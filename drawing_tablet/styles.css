@@ -555,7 +555,7 @@ body {
 .download-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    border-color: #2563eb;
+    border-color: #22c55e;
 }
 
 .download-card.coming-soon {
@@ -571,7 +571,7 @@ body {
 .download-icon {
     width: 70px;
     height: 70px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -601,7 +601,7 @@ body {
     position: absolute;
     top: -10px;
     right: -10px;
-    background: #2563eb;
+    background: #22c55e;
     color: white;
     padding: 5px 12px;
     border-radius: 20px;
@@ -655,7 +655,7 @@ footer {
 }
 
 .footer-section ul li a:hover {
-    color: #2563eb;
+    color: #22c55e;
 }
 
 .footer-bottom {
@@ -708,7 +708,7 @@ footer {
     }
     
     .tab-btn.active {
-        border-bottom-color: #2563eb;
+        border-bottom-color: #22c55e;
     }
     
     .features-grid {
