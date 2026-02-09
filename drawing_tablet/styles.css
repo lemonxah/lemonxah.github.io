@@ -89,7 +89,7 @@ body {
     display: flex;
     align-items: center;
     min-height: 100vh;
-    background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+    background: linear-gradient(180deg, #9FE58C 0%, #3A9CAB 100%);
     color: white;
     position: relative;
     overflow: hidden;
