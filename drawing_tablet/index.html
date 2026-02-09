@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drawing Tablet - Remote Graphics Tablet</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="nav-logo">
+                    <i class="fas fa-tablet-alt"></i>
+                    <span>Drawing Tablet</span>
+                </div>
+                <ul class="nav-menu">
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#how-it-works">How It Works</a></li>
+                    <li><a href="#installation">Installation</a></li>
+                    <li><a href="#download">Download</a></li>
+                </ul>
+                <div class="nav-toggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="hero">
+            <div class="hero-content">
+                <h1>Turn Your Android into a Professional Drawing Tablet</h1>
+                <p>A high-performance, low-latency drawing tablet solution that transforms your Android device into a Wacom-style graphics tablet for Linux (Wayland).</p>
+                <div class="hero-buttons">
+                    <a href="#installation" class="btn btn-primary">Get Started</a>
+                    <a href="https://github.com/lemonxah/drawing_tablet" class="btn btn-secondary" target="_blank">
+                        <i class="fab fa-github"></i> View on GitHub
+                    </a>
+                </div>
+                <div class="playstore-notice">
+                    <i class="fab fa-google-play"></i>
+                    <span><strong>Coming Soon:</strong> Google Play Store release for Android</span>
+                </div>
+            </div>
+            <div class="hero-image">
+                <img src="splash.png" alt="Drawing Tablet App" />
+            </div>
+        </section>
+
+        <section id="features">
+            <div class="container">
+                <h2>Powerful Features</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-tachometer-alt"></i>
+                        </div>
+                        <h3>Sub-millisecond Latency</h3>
+                        <p>UDP-based protocol delivers instant cursor response for professional drawing experience.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <h3>High-Quality Screen Mirroring</h3>
+                        <p>H.264/H.265 hardware encoding with GPU acceleration ensures smooth screen sharing.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-pen"></i>
+                        </div>
+                        <h3>Full Wacom Emulation</h3>
+                        <p>Complete support for pressure sensitivity, tilt detection, and hover functionality.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-hand-pointer"></i>
+                        </div>
+                        <h3>Gesture Support</h3>
+                        <p>Pinch-to-zoom, pan, and rotate gestures in Krita, GIMP, and other creative apps.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fab fa-linux"></i>
+                        </div>
+                        <h3>Wayland Native</h3>
+                        <p>Built for modern Linux desktops including GNOME, KDE, and Sway.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-wifi"></i>
+                        </div>
+                        <h3>Auto-Connect</h3>
+                        <p>Client remembers your server and handles network interruptions gracefully.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="how-it-works">
+            <div class="container">
+                <h2>How It Works</h2>
+                <div class="how-it-works-content">
+                    <div class="steps">
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h3>Android Client</h3>
+                                <p>Captures stylus input (pressure, tilt, coordinates) and renders low-latency video stream of your PC screen.</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h3>Rust Server</h3>
+                                <p>Captures screen using PipeWire, encodes with GStreamer, and emulates virtual Wacom tablet via uinput.</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h3>Cintiq Experience</h3>
+                                <p>Professional graphics tablet experience entirely over WiFi with sub-millisecond input latency.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="installation">
+            <div class="container">
+                <h2>Installation</h2>
+                <div class="installation-tabs">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" data-tab="android">Android</button>
+                        <button class="tab-btn" data-tab="arch">Arch Linux</button>
+                        <button class="tab-btn" data-tab="other">Other Distros</button>
+                    </div>
+                    <div class="tab-content">
+                        <div id="android" class="tab-pane active">
+                            <h3>Android Installation</h3>
+                            <div class="install-steps">
+                                <div class="install-step">
+                                    <h4><i class="fas fa-download"></i> Download the APK</h4>
+                                    <p>Download the latest APK from the GitHub Releases page.</p>
+                                    <div class="code-block">
+                                        <button class="copy-btn" data-copy="android-apk">Copy</button>
+                                        <code id="android-apk">wget https://github.com/lemonxah/drawing_tablet/releases/latest/download/drawing-tablet.apk</code>
+                                    </div>
+                                </div>
+                                <div class="install-step">
+                                    <h4><i class="fas fa-cog"></i> Enable Unknown Sources</h4>
+                                    <p>Go to Settings > Security > Enable installation from unknown sources.</p>
+                                </div>
+                                <div class="install-step">
+                                    <h4><i class="fas fa-install"></i> Install the App</h4>
+                                    <p>Open the downloaded APK file and follow the installation prompts.</p>
+                                </div>
+                            </div>
+                            <div class="playstore-coming-soon">
+                                <i class="fab fa-google-play"></i>
+                                <strong>Play Store Version Coming Soon!</strong> We're working on publishing the app to the Google Play Store for easier installation and automatic updates.
+                            </div>
+                        </div>
+                        <div id="arch" class="tab-pane">
+                            <h3>Arch Linux Installation</h3>
+                            <div class="install-steps">
+                                <div class="install-step">
+                                    <h4><i class="fas fa-download"></i> Install from AUR</h4>
+                                    <p>Use your favorite AUR helper to install the package:</p>
+                                    <div class="code-block">
+                                        <button class="copy-btn" data-copy="aur-install">Copy</button>
+                                        <code id="aur-install">yay -S drawing-tablet-git</code>
+                                    </div>
+                                    <p>Or with paru:</p>
+                                    <div class="code-block">
+                                        <button class="copy-btn" data-copy="paru-install">Copy</button>
+                                        <code id="paru-install">paru -S drawing-tablet-git</code>
+                                    </div>
+                                </div>
+                                <div class="install-step">
+                                    <h4><i class="fas fa-shield-alt"></i> Setup udev Rules</h4>
+                                    <p>Allow the server to create virtual input devices:</p>
+                                    <div class="code-block">
+                                        <button class="copy-btn" data-copy="udev-rules">Copy</button>
+                                        <code id="udev-rules">sudo bash -c 'echo "KERNEL==\"uinput\", GROUP=\"input\", MODE=\"0660\"" > /etc/udev/rules.d/99-drawing-tablet.rules'</code>
+                                    </div>
+                                    <div class="code-block">
+                                        <button class="copy-btn" data-copy="udev-reload">Copy</button>
+                                        <code id="udev-reload">sudo udevadm control --reload-rules && sudo udevadm trigger && sudo usermod -aG input $USER</code>
+                                    </div>
+                                    <p><strong>Important:</strong> Log out and back in for the group change to take effect.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="other" class="tab-pane">
+                            <h3>Other Linux Distributions</h3>
+                            <div class="install-steps">
+                                <div class="install-step">
+                                    <h4><i class="fas fa-cogs"></i> Build from Source</h4>
+                                    <p>Clone the repository and build the server:</p>
+                                    <div class="code-block">
+                                        <button class="copy-btn" data-copy="clone-repo">Copy</button>
+                                        <code id="clone-repo">git clone https://github.com/lemonxah/drawing_tablet.git && cd drawing_tablet</code>
+                                    </div>
+                                </div>
+                                <div class="install-step">
+                                    <h4><i class="fas fa-tools"></i> Install Dependencies</h4>
+                                    <p><strong>Ubuntu/Debian:</strong></p>
+                                    <div class="code-block">
+                                        <button class="copy-btn" data-copy="ubuntu-deps">Copy</button>
+                                        <code id="ubuntu-deps">sudo apt install build-essential pkg-config libclang-dev libpipewire-0.3-dev libglib2.0-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-vaapi udev</code>
+                                    </div>
+                                    <p><strong>Fedora:</strong></p>
+                                    <div class="code-block">
+                                        <button class="copy-btn" data-copy="fedora-deps">Copy</button>
+                                        <code id="fedora-deps">sudo dnf install clang pipewire-devel glib2-devel gstreamer1-devel gstreamer1-plugins-base-devel gstreamer1-plugins-bad-free-devel</code>
+                                    </div>
+                                </div>
+                                <div class="install-step">
+                                    <h4><i class="fas fa-rocket"></i> Build and Run</h4>
+                                    <div class="code-block">
+                                        <button class="copy-btn" data-copy="build-server">Copy</button>
+                                        <code id="build-server">cargo build --release</code>
+                                    </div>
+                                    <div class="code-block">
+                                        <button class="copy-btn" data-copy="run-server">Copy</button>
+                                        <code id="run-server">./target/release/dt-server</code>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="usage">
+            <div class="container">
+                <h2>How to Use</h2>
+                <div class="usage-steps">
+                    <div class="usage-step">
+                        <div class="usage-icon">
+                            <i class="fas fa-server"></i>
+                        </div>
+                        <h3>1. Start the Server</h3>
+                        <p>Run the drawing tablet server on your Linux machine. On first run, select the screen you want to mirror when prompted.</p>
+                        <div class="code-block">
+                            <button class="copy-btn" data-copy="start-server">Copy</button>
+                            <code id="start-server">dt-server</code>
+                        </div>
+                    </div>
+                    <div class="usage-step">
+                        <div class="usage-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h3>2. Connect from Android</h3>
+                        <p>Open the Drawing Tablet app and it will automatically scan for servers on your local network. Tap your computer to connect.</p>
+                    </div>
+                    <div class="usage-step">
+                        <div class="usage-icon">
+                            <i class="fas fa-paint-brush"></i>
+                        </div>
+                        <h3>3. Start Drawing!</h3>
+                        <p>Your Android tablet now works as a professional graphics tablet with pressure sensitivity, tilt support, and gesture controls.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="download">
+            <div class="container">
+                <h2>Download</h2>
+                <div class="download-options">
+                    <a href="https://github.com/lemonxah/drawing_tablet/releases" class="download-card" target="_blank">
+                        <div class="download-icon">
+                            <i class="fab fa-github"></i>
+                        </div>
+                        <h3>GitHub Releases</h3>
+                        <p>Download the latest APK and server binaries</p>
+                        <span class="download-badge">Latest</span>
+                    </a>
+                    <div class="download-card coming-soon">
+                        <div class="download-icon">
+                            <i class="fab fa-google-play"></i>
+                        </div>
+                        <h3>Google Play Store</h3>
+                        <p>Coming soon for easy Android installation</p>
+                        <span class="download-badge">Soon</span>
+                    </div>
+                    <a href="https://aur.archlinux.org/packages/drawing-tablet-git" class="download-card" target="_blank">
+                        <div class="download-icon">
+                            <i class="fab fa-arch-linux"></i>
+                        </div>
+                        <h3>AUR Repository</h3>
+                        <p>Install on Arch Linux with your AUR helper</p>
+                        <span class="download-badge">AUR</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                <div class="footer-logo">
+                    <i class="fas fa-tablet-alt"></i>
+                    <span>Drawing Tablet</span>
+                </div>
+                <p>High-performance remote drawing tablet for Linux</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Links</h4>
+                    <ul>
+                        <li><a href="https://github.com/lemonxah/drawing_tablet" target="_blank">GitHub Repository</a></li>
+                        <li><a href="https://github.com/lemonxah/drawing_tablet/issues" target="_blank">Report Issues</a></li>
+                        <li><a href="https://github.com/lemonxah/drawing_tablet/blob/main/LICENSE" target="_blank">License</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="https://github.com/lemonxah/drawing_tablet/discussions" target="_blank">Discussions</a></li>
+                        <li><a href="https://github.com/lemonxah/drawing_tablet/blob/main/PRIVACY_POLICY.md" target="_blank">Privacy Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Drawing Tablet - Remote Graphics Tablet. Licensed under MIT License.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
