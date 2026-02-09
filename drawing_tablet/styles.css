@@ -85,7 +85,7 @@ body {
 
 /* Hero Section */
 #hero {
-    padding: 120px 0 80px;
+    padding: 120px 200px 80px;
     display: flex;
     align-items: center;
     min-height: 100vh;
