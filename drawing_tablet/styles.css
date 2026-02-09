@@ -45,7 +45,7 @@ body {
     gap: 10px;
     font-size: 1.5rem;
     font-weight: 700;
-    color: #2563eb;
+    color: #22c55e;
 }
 
 .nav-logo i {
@@ -66,7 +66,7 @@ body {
 }
 
 .nav-menu a:hover {
-    color: #2563eb;
+    color: #22c55e;
 }
 
 .nav-toggle {
@@ -89,7 +89,7 @@ body {
     display: flex;
     align-items: center;
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
     color: white;
     position: relative;
     overflow: hidden;
@@ -145,12 +145,12 @@ body {
 }
 
 .btn-primary {
-    background: #2563eb;
+    background: #16a34a;
     color: white;
 }
 
 .btn-primary:hover {
-    background: #1d4ed8;
+    background: #15803d;
     transform: translateY(-2px);
 }
 
@@ -233,7 +233,7 @@ body {
 .feature-icon {
     width: 70px;
     height: 70px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -289,7 +289,7 @@ body {
 .step-number {
     width: 60px;
     height: 60px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -351,12 +351,12 @@ body {
 }
 
 .tab-btn.active {
-    color: #2563eb;
-    border-bottom-color: #2563eb;
+    color: #22c55e;
+    border-bottom-color: #22c55e;
 }
 
 .tab-btn:hover {
-    color: #2563eb;
+    color: #22c55e;
 }
 
 .tab-content {
@@ -401,7 +401,7 @@ body {
 }
 
 .install-step h4 i {
-    color: #2563eb;
+    color: #22c55e;
 }
 
 .install-step p {
@@ -482,7 +482,7 @@ body {
 .usage-icon {
     width: 80px;
     height: 80px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -536,7 +536,7 @@ body {
     gap: 10px;
     font-size: 1.5rem;
     font-weight: 700;
-    color: #2563eb;
+    color: #22c55e;
     margin-bottom: 15px;
 }
 
