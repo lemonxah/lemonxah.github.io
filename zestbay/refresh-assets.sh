@@ -30,4 +30,4 @@ magick "$SRC/main-dark.png" -resize 1200x -gravity north -crop 1200x630+0+0 +rep
 
 VERSION=$(grep '^version' "$REPO/Cargo.toml" | head -1 | sed 's/.*"\(.*\)".*/\1/')
 echo "Images refreshed. Repo is at v$VERSION."
-echo "The page shows v$(grep -o 'v[0-9][0-9.]*' "$HERE/index.html" | head -1 | tr -d v); update it in index.html (hero pill and footer) if it differs."
+echo "The page reads its version from the newest GitHub tag (version.js); nothing to update there."
