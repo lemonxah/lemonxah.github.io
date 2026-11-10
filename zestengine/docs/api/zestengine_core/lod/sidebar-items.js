@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["AUTO_LOD_MIN_TRIANGLES","AUTO_LOD_STEPS","COVERAGE_HYSTERESIS","IK_MIN_COVERAGE","IMPOSTOR_COVERAGE","IMPOSTOR_PREPARE_COVERAGE"],"fn":["animation_interval","auto_thresholds","impostor_distance","screen_coverage","select_by_coverage","use_impostor"]};

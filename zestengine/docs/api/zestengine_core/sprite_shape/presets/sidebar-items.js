@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ShapePreset"],"fn":["apply_preset","preset_shape"],"struct":["PresetData"]};

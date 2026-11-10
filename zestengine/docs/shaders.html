@@ -1,0 +1,677 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>The standard shader - ZestEngine</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Documentation for the ZestEngine game engine: the ECS, the engine API and WASM scripting.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="shortcut icon" href="favicon-8e6b73bd.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-e96d0476.css">
+        <link rel="stylesheet" href="css/chrome-d279d366.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="theme/zestengine-9866fa4a.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-49b9e9f7.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-ffb240a5.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">ZestEngine</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/lemonxah/zestengine" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <!-- Copied from docs/shaders.md in the engine repository by sync.py. Edit it there, then run ./sync.py. -->
+<h1 id="zestengine-standard-shader"><a class="header" href="#zestengine-standard-shader">zestengine standard shader</a></h1>
+<p>The single default shader used by every world and avatar, on PC and mobile.
+Inspired by Poiyomi: one heavily configurable <strong>uber-shader</strong> instead of many
+small shaders, so creators toggle features instead of writing GLSL.</p>
+<h2 id="flux-math"><a class="header" href="#flux-math">Flux math</a></h2>
+<p>The shared helpers in <code>crates/zestengine-render/shaders/flux_common.glsl</code>
+provide the sampling and lighting calculations used by Flux:</p>
+<ul>
+<li>Screen probes use four real spherical-harmonic coefficients, with basis
+<code>(1/sqrt(4*pi), sqrt(3/(4*pi)) * (-y, z, -x))</code>. The signs and order preserve
+the existing screen-probe buffer convention. This is distinct from the
+positive-axis convention in the baked/world-volume probes.</li>
+<li>Diffuse irradiance is the hemispherical integral of incoming radiance times
+the cosine with the surface normal. For degree zero and one, the convolution
+factors are <code>pi</code> and <code>2*pi/3</code>. The helper evaluates those four RGB coefficients directly. The resolve still uses only the directional ratio; the denoised
+scalar gather supplies brightness. See Ramamoorthi and Hanrahan (2001),
+<a href="https://graphics.stanford.edu/papers/envmap/envmap.pdf">An Efficient Representation for Irradiance Environment Maps</a>,
+equations 3, 7 and 9. The basis normalization is computed from pi.</li>
+<li>Hemisphere sampling projects a uniformly sampled disk onto a hemisphere:
+radius squared is uniform and height is <code>sqrt(1-radius_squared)</code>. This is
+Malley's method, explained in
+<a href="https://pbr-book.org/4ed/Sampling_Algorithms/Sampling_Multidimensional_Functions#Cosine-WeightedHemisphereSampling">Physically Based Rendering, section A.5.3</a>.
+A unit-quaternion rotation carries the local direction into the surface frame.
+The north/south chart boundary remains at <code>normal.z = -0.5</code> to preserve the
+directional-bin convention shared by tracing, temporal history and denoising.</li>
+<li>The RGB firefly limiter applies one scale so that the largest channel does
+not exceed the configured ceiling, preserving color ratios.</li>
+</ul>
+<p><code>gpu_tests::flux_math</code> exercises the actual production GLSL against analytic
+constant/linear lighting integrals, the spherical-harmonic addition theorem,
+cosine-distribution moments, both poles, chart boundaries, sampling endpoints,
+wall-normal continuity and RGB ratios. Run it with:</p>
+<pre><code class="language-sh">cargo test -p zestengine-render --lib gpu_tests::flux_math -- --nocapture --test-threads=1
+</code></pre>
+<p>As with other GPU tests, a machine without a usable Vulkan device reports a
+skip. A compilation or skipped test is not evidence of numerical correctness.</p>
+<h2 id="why-an-uber-shader"><a class="header" href="#why-an-uber-shader">Why an uber-shader</a></h2>
+<p>Poiyomi's model works because creators get a huge feature surface behind
+checkboxes, and the shader compiler strips everything unused. We replicate
+that with <strong>SPIR-V specialization constants + compile-time variant flags</strong>:</p>
+<ul>
+<li>Authoring time: every feature is a material property in the editor.</li>
+<li>Build/publish time: the material's enabled-feature set selects (or bakes) a
+shader variant; disabled features cost zero GPU time.</li>
+<li>Runtime: variants are cached in a pipeline cache keyed by
+<code>(feature_bits, vertex_layout, render_state, tier)</code>.</li>
+</ul>
+<h2 id="feature-set-target-phased"><a class="header" href="#feature-set-target-phased">Feature set (target, phased)</a></h2>
+<p><strong>Phase 1 — core PBR/toon hybrid</strong></p>
+<ul>
+<li>Base: albedo × vertex color, normal map, metallic/roughness/AO (ORM packed)</li>
+<li>Lighting modes: <code>PBR</code>, <code>Toon</code> (ramp or step shading), blend between them</li>
+<li>Emission with masks</li>
+<li>Alpha modes: opaque / cutout / transparent (premultiplied)</li>
+<li>Double-sided rendering with proper normal flip</li>
+</ul>
+<p><strong>Phase 2 — the "Poiyomi feel"</strong></p>
+<ul>
+<li>Shading ramps / gradient lighting, shadow tinting</li>
+<li>Rim lighting (color, power, masked)</li>
+<li>Matcaps (add/multiply/replace, masked, 2 slots)</li>
+<li>Outlines (inverted-hull, color/width properties, distance fade)</li>
+<li>UV manipulation: tiling/offset, panning, rotation per texture slot</li>
+<li>Detail maps (albedo/normal second set)</li>
+</ul>
+<p><strong>Phase 3 — flair</strong></p>
+<ul>
+<li>Audio-link-style reactive params (driven by engine-side audio analysis bus)</li>
+<li>Dissolve (alpha + edge glow), glitter/sparkle, iridescence</li>
+<li>Flipbook/spritesheet animation</li>
+<li>Vertex animation hooks (wind, sway: the custom-shader <code>// @vertex</code> hook below; jiggle is handled by spring bones instead)</li>
+</ul>
+<h2 id="tiers"><a class="header" href="#tiers">Tiers</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th></th><th>PC (<code>tier_pc</code>)</th><th>Mobile (<code>tier_mobile</code>)</th></tr>
+</thead>
+<tbody>
+<tr><td>Lighting</td><td>Full PBR IBL + analytic lights</td><td>Baked/SH ambient + 1 directional</td></tr>
+<tr><td>Texture slots</td><td>All</td><td>Albedo, normal (optional), emission, ORM</td></tr>
+<tr><td>Matcap/rim/outline</td><td>Yes</td><td>Rim yes; matcap 1 slot; outlines optional</td></tr>
+<tr><td>Transparency</td><td>Full</td><td>Cutout strongly preferred</td></tr>
+<tr><td>Target</td><td>Desktop Vulkan 1.3</td><td>Quest-class (Vulkan 1.1, tiled GPU)</td></tr>
+</tbody>
+</table>
+</div>
+<p>Same material asset, two compilation targets. The mobile tier compiles the
+same source with <code>TIER_MOBILE</code> set, which forces cheap fallbacks for features
+out of budget (matcap→off, PBR→simplified BRDF, etc.). Creators see one
+material; the publisher emits both variants and validates mobile budget.</p>
+<h2 id="material-inspector-gui"><a class="header" href="#material-inspector-gui">Material inspector GUI</a></h2>
+<p>The shader is only as good as its inspector. Creators interact with the GUI,
+not the SPIR-V. The egui material inspector (zestengine-editor) is a first-class
+part of the shader spec:</p>
+<ul>
+<li><strong>Collapsible feature sections</strong>, each with a master enable toggle in the
+header (toggle off = section collapses, variant bit clears, GPU cost gone).
+Disabled sections render dimmed, never hidden, for discoverability.</li>
+<li><strong>Search/filter bar</strong> across all property names ("rim" jumps you to rim
+lighting), like Poiyomi's ctrl+F workflow.</li>
+<li><strong>Live preview</strong>: edits apply to the running scene immediately, with no
+apply button. Variant recompiles happen async with the old pipeline kept
+until the new one is ready (no hitching).</li>
+<li><strong>Texture slots</strong> as thumbnail widgets: click to assign, right-click to
+clear; per-slot UV controls (tiling/offset/pan speed/rotation) fold out
+under the thumbnail.</li>
+<li><strong>Proper widgets per type</strong>: color = picker with HDR intensity for
+emission; ranges = sliders with drag-to-type; ramps = gradient editor
+widget; masks = channel-select dropdown (R/G/B/A).</li>
+<li><strong>Presets</strong>: save/load named property bundles (full material or
+per-section), shippable with the platform (e.g. "Toon Skin", "Glossy
+Metal") and shareable as small JSON/RON files.</li>
+<li><strong>Tier preview toggle</strong> in the inspector header: PC ⇄ Mobile, showing
+exactly what the mobile tier degrades, plus a live mobile-budget meter
+(texture memory, variant cost) so creators see Quest problems <em>while</em>
+authoring rather than at publish time.</li>
+<li><strong>Reset-to-default</strong> per property (right-click) and per section.</li>
+</ul>
+<p>Build order: a minimal version of this inspector ships <strong>with M2</strong> (phase 1
+features need it for testing) and grows with each shader phase. The
+inspector and the shader are one deliverable, not two.</p>
+<h2 id="implementation-notes"><a class="header" href="#implementation-notes">Implementation notes</a></h2>
+<ul>
+<li>Source language: <strong>Slang</strong> or GLSL with includes, decided at milestone M2.
+Compiled to SPIR-V at build time (<code>glslc</code>/<code>slangc</code>), variants via
+specialization constants where possible, preprocessor defines where not
+(e.g. texture binding presence).</li>
+<li>Bindless-ish material model on PC (descriptor indexing) to keep one
+pipeline across materials with the same feature bits; classic descriptor
+sets on mobile tier.</li>
+<li>Material parameters serialize into the glTF material <code>extras</code> /
+a <code>VRSH_materials_standard</code> extension so worlds and VRM avatars carry vrsh
+materials portably while staying valid glTF for other tools.</li>
+</ul>
+<h2 id="custom-shaders-property-system-v2"><a class="header" href="#custom-shaders-property-system-v2">Custom shaders (property system v2)</a></h2>
+<p>Any <code>.frag</code> (GLSL) or <code>.hlsl</code> (HLSL) file anywhere in the project (not only
+<code>shaders/</code>) appears in the material Shader picker. The engine prepends a
+preamble, compiles via <code>glslc</code> at runtime and hot-reloads on save (about 2 s
+polling; property values are carried over by name). Compile errors show in
+the Inspector (with your own line numbers) and in the log; the material draws
+the error swirl until the file compiles again. Files &gt; Create &gt; New Shader
+writes a commented GLSL starter (<code>zestengine_assets::SHADER_TEMPLATE</code>;
+<code>HLSL_SHADER_TEMPLATE</code> is the HLSL equivalent).</p>
+<p>The file is the fragment stage plus, optionally, a <strong>vertex hook</strong> (see "Vertex
+hook" below); the rest of the vertex stage is the engine's. Do not write a
+<code>#version</code> line.</p>
+<h3 id="property-declarations"><a class="header" href="#property-declarations">Property declarations</a></h3>
+<p>Properties are <code>// @</code> comment directives, anywhere in the file:</p>
+<pre><code class="language-glsl">// @shader "Wobble"
+// @property tint "Tint" Color = (1, 0.5, 0.1, 1)
+// @property speed "Speed" Range(0, 10) = 2
+// @property mode "Mode" Enum(Flat, Wavy, Noisy) = Wavy @keyword
+// @feature GLOW "Glow"
+// @property glow_color "Color" Color3(HDR) = (4, 2, 1)
+// @property glow_mask "Mask" Texture2D = white @linear
+// @property glow_width "Width" Float = 0.5 @show_if(mode != Flat)
+// @end
+// @preset "Cheap" GLOW=0 mode=Flat
+</code></pre>
+<p><code>@property name ["Label"] Type [= default] [flags]</code></p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Type</th><th>Widget</th><th>GLSL type</th><th>Default</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Range(min, max)</code></td><td>slider</td><td><code>float</code></td><td>number</td></tr>
+<tr><td><code>Float</code></td><td>drag value</td><td><code>float</code></td><td>number</td></tr>
+<tr><td><code>Int</code>, <code>IntRange(min, max)</code></td><td>drag / slider</td><td><code>int</code></td><td>number</td></tr>
+<tr><td><code>Toggle</code></td><td>checkbox</td><td><code>bool</code> (see below)</td><td><code>0</code> / <code>1</code></td></tr>
+<tr><td><code>Enum(A, B, C)</code></td><td>combo</td><td><code>int</code>, plus <code>const int name_A = 0;</code> ...</td><td>option name or index</td></tr>
+<tr><td><code>Color</code>, <code>Color(HDR)</code></td><td>colour picker (+ intensity for HDR)</td><td><code>vec4</code></td><td><code>(r, g, b, a)</code></td></tr>
+<tr><td><code>Color3</code>, <code>Color3(HDR)</code></td><td>colour picker</td><td><code>vec3</code></td><td><code>(r, g, b)</code></td></tr>
+<tr><td><code>Vector</code>, <code>Vector2</code>, <code>Vector3</code></td><td>drag fields</td><td><code>vec4</code> / <code>vec2</code> / <code>vec3</code></td><td><code>(x, y, ...)</code></td></tr>
+<tr><td><code>Texture2D</code></td><td>texture slot (drop an image) + tiling/offset</td><td><code>sampler2D name</code>, <code>vec4 name_st</code>, <code>name_uv(uv)</code></td><td><code>white</code>, <code>black</code>, <code>normal</code>, <code>gray</code></td></tr>
+</tbody>
+</table>
+</div>
+<p>Flags: <code>@keyword</code> (Toggle / Enum / Int become a specialization constant, see
+variants), <code>@linear</code> / <code>@srgb</code> (texture colour space; colour textures default
+to sRGB, <code>normal</code> and <code>gray</code> defaults to linear), <code>@show_if(expr)</code>,
+<code>@tooltip("text")</code>.</p>
+<p>Grouping and layout directives:</p>
+<ul>
+<li><code>@feature NAME "Label" [= 1]</code>: declares a keyword Toggle <code>NAME</code> and opens a
+foldout whose header checkbox is that toggle. Off = dimmed in the Inspector
+and compiled out of the material's variant.</li>
+<li><code>@foldout "Label" [@show_if(expr)]</code> ... <code>@end</code>: a plain foldout group.</li>
+<li><code>@header "Text"</code>: sub-heading above the next property.</li>
+<li><code>@show_if expr</code> ... <code>@end_show_if</code>: condition for a run of properties.</li>
+<li><code>@preset "Name" a=1 b=Option c=(1,0,0,1)</code>: Inspector preset; selecting it
+writes those values (usually the feature keywords).</li>
+</ul>
+<p>Conditions: <code>name</code> (non-zero), <code>!name</code>, <code>name == value</code> / <code>!=</code> / <code>&lt;</code> / <code>&lt;=</code> /
+<code>&gt;</code> / <code>&gt;=</code> (enum option names allowed), combined with <code>&amp;&amp;</code> and <code>||</code> (OR of
+ANDs). Hidden properties keep their values.</p>
+<p>The legacy v1 pragmas (<code>//! shader "Name"</code>, <code>//! prop tint color default(...)</code>,
+kinds <code>float</code>, <code>toggle</code>, <code>color</code>, <code>color3</code>) still work unchanged: they pack into
+15 push-constant floats and can be mixed with v2 properties.</p>
+<h3 id="data-flow"><a class="header" href="#data-flow">Data flow</a></h3>
+<ol>
+<li><strong>Asset</strong> (<code>zestengine-assets/src/shader_props.rs</code>): the parser builds a
+<code>ShaderSource</code> with each property's storage: push lane (v1), std140 byte
+offset in the material block, keyword constant id, or texture binding.</li>
+<li><strong>Material</strong>: values live in <code>MaterialModel::custom_values</code> (lanes 0..15 =
+v1 push block, v2 values from lane 16) and are saved by property name in
+<code>.material</code> files and inline scene materials (<code>custom</code>); texture properties
+are saved by name in <code>textures.shader</code>. Old files load unchanged.</li>
+<li><strong>GPU</strong>: <code>apply_material</code> uploads the std140 bytes to the material's set 2
+uniform buffer (binding 0, max 4096 bytes), binds texture properties at
+set 2 bindings 1..20 (unassigned = the declared default), pushes the v1
+lanes, and sets the material's keyword values on the pipeline key.</li>
+<li><strong>Shader</strong>: the generated declarations name everything after the property,
+so the body just uses <code>tint</code>, <code>speed</code>, <code>GLOW</code>, <code>texture(glow_mask, glow_mask_uv(v_uv))</code>. Non-keyword toggles read as <code>bool</code> (<code>#define name (_cp_name &gt; 0.5)</code>).</li>
+</ol>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Set / binding</th><th>Contents</th></tr>
+</thead>
+<tbody>
+<tr><td>set 0</td><td>frame UBO (lights, shadows, probes, post), shadow atlas (1), probe SH (2), lightmaps (3), screen GI (4), environment cube (7)</td></tr>
+<tr><td>set 1, bindings 0-3</td><td>fixed material slots <code>t_albedo</code>, <code>t_normal</code>, <code>t_orm</code>, <code>t_emission</code> (also editable in the custom shader Inspector)</td></tr>
+<tr><td>set 2, binding 0</td><td>generated <code>ZestEngineMaterial</code> std140 block</td></tr>
+<tr><td>set 2, bindings 1..20</td><td><code>Texture2D</code> properties in declaration order</td></tr>
+<tr><td>push constants</td><td><code>pc.model</code>, v1 props in <code>pc.d0..d3</code>, lightmap layer in <code>pc.d3.w</code></td></tr>
+<tr><td>spec constants 0..31</td><td><code>@keyword</code> properties; id 63 = <code>zestengine_alpha_mode</code> (0 opaque, 1 cutout, 2 blend)</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="provided-by-the-preamble"><a class="header" href="#provided-by-the-preamble">Provided by the preamble</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th></th><th></th></tr>
+</thead>
+<tbody>
+<tr><td>Varyings</td><td><code>v_world_pos</code>, <code>v_normal</code>, <code>v_uv</code>, <code>v_uv1</code>, <code>v_color</code>, <code>v_tangent</code></td></tr>
+<tr><td>Uniforms</td><td><code>u_time</code>, <code>u_camera_pos</code>, <code>u_ambient</code>, <code>u_light_count</code>, the full <code>frame</code> UBO</td></tr>
+<tr><td>Lights</td><td><code>zestengine_light(i, pos, out L, out radiance)</code> (attenuation, spot cone, baked-light skip), <code>zestengine_shadow(i, pos, n, L)</code> (cascades, cube faces, PCF), <code>zestengine_direct_lambert(pos, n)</code> (shadowed), <code>zestengine_direct_diffuse(pos, n)</code> (unshadowed)</td></tr>
+<tr><td>GI</td><td><code>zestengine_baked_gi(pos, n)</code> (lightmap + realtime probes, screen-space Flux GI, probe GI, ambient: the standard shader's priority), <code>zestengine_gi(pos, n)</code>, <code>zestengine_probe_irradiance(pos, n, out coverage)</code></td></tr>
+<tr><td>Reflections</td><td><code>zestengine_env(pos, R, roughness)</code> (reflection probe, box-projected, or sky)</td></tr>
+<tr><td>Misc</td><td><code>zestengine_postfx(color, gl_FragCoord.xy)</code> (call before writing), <code>zestengine_dither(fragcoord)</code>, <code>zestengine_alpha_mode</code></td></tr>
+<tr><td>Output</td><td><code>o_color</code>; <code>o_gbuf</code> is zeroed (not an SSR reflector) before your <code>main</code> runs</td></tr>
+</tbody>
+</table>
+</div>
+<p>Alpha mode and double-sided still come from the material's Transparency /
+Geometry sections (pipeline state); read <code>zestengine_alpha_mode</code> to cut out.</p>
+<h3 id="hlsl"><a class="header" href="#hlsl">HLSL</a></h3>
+<p><code>.hlsl</code> files use the same directives and bindings. Implement
+<code>float4 zestengine_frag(ZestEngineInput i)</code>; the engine adds the <code>main</code> entry point.
+<code>ZestEngineInput</code> has <code>world_pos</code>, <code>normal</code>, <code>uv</code>, <code>color</code>, <code>tangent</code>, <code>uv1</code>,
+<code>frag_coord</code> (SV_Position) and <code>front_facing</code>. Every texture is a
+<code>Texture2D x</code> with a <code>SamplerState sampler_x</code> at the same binding (glslc's
+<code>-fauto-combined-image-sampler</code> merges them into the combined samplers the
+pipeline uses); <code>ZESTENGINE_SAMPLE(x, uv)</code> expands to <code>x.Sample(sampler_x, uv)</code>.
+The material block is a <code>cbuffer</code> with explicit <code>packoffset</code>s matching the
+std140 layout, keywords are <code>[[vk::constant_id(N)]] const</code> values, matrices
+are column-major as the engine writes them (use <code>mul(M, v)</code>). The helper
+functions have the same names and signatures as in GLSL. Compiled with
+<code>glslc -x hlsl -fshader-stage=frag</code>.</p>
+<pre><code class="language-hlsl">// @shader "Rim Glow"
+// @property tint "Tint" Color = (1, 1, 1, 1)
+// @feature RIM "Rim"
+// @property rim_color "Rim Color" Color3(HDR) = (2, 2, 2)
+// @end
+float4 zestengine_frag(ZestEngineInput i) {
+    float4 albedo = ZESTENGINE_SAMPLE(t_albedo, i.uv) * tint;
+    float3 n = normalize(i.front_facing ? i.normal : -i.normal);
+    float3 c = albedo.rgb * (zestengine_direct_lambert(i.world_pos, n) + zestengine_baked_gi(i.world_pos, n));
+    if (RIM) c += rim_color * pow(1.0 - saturate(dot(n, normalize(u_camera_pos - i.world_pos))), 3.0);
+    return float4(zestengine_postfx(c, i.frag_coord.xy), albedo.a);
+}
+</code></pre>
+<h3 id="keyword-variants-shader_feature-model"><a class="header" href="#keyword-variants-shader_feature-model">Keyword variants (shader_feature model)</a></h3>
+<p>One shader file contains every feature; <code>@keyword</code> / <code>@feature</code> properties
+decide which of them a material's GPU program contains.</p>
+<ul>
+<li>At runtime the shader compiles once to a SPIR-V module whose keywords are
+specialization constants. Each material's keyword set is part of its
+pipeline key, so every distinct set gets its own pipeline, built lazily the
+first time a material with that set draws and cached afterwards. When the
+driver builds a specialized pipeline it folds the constants, so
+<code>if (GLITTER) { ... }</code> with GLITTER off is removed: no branch, no texture
+sample, no register pressure from the disabled code. Toggling a keyword in
+the Inspector switches pipelines without recompiling GLSL.</li>
+<li>Non-keyword properties (sliders, colours) are uniform reads: changing them
+never creates a variant. Use <code>@keyword</code> for anything that gates sizeable
+code or texture fetches, plain properties for values.</li>
+<li>Game builds (<code>bundle.rs</code>) precompile every shader to a <code>.spv</code> sidecar
+(players need no glslc) and additionally bake the exact keyword sets their
+scenes and <code>.material</code> files use into <code>&lt;shader&gt;.variants/&lt;hash&gt;.spv</code>, with
+the keywords compiled as plain constants so glslc's optimizer strips the
+disabled code from the SPIR-V itself. The runtime prefers a baked variant
+when one exists and otherwise falls back to specializing the shared module.</li>
+<li>Cost model: variant count is bounded by the keyword combinations materials
+actually use (not 2^N); each costs one pipeline object. The test
+<code>zestengine_toon_variants_strip_disabled_features</code> checks that ZestEngine Toon's
+Simple variant compiles to roughly half the SPIR-V of Heavy with a quarter
+of the texture samples, and that the heavy-only samplers (dissolve,
+glitter, decal, detail, parallax, second matcap, hair shift) are absent.</li>
+</ul>
+<h3 id="vertex-hook"><a class="header" href="#vertex-hook">Vertex hook</a></h3>
+<p>A custom GLSL shader can move its own vertices: waving grass, banners, flags, breathing,
+shatter. Put a function in a <code>// @vertex</code> ... <code>// @endvertex</code> section anywhere in the file:</p>
+<pre><code class="language-glsl">// @property sway "Sway (m)" Range(0, 1) = 0.15
+// @vertex
+void zestengine_vertex(inout VertexData v) {
+    float h = clamp(v.position.y / 2.0, 0.0, 1.0);
+    v.world_offset.x += sin(v.time * 2.0 + v.world_position.x) * sway * h * h;
+}
+// @endvertex
+void main() { /* the fragment stage, unchanged */ }
+</code></pre>
+<p><code>VertexData</code> (the engine declares it; you only fill it):</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Field</th><th>Type</th><th>Meaning</th></tr>
+</thead>
+<tbody>
+<tr><td><code>position</code></td><td><code>vec3</code></td><td>object-space position, in / out (write it to displace in object space)</td></tr>
+<tr><td><code>normal</code></td><td><code>vec3</code></td><td>object-space normal, in / out (the engine re-normalises it after the world transform)</td></tr>
+<tr><td><code>tangent</code></td><td><code>vec4</code></td><td>object-space tangent xyz and handedness w, in / out</td></tr>
+<tr><td><code>uv</code>, <code>uv1</code></td><td><code>vec2</code></td><td>first UV set and the lightmap UVs, in / out</td></tr>
+<tr><td><code>color</code></td><td><code>vec4</code></td><td>vertex colour, in / out (the fragment sees the new value as <code>v_color</code>)</td></tr>
+<tr><td><code>model</code></td><td><code>mat4</code></td><td>object to world, read only</td></tr>
+<tr><td><code>world_position</code></td><td><code>vec3</code></td><td>the vertex in world space BEFORE the hook, read only</td></tr>
+<tr><td><code>world_offset</code></td><td><code>vec3</code></td><td>added to the world position after the transform; starts at 0 (wind and other world-space pushes)</td></tr>
+<tr><td><code>time</code></td><td><code>float</code></td><td>seconds, the engine clock (<code>frame.misc.x</code>)</td></tr>
+<tr><td><code>vertex_index</code></td><td><code>int</code></td><td><code>gl_VertexIndex</code></td></tr>
+</tbody>
+</table>
+</div>
+<p>The hook can also read <code>frame</code> (the frame uniform block: camera, lights, ...), every <code>// @property</code>
+(floats, vectors, colours, keywords, enums, and texture properties with <code>textureLod(name, uv, 0.0)</code>;
+<code>name_uv(uv)</code> applies tiling) and <code>ZESTENGINE_PI</code>. It cannot read <code>//!prop</code> push-constant
+properties (the shadow pass has different push constants): use <code>// @property</code>. The section is cut out of
+the file before the fragment stage is compiled, so it may use names the fragment stage does not have
+(and the other way round); share helpers by writing them in both. Line numbers in compile errors are the
+file's own. HLSL shaders have no hook.</p>
+<p><strong>One hook, every pass.</strong> The engine splices your function into its own vertex shaders and builds them
+with <code>glslc</code> the first time a pipeline needs each one: the main pass, the depth prepass, the XR
+(multiview) pass and planar mirrors share one module (<code>standard.vert</code>), so the depth prepass and the
+EQUAL-tested main pass compute bit-identical positions; the shadow pass has its own (<code>shadow.vert</code>) that runs
+the same function, so swaying grass casts the shadow of the swayed surface. Because the shadow depends on
+<code>time</code>, a layer holding a hooked caster re-renders every frame. A shader without a section compiles
+exactly as before (no extra module, no extra pipeline state; tested).</p>
+<p>Limits and conventions:</p>
+<ul>
+<li><strong>Previous-frame position.</strong> The motion vectors (TAA / upscaling) assume the displacement did not change since the
+last frame, so only the object's own movement shows as velocity. Fast hooks ghost slightly under temporal upscaling.</li>
+<li><strong>Bounds.</strong> Culling uses the mesh's own bounds (<code>DrawCmd::bound_radius</code>): give a swaying object a bound with margin.</li>
+<li><strong>Cluster path.</strong> Custom-shader materials are never drawn through the cluster (virtual geometry) path (they
+draw the ordinary mesh, like before), so a hook never meets cluster vertex pulling; hooked casters are left out of
+the cluster shadow batches too and draw as ordinary meshes.</li>
+<li><strong>GPU-driven batches.</strong> Custom shaders were never in the GPU-culled indirect batches; unchanged.</li>
+<li><strong>Instance colour / param</strong> are not given to the hook (the shadow pass has no such stream).</li>
+<li><strong><code>glslc</code> at run time.</strong> Like every custom shader the hook is compiled when the shader registers (a hook that does
+not compile fails the shader, naming the line); the other pass modules compile on first use. A game that ships
+without <code>glslc</code> should keep to fragment-only shaders for now (the hook's SPIR-V is not baked into a sidecar yet).</li>
+<li><strong>Template.</strong> <code>shaders/zestengine_wind_sway.frag</code> ("ZestEngine Wind Sway"): sway amplitude, speed, plant height, gust and
+wind direction, rooted at object <code>y = 0</code>, lit and shadowed. Copy it as the starting point for foliage, cloth-like
+props or banners.</li>
+</ul>
+<h3 id="tessellation-and-displacement-standard-shader-and-custom-shaders"><a class="header" href="#tessellation-and-displacement-standard-shader-and-custom-shaders">Tessellation and displacement (standard shader and custom shaders)</a></h3>
+<p>A material can displace its geometry by a height map with hardware tessellation: the material's
+<strong>Tessellate</strong> switch (Material inspector, under the Displacement slot) or <code>MaterialParams::tess</code>
+(<code>TessParams</code>: <code>enabled</code>, <code>scale</code>, <code>midlevel</code>, <code>edge_px</code>, <code>max_factor</code>, <code>phong</code>; <code>.material</code> files
+carry it, old files load unchanged). The height map is the Displacement texture slot (binding 16, white = peak).</p>
+<ul>
+<li><strong>Subdivision</strong> follows the screen-space length of each triangle edge: an edge is split until its pieces are about
+<code>edge_px</code> pixels long, up to <code>max_factor</code> (at most 64). The level of an edge depends only on its two world
+positions and the camera, so neighbouring triangles agree and the surface has no cracks.</li>
+<li><strong>Shape.</strong> New vertices are placed by Phong tessellation (<code>phong</code> 0..1 pulls them toward the curved surface the
+vertex normals imply) and pushed along the smoothed normal by <code>(height - midlevel) * scale</code> (world units).
+The shading normal comes from the height field's slope in the tangent frame, so lighting follows the displaced
+surface. The height map is sampled at a mip matching the subdivision. While tessellation is on, parallax mapping is off.</li>
+<li><strong>Every pass.</strong> The material's pipelines get a tessellation control and evaluation stage in the main pass, the depth prepass
+(same modules and an <code>invariant</code> position: the EQUAL-tested main pass agrees pixel for pixel), the XR multiview pass,
+planar mirrors and reflection captures (all <code>record_scene_draws</code>), and the shadow pass (<code>shadow.vert -DZE_TESS</code> +
+<code>tess.tesc/tess.tese -DSHADOW</code>, which tessellate from the SAME camera, so the shadow is cast by the surface the camera sees).
+Casters with a displaced material draw separately from the shared shadow batches and re-render their layer every frame.</li>
+<li><strong>Cost.</strong> One extra pipeline-key bit (<code>PipelineKey::tess</code>); a material without the switch has no tessellation stages
+and the same pipelines as before. Displaced materials draw on the CPU path (not in the GPU-culled indirect batches).</li>
+<li><strong>Cluster path.</strong> A tessellated material is never drawn through the cluster path: it falls back to the ordinary mesh draw
+(and is left out of the cluster shadow batches), like custom shaders.</li>
+<li><strong>Devices.</strong> Needs <code>tessellationShader</code> (and <code>multiviewTessellationShader</code> for the XR pass). Without it the material draws
+flat (use parallax mapping there). A compute pre-subdivision fallback was considered and not built: tessellation hardware is
+universal on desktop GPUs, absent mainly on some mobile / standalone-VR parts (where subdividing a mesh every frame is the
+wrong cost anyway), and a fallback would need its own copy of the shadow / prepass / XR plumbing to stay consistent.</li>
+<li><strong>Mesh needs.</strong> Triangle lists with normals, UVs and tangents (the tangent's handedness picks the bitangent); the mesh should
+be reasonably dense (the patch is the original triangle). Water, outline and fur draws are not tessellated.</li>
+<li><strong>Bounds.</strong> Culling uses the original mesh's bounds: give a displaced object a bound with margin.</li>
+</ul>
+<h3 id="zestengine-toon-shaderszestengine_toonfrag"><a class="header" href="#zestengine-toon-shaderszestengine_toonfrag">ZestEngine Toon (<code>shaders/zestengine_toon.frag</code>)</a></h3>
+<p>A Poiyomi-style toon shader written on this system. Presets: <strong>Simple</strong>
+(albedo, multilayer toon ramp, shadows, optional alpha), <strong>Medium</strong> (adds
+normal map, rim, matcap, toon specular, emission), <strong>Heavy</strong> (everything).
+Presets only set keywords; features can be toggled individually afterwards.</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Poiyomi group</th><th>ZestEngine Toon</th></tr>
+</thead>
+<tbody>
+<tr><td>Lighting modes</td><td><code>lighting_mode</code>: Ramp (ramp texture), Multilayer (math toon, two layers with border/blur/colour), Realistic (GGX/Lambert with toon blend, metallic/roughness, ORM), Flat; min/max brightness, monochrome lighting, indirect strength, AO; all scene lights, shadows (<code>RECEIVE_SHADOWS</code>), lightmaps, probe and Flux GI</td></tr>
+<tr><td>Shadows</td><td>shadow colour, strength, shadow mask, ramp, second shadow layer</td></tr>
+<tr><td>Rim lighting</td><td>colour (HDR), width, sharpness, light-based, mask, Add / Replace / Multiply</td></tr>
+<tr><td>Matcaps</td><td>2 slots, each with mask, strength, light-based, Add / Multiply / Replace / Screen</td></tr>
+<tr><td>Specular</td><td>Toon (size, smoothness), Anisotropic hair (Kajiya-Kay, shift noise, two lobes, tangent/bitangent), Realistic GGX; mask</td></tr>
+<tr><td>Reflections</td><td>reflection probe / sky with fresnel</td></tr>
+<tr><td>Emission</td><td>2 slots: scroll, pulse, hue shift over time, masks</td></tr>
+<tr><td>Outlines</td><td><code>OUTLINE</code> + <code>outline_color</code> + <code>outline_width</code>: the engine draws an inverted-hull pass after the object (any custom shader can opt in with these three property names)</td></tr>
+<tr><td>Dissolve</td><td>noise texture, amount, edge width and HDR edge glow, invert</td></tr>
+<tr><td>Glitter</td><td>procedural sparkle cells, density, size, speed, view dependence, rainbow, mask</td></tr>
+<tr><td>Decal</td><td>1 slot with UV position / scale / rotation, Replace / Multiply / Add, emission</td></tr>
+<tr><td>Detail</td><td>detail albedo (x2) and normal with mask and tiling</td></tr>
+<tr><td>UV tile discard</td><td>4x4 tiles on UV0 or UV1</td></tr>
+<tr><td>Vertex colour</td><td>Multiply, Tint, AlphaOnly, EmissionMask; sRGB linearize</td></tr>
+<tr><td>Alpha</td><td>cutout (material Transparency mode + cutoff), dithered, blend, alpha mask, offset, fresnel fade, alpha boost from emission</td></tr>
+<tr><td>Parallax</td><td>steep parallax with height map, scale, steps</td></tr>
+</tbody>
+</table>
+</div>
+<p>Out of scope (not feasible in this engine today): AudioLink (no audio
+analysis texture), grab-pass refraction / glass blur (no scene-colour copy is
+exposed to material shaders), stencil chains (no stencil attachment state per
+material), geometry shader effects (vertex offsets and wind are the vertex hook, tessellated
+displacement is the material's Tessellate switch, see above), per-material outline masks / per-vertex outline width (the hull
+pass uses one width), multi-pass fur, and Poiyomi's light-volume /
+"VRChat light probe" specifics.</p>
+<h3 id="unity-shader-compatibility"><a class="header" href="#unity-shader-compatibility">Unity shader compatibility</a></h3>
+<p>Materials authored for Poiyomi, Mochie, lilToon, MToon and Unity Standard convert to ZestEngine Toon / the
+PBR standard shader on import (Files panel: Convert Unity Material, Convert Unity folder, Import Unity package).
+Property mapping, the list of unsupported features with priorities, licence notes and sources are in
+<a href="shaders-unity-compat.html">shaders-unity-compat.md</a>; the gaps are tracked as UNITY-* tasks in IMPLEMENTATION_PLAN.md.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="flux.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="shaders-unity-compat.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="flux.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="shaders-unity-compat.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-09f2665d.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-609e4cb8.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

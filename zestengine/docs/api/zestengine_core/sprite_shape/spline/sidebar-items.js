@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["TessMode"],"fn":["bezier_at","distance_to_polyline","flatten_bezier","flatten_fixed","offset_ring","point_in_ring","segment_bezier","signed_area","simplify","tessellate","triangulate","triangulate_with_holes"],"struct":["Poly"]};

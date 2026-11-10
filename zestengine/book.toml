@@ -1,0 +1,28 @@
+[book]
+title = "ZestEngine"
+description = "Documentation for the ZestEngine game engine: the ECS, the engine API and WASM scripting."
+authors = ["ZestEngine contributors"]
+language = "en"
+src = "src"
+
+[build]
+# The site is served from https://lemonxah.github.io/zestengine/docs/, so the book builds into docs/
+# next to this file. ./build.sh does the build; do not point mdbook at a folder that holds anything else.
+build-dir = "docs"
+
+[output.html]
+site-url = "/zestengine/docs/"
+git-repository-url = "https://github.com/lemonxah/zestengine"
+git-repository-icon = "fab-github"
+default-theme = "light"
+preferred-dark-theme = "navy"
+smart-punctuation = false
+additional-css = ["theme/zestengine.css"]
+
+[output.html.search]
+enable = true
+limit-results = 20
+
+[output.html.playground]
+# The snippets are fragments of game code, not standalone programs.
+runnable = false

@@ -1,0 +1,9 @@
+(function() {
+    const implementors = Object.fromEntries([["zestengine_core",[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.99.1/core/ops/deref/trait.DerefMut.html\" title=\"trait core::ops::deref::DerefMut\">DerefMut</a> for <a class=\"struct\" href=\"zestengine_core/ecs/struct.EcsMoveHost.html\" title=\"struct zestengine_core::ecs::EcsMoveHost\">EcsMoveHost</a>&lt;'_, '_&gt;",0],["impl&lt;T: ?<a class=\"trait\" href=\"https://doc.rust-lang.org/1.99.1/core/marker/trait.Sized.html\" title=\"trait core::marker::Sized\">Sized</a>&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/1.99.1/core/ops/deref/trait.DerefMut.html\" title=\"trait core::ops::deref::DerefMut\">DerefMut</a> for <a class=\"struct\" href=\"zestengine_core/ecs/struct.ComponentMut.html\" title=\"struct zestengine_core::ecs::ComponentMut\">ComponentMut</a>&lt;'_, T&gt;",0],["impl&lt;T: <a class=\"trait\" href=\"zestengine_core/trait.Component.html\" title=\"trait zestengine_core::Component\">Component</a>&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/1.99.1/core/ops/deref/trait.DerefMut.html\" title=\"trait core::ops::deref::DerefMut\">DerefMut</a> for <a class=\"struct\" href=\"zestengine_core/ecs/struct.DisabledComponent.html\" title=\"struct zestengine_core::ecs::DisabledComponent\">DisabledComponent</a>&lt;T&gt;",0]]]]);
+    if (window.register_implementors) {
+        window.register_implementors(implementors);
+    } else {
+        window.pending_implementors = implementors;
+    }
+})()
+//{"start":59,"fragment_lengths":[1278]}

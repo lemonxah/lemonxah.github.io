@@ -1,0 +1,634 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Dedicated server - ZestEngine</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Documentation for the ZestEngine game engine: the ECS, the engine API and WASM scripting.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="shortcut icon" href="favicon-8e6b73bd.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-e96d0476.css">
+        <link rel="stylesheet" href="css/chrome-d279d366.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="theme/zestengine-9866fa4a.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-49b9e9f7.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-ffb240a5.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">ZestEngine</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/lemonxah/zestengine" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <!-- Copied from docs/dedicated-server.md in the engine repository by sync.py. Edit it there, then run ./sync.py. -->
+<h1 id="dedicated-server"><a class="header" href="#dedicated-server">Dedicated server</a></h1>
+<p><code>zestengine-server</code> (NET-2) hosts a project scene with no window, GPU, audio device or
+headset. It is the same gameplay, physics and networking code the player runs
+(<code>zestengine_engine::server::HeadlessHost</code> plus a hosting <code>NetSession</code>), driven by a fixed tick loop.
+The Network Manager's <code>dedicated</code> mode is forced on: the server gets no player of its own; every
+joiner gets the Network Manager's player prefab at a Spawn Point (same rules as a player-host).</p>
+<h2 id="build"><a class="header" href="#build">Build</a></h2>
+<pre><code class="language-sh">cargo build --release -p zestengine-server        # target/release/zestengine-server
+just server &lt;project-dir&gt;                          # debug build + run
+</code></pre>
+<p>The crate depends on <code>zestengine-engine</code> with <code>default-features = false</code>, so the <code>client</code> feature is
+off. <code>cargo tree -p zestengine-server -e normal</code> has none of <code>ash</code>, <code>winit</code>, <code>egui</code>, <code>cpal</code>,
+<code>rodio</code>, <code>gilrs</code>, <code>openxr</code>, <code>audionimbus</code>, <code>gpu-allocator</code>, <code>shaderc</code>, <code>zestengine-render</code> or
+<code>zestengine-xr</code>; the renderer is the inert stand-in <code>zestengine-render-lite</code>. Direct dependencies:
+<code>zestengine-engine</code>, <code>zestengine-core</code>, <code>anyhow</code>, <code>serde</code>, <code>ron</code>, <code>tracing</code>, <code>tracing-subscriber</code>, <code>libc</code>
+(and <code>windows-sys</code> on Windows).</p>
+<h2 id="run"><a class="header" href="#run">Run</a></h2>
+<pre><code class="language-sh">zestengine-server --project ~/games/arena --port 9000 --max-players 16
+zestengine-server --config server.ron
+zestengine-server --project ~/games/arena --headless-selftest   # load, host, join a loopback client, stop; exit 0
+./build-server/run.sh                                           # a Dedicated server build (see below)
+</code></pre>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Flag</th><th>Meaning</th></tr>
+</thead>
+<tbody>
+<tr><td><code>--project &lt;dir&gt;</code></td><td>Project folder (holds <code>project.zestengine</code>). Required (flag or file).</td></tr>
+<tr><td><code>--scene &lt;path&gt;</code></td><td>Project-relative scene. Default: the project's boot scene.</td></tr>
+<tr><td><code>--port &lt;n&gt;</code></td><td>UDP port. Default: the scene's Network Manager port, else 9000. <code>0</code> = OS picks.</td></tr>
+<tr><td><code>--max-players &lt;n&gt;</code></td><td>Players at once (the server does not count). Default 16.</td></tr>
+<tr><td><code>--tick-rate &lt;hz&gt;</code></td><td>Fixed tick rate, 1 to 240. Default 30.</td></tr>
+<tr><td><code>--name &lt;text&gt;</code></td><td>Server / session name (LAN discovery).</td></tr>
+<tr><td><code>--password &lt;text&gt;</code></td><td>Join password = the session secret. Prefer <code>ZESTENGINE_SERVER_PASSWORD</code> (not visible in <code>ps</code>).</td></tr>
+<tr><td><code>--config &lt;server.ron&gt;</code></td><td>Settings file. Flags override it; the environment password sits between.</td></tr>
+<tr><td><code>--log &lt;file&gt;</code></td><td>Also log to this file, rotated by size.</td></tr>
+<tr><td><code>--log-level &lt;l&gt;</code></td><td><code>error</code>..<code>trace</code> or a <code>tracing</code> filter such as <code>info,zestengine_engine::net=debug</code>.</td></tr>
+<tr><td><code>--no-lan</code></td><td>Do not answer LAN discovery queries.</td></tr>
+<tr><td><code>--no-console</code></td><td>Do not read admin commands from stdin.</td></tr>
+<tr><td><code>--healthcheck</code></td><td>Probe a running server through its heartbeat file under <code>state_dir</code>; exit 0 alive, 1 not (stale, stopped, missing). No project, network or keys needed.</td></tr>
+<tr><td><code>--health-max-age &lt;s&gt;</code></td><td>Heartbeat age <code>--healthcheck</code> accepts. Default: three <code>health_interval</code>s, at least 30.</td></tr>
+<tr><td><code>--print-config</code></td><td>Print the effective settings (file, environment and flags merged; password and relay token hidden) as RON and exit.</td></tr>
+<tr><td><code>--headless-selftest</code></td><td>Smoke test, see above.</td></tr>
+</tbody>
+</table>
+</div>
+<p>Exit codes: 0 after a graceful stop, 1 when startup fails after logging began, 2 for a bad command
+line or config, 101 after a panic (logged with file and line, log file flushed).</p>
+<h2 id="serverron"><a class="header" href="#serverron"><code>server.ron</code></a></h2>
+<p>Copy <code>crates/zestengine-server/server.example.ron</code>. Every field is optional; unknown fields are an
+error. <code>port: 9000</code> needs no <code>Some(..)</code>.</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Field</th><th>Default</th><th></th></tr>
+</thead>
+<tbody>
+<tr><td><code>project</code></td><td><code>""</code></td><td>Project folder. Required.</td></tr>
+<tr><td><code>scene</code></td><td>boot scene</td><td>Project-relative scene.</td></tr>
+<tr><td><code>port</code></td><td>scene's port, else 9000</td><td>UDP port.</td></tr>
+<tr><td><code>tick_rate</code></td><td><code>30.0</code></td><td>Hz, 1 to 240.</td></tr>
+<tr><td><code>max_catch_up_ticks</code></td><td><code>5</code></td><td>Ticks run in one wake-up when behind; the rest of the backlog is dropped with a warning.</td></tr>
+<tr><td><code>max_players</code></td><td><code>16</code></td><td>1 to 4096.</td></tr>
+<tr><td><code>server_name</code></td><td><code>"ZestEngine Server"</code></td><td>Session name and the server's player name.</td></tr>
+<tr><td><code>password</code></td><td><code>""</code></td><td>Join secret (also keys the session encryption). Empty falls back to the scene's Network Manager <code>secret</code>.</td></tr>
+<tr><td><code>log_path</code></td><td>none</td><td>Log file.</td></tr>
+<tr><td><code>log_level</code></td><td><code>"info"</code></td><td>Level or filter.</td></tr>
+<tr><td><code>log_max_mb</code> / <code>log_keep</code></td><td><code>10</code> / <code>5</code></td><td>Size rotation: <code>server.log</code> -&gt; <code>server.log.1</code> .. <code>.N</code>.</td></tr>
+<tr><td><code>lan_discovery</code></td><td><code>true</code></td><td>Answer LAN queries (UDP 47777).</td></tr>
+<tr><td><code>motd</code></td><td><code>""</code></td><td>Private message to each joiner.</td></tr>
+<tr><td><code>admin_tokens</code></td><td><code>[]</code></td><td>Retired shared-secret tokens: ignored (a warning is logged). Use <code>admin_keys</code>.</td></tr>
+<tr><td><code>restart_on_scene_end</code></td><td><code>false</code></td><td>A component asking to quit reloads the scene for everyone instead of exiting.</td></tr>
+<tr><td><code>stats_interval</code></td><td><code>10.0</code></td><td>Seconds between stats lines, 0 = off.</td></tr>
+<tr><td><code>console</code></td><td><code>true</code></td><td>Read stdin admin commands.</td></tr>
+<tr><td><code>identity_file</code></td><td><code>&lt;project&gt;/.server/identity.key</code></td><td>The server's signing key. Clients pin it on first join and refuse a changed one, so keep it across reinstalls.</td></tr>
+<tr><td><code>ban_file</code></td><td><code>&lt;state_dir&gt;/bans.ron</code></td><td>Bans made by the strike system, the <code>ban</code> command or <code>NetSession::ban_fingerprint</code>, by player id, loaded at start.</td></tr>
+<tr><td><code>state_dir</code></td><td><code>&lt;project&gt;/.server</code></td><td>Where saved state, bans and the identity live (see "Server services").</td></tr>
+<tr><td><code>persist</code> / <code>persist_interval</code> / <code>persist_keep</code></td><td><code>true</code> / <code>60</code> / <code>3</code></td><td>Persistent world and player state: on, seconds between saves (0 = only at shutdown), backup generations.</td></tr>
+<tr><td><code>admin_port</code> / <code>admin_bind</code> / <code>admin_keys</code></td><td>none / <code>0.0.0.0</code> / <code>[]</code></td><td>Signed remote admin.</td></tr>
+<tr><td><code>directory</code> / <code>directory_interval</code></td><td><code>""</code> / <code>30</code></td><td>Relay (<code>host[:port]</code>) to list this server on, and the heartbeat in seconds.</td></tr>
+<tr><td><code>region</code> / <code>game</code> / <code>game_version</code></td><td><code>""</code></td><td>What the directory lists; <code>game</code> defaults to the project folder's name.</td></tr>
+<tr><td><code>relay</code> / <code>relay_room</code> / <code>relay_token</code></td><td><code>""</code></td><td>Open a room on this relay (join by code from behind a NAT); empty takes the scene's Network Manager.</td></tr>
+<tr><td><code>shutdown_redirect</code></td><td><code>""</code></td><td>Offered to players when the server stops (<code>host:port</code> or a room code).</td></tr>
+<tr><td><code>health_interval</code></td><td><code>5.0</code></td><td>Seconds between heartbeat writes (<code>&lt;state_dir&gt;/health.status</code>, <code>metrics.prom</code>); 0 = off. See <code>docs/deployment/dedicated-server.md</code>, "Monitoring".</td></tr>
+<tr><td><code>metrics_addr</code></td><td><code>""</code> (off)</td><td>Loopback <code>ip:port</code> of a tiny HTTP listener serving <code>/health</code> and <code>/metrics</code>; a non-loopback address is refused.</td></tr>
+<tr><td><code>validation</code></td><td>the scene's Network Manager</td><td>Replaces the Network Manager's validation settings; name only the fields you change: <code>validation: (max_rewind: 0.2, rates: (rpc: (rate: 20.0, burst: 40.0)))</code>. See <code>docs/networking.md</code>, "Dedicated sessions".</td></tr>
+<tr><td><code>interest</code></td><td>the scene's Network Manager</td><td>Interest management for big worlds (NET-5): <code>interest: (enabled: true, radius: 120.0, hysteresis: 20.0, budget: 60000, tiers: [(distance: 0.0, rate: 0.0), (distance: 60.0, rate: 10.0)], voice_range: 50.0)</code>. Off by default. See <code>docs/networking.md</code>, "Interest management". The <code>interest</code> console command lists each player's relevant objects and bytes/s.</td></tr>
+<tr><td><code>anticheat</code></td><td>the scene's Network Manager</td><td>Anti-cheat provider (SEC-2): <code>anticheat: (provider: "none", require: false, pending_timeout: 30.0, options: {})</code>. <code>provider</code> is <code>none</code> (default), <code>eos</code> (Easy Anti-Cheat; the binding is not built, so it fails closed) or a provider the host program installs with <code>NetSession::set_anticheat</code>. With <code>require: true</code> a joining client is held out of gameplay (its data is ignored, like a muted peer) until the provider says Trusted; a rejection or <code>pending_timeout</code> seconds without an answer kicks it with the reason and counts a strike (repeat offenders are banned in <code>bans.ron</code>). <code>require: false</code> only logs and counts rejections. See <code>docs/research/security/anticheat.md</code>.</td></tr>
+</tbody>
+</table>
+</div>
+<p>Validation reports every problem at once (missing project, scene not in the project, rates out of
+range, bad log filter, ...). Relative paths resolve against the working directory. Settings that
+come from the scene's Network Manager (relay, room code, allow/ban lists, accounts, timeout) still
+apply; the server then overrides name, player limit, discovery, password, sets the topology to Dedicated
+and turns host migration off.</p>
+<h2 id="behaviour"><a class="header" href="#behaviour">Behaviour</a></h2>
+<ul>
+<li><strong>Tick loop</strong>: a monotonic accumulator yields whole fixed ticks; at most <code>max_catch_up_ticks</code> run per
+wake-up, the rest of the backlog is dropped (a rate-limited <code>server overloaded</code> warning) so a stall
+cannot snowball. Between ticks it sleeps (in slices of at most 50 ms so a stop is prompt) and spins
+only the last 1.5 ms. Inbound packets are read once per tick, so latency adds up to one tick.</li>
+<li><strong>Stats</strong>: every <code>stats_interval</code> seconds one line: ticks (and per second), mean and max tick ms,
+players, bytes in/out and rates.</li>
+<li><strong>Joining</strong>: the engine's handshake rejects a wrong protocol version, wrong password and a full
+session with an explanatory reason. Joins and leaves are logged with the player id and the short
+fingerprint.</li>
+<li><strong>Console</strong> (stdin): <code>status</code>, <code>players</code>, <code>stats</code>, <code>kick &lt;id&gt; [reason]</code>, <code>ban &lt;id|fingerprint&gt; [30m|2h|7d|perm] [reason]</code>,
+<code>unban &lt;fingerprint&gt;</code>, <code>bans</code>, <code>say &lt;text&gt;</code>, <code>scene &lt;path&gt;</code>, <code>save</code>, <code>reload</code>, <code>restart [addr]</code>, <code>shutdown [addr]</code>,
+<code>quit</code>, <code>help</code> (plus <code>interest</code> when interest management is on). Without a stdin (a service manager) the console
+ends quietly. The same commands arrive over UDP as signed remote admin (below).</li>
+<li><strong>Shutdown</strong>: SIGTERM, SIGINT (Ctrl+C), Ctrl+Break and console close on Windows, or <code>quit</code>. The server
+stops ticking, sends every player a close notice with the reason ("server shutting down"), closes the
+socket, flushes the log and exits 0. A second signal exits at once (130).</li>
+<li><strong>Identity</strong>: the server keeps its own Ed25519 identity on disk; it is not shared with a player install.
+Clients pin it on first join (trust on first use).</li>
+<li><strong>Authority and validation (NET-4)</strong>: the server is the authority for everything and checks what clients send:
+rate limits, NaN and bounds, movement budgets with teleport correction, VR pose limits, ownership rules
+(flagged objects, in reach, free, cooldown), RPC permissions, a spawn allow-list (none by default), size
+limits, timestamps, forged ids. Violations are counted per peer, logged rate limited, scored, and lead to
+a warning, muting, a kick with a reason and a ban by player id (<code>bans.ron</code>). The stats line shows the
+violation and muted counts. No player address is sent to other players. Details and the rule table:
+<code>docs/networking.md</code>.</li>
+</ul>
+<h2 id="content-roles-netrole"><a class="header" href="#content-roles-netrole">Content roles (<code>NetRole</code>)</a></h2>
+<p>Every scene object and every component has a role: <code>Both</code> (the default; old scenes mean this), <code>Client</code>
+(only players have it) or <code>Server</code> (only the dedicated server has it). A dedicated server removes
+<code>Client</code> content when it loads a scene and from every prefab or network spawn; a player that only ever
+joins servers removes <code>Server</code> content (<code>zestengine_core::set_process_role(NetRole::Client)</code>, the player
+keeps <code>Both</code> by default so offline play and listen hosts are unchanged); the editor keeps everything.</p>
+<p><strong>Rules</strong></p>
+<ul>
+<li>An object's role hides it from the other side with its whole subtree. A child cannot be more
+permissive than a missing parent: a <code>Both</code> child of a <code>Client</code> object is gone on a server too.</li>
+<li>A component's effective role is the object's per-component override if it has one, else the
+type's default. Overrides are keyed like prefab component keys (<code>Kind</code>, <code>Kind#1</code> for a second one),
+stored in the scene entry (<code>net_role</code>, <code>component_roles</code>; both omitted when default) and are ordinary
+prefab-overridable properties (revert, apply, variants).</li>
+<li>A kept component may still hold an object id of a stripped object (a trigger pointing at a client-only
+effect, an event binding). It resolves to "missing" (no crash) and the load logs one warning naming
+both objects (<code>Root/Zone [Trigger Events] references stripped object Root/Smoke</code>).</li>
+<li>A game component declares its default with <code>const NET_ROLE: NetRole = NetRole::Server;</code> on its
+<code>TypedComponent</code> impl. Pattern for server-only logic: also put it behind your crate's own cargo feature so
+the code is not compiled into the client binary.</li>
+</ul>
+<p><strong>Type defaults</strong> (anything not listed is <code>Both</code>: colliders, rigid bodies, character controllers, joints,
+triggers, navigation, network components, spawn points, Animator and Humanoid IK (poses feed hitboxes),
+avatar data, scripts, Wasm scripts, the gameplay kit, water and buoyancy, VR Player / Avatar, Voice Chat)</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Group</th><th><code>Client</code> types</th></tr>
+</thead>
+<tbody>
+<tr><td>Lighting and rendering</td><td>Camera, Light, Light Probe Volume, FluxVoxel Light, Flux Volume, Reflection Probe, Planar Reflection, Per Instance, Volume (Post FX), Decal Projector, Terrain Foliage, Particle Emitter, LOD Group, Text 3D, Sprite Renderer, Sorting Group, Sprite Mask, Mesh Cloth, Cloth Colliders, Bone Cloth, Wind Zone</td></tr>
+<tr><td>Audio</td><td>Audio Source, Audio Listener, Acoustic Material, Audio Probe Volume</td></tr>
+<tr><td>UI</td><td>UI Canvas, UI Rect, UI Panel, UI Image, UI Text, UI Button, UI Toggle, UI Slider, UI Progress Bar, UI Pause Menu, UI Text Field, HUD Binding, Controls Menu</td></tr>
+<tr><td>Player-side presentation</td><td>Follow Camera, RTS Camera, Lip Sync, Face Tracking, Blend Shapes, Avatar Menu Item, Menu Toggle, Menu Installer, Merge Animator, Merge Armature, Avatar Menu</td></tr>
+</tbody>
+</table>
+</div>
+<p>Mesh "renderers" are not components (a mesh object is an object with a model source): the server keeps
+those objects, loads their collision geometry and skips everything render-only. The table lives in
+<code>crates/zestengine-core/src/net_role.rs</code> (<code>builtin_default_role</code>).</p>
+<p><strong>Editor</strong>: the Inspector header has a <em>Network Role</em> dropdown (Both / Client only / Server only) and lists
+warnings for the object's server-kept components that point at stripped objects or at files a server
+build drops; each component's kebab menu has <em>Network Role</em> (and <em>Type default</em>). The Hierarchy shows a
+<code>C</code> / <code>S</code> tag on objects that are not <code>Both</code> (dimmed on descendants that inherit it) and its filter
+box matches <code>client</code> / <code>server</code>. Project Settings &gt; Build has a <em>Dedicated server</em> target.</p>
+<p><strong>Play as Server</strong> (editor): Network window &gt; <em>Play as Server</em> saves nothing itself; it runs the <em>saved</em> scene as a local
+dedicated server on a loopback port on a background thread (<code>zestengine_engine::local_server::LocalServer</code>: the same
+headless host as the server binary, Server-role content kept, Client-role stripped, strict validation, no persistence or
+admin port) and joins it as a player, so the editor shows what a player sees. Leaving the session stops the server.</p>
+<h2 id="server-build-target"><a class="header" href="#server-build-target">Server build target</a></h2>
+<pre><code class="language-sh">just build-server &lt;project&gt; [out-dir]      # cooks &lt;project&gt;/build-server, copies to out-dir if given
+zestengine --build &lt;project&gt; --target server     # the same from the editor binary
+</code></pre>
+<p>Editor: Project Settings &gt; Build &gt; Target <em>Dedicated server</em> &gt; <em>Build Server</em>. Output (<code>build-server/</code>):</p>
+<pre><code class="language-text">zestengine-server    the server binary
+server.ron           project: "assets", the boot scene, the project name, tick 30 Hz, log under logs/
+run.sh               cd into the folder and start with server.ron
+assets/              the stripped cook (loose files)
+build-report.txt     client vs server sizes, dropped files by class, per-scene strip counts, reference warnings
+</code></pre>
+<p><strong>Stripped cook</strong> (<code>crates/zestengine-engine/src/server_build.rs</code>):</p>
+<ul>
+<li>Scenes and prefabs are rewritten with prefab links expanded and <code>Client</code> content removed; skybox and
+editor camera dropped. Reachability is recomputed from the stripped scenes, so a model, animation or data
+file used only by stripped content is not shipped.</li>
+<li>Models become collision-only blobs at their own path (<code>ZSM1</code>, <code>zestengine_assets::server_model</code>): positions
+and indices, authored collision pieces, instances, skeletons, animation clips and sub-asset ids; no
+normals, tangents, UVs, vertex colours, skin weights, blendshapes, spring bones, textures or materials.
+The model loader recognises the blob by its magic, so <code>.meta</code> sidecars and sub-asset ids keep working.</li>
+<li>Dropped by extension: images and skyboxes, sprite sheets and atlas products, audio, shaders (<code>.frag</code>,
+<code>.hlsl</code>, <code>.spv</code> ...), <code>.material</code>, fonts, video, baked lighting (<code>.lightmap</code>, <code>.reflprobe</code>, <code>.occlusion</code>,
+<code>.audiobake</code>, <code>.lmuv</code>), sidecars of dropped files, and the geometry / texture / atlas caches. Kept: scenes,
+prefabs, physics materials, navmesh data, animation clips and controllers, <code>.wasm</code> logic, data (<code>.ron</code>),
+<code>resources/</code>. No shader precompile, no ASTC, no geocache. The server reads loose files by default; <code>--pak</code> also writes
+<code>assets.pak</code> (see below).</li>
+<li>Roles use the built-in type defaults, the project-wide list (<code>net_role_overrides</code> in <code>project.zestengine</code>, edited in
+Project Settings &gt; Network roles) and per-component overrides, in that order of increasing priority; a project
+component's own <code>NET_ROLE</code> is applied when the server loads the scene (the cook does not load project plugins).</li>
+</ul>
+<p><strong><code>--strict-roles</code></strong>: <code>zestengine-build-server --strict-roles &lt;project&gt;</code> (or <code>ZESTENGINE_STRICT_ROLES=1</code>, which also
+applies to Build Server in the editor) turns every cook warning (a scene kept unstripped, a model shipped whole) and every
+"kept content references stripped content" lint into an error that lists them all and stops before compiling.</p>
+<p><strong><code>assets.pak</code></strong>: <code>--pak</code> (or <code>ZESTENGINE_SERVER_PAK=1</code>) also packs the cooked assets into <code>build-server/assets.pak</code> and
+writes <code>server.ron</code> with <code>project: "assets.pak"</code>. The server accepts <code>project</code> as the pak file, or as a folder that
+holds an <code>assets.pak</code> but no <code>project.zestengine</code>, unpacks it once per pak (named by a hash of its contents) into
+<code>&lt;state_dir&gt;/assets/</code> and runs from there; with no <code>state_dir</code> the state folder is <code>.server</code> next to the pak. The
+<code>deploy/</code> files still copy the loose <code>assets/</code> folder.</p>
+<p><strong>Warnings</strong> ("kept content references stripped content") are printed in the build log and listed in
+<code>build-report.txt</code>: a kept component with an object id of a stripped object, or a path of a file the
+server build drops (a gameplay script naming a texture or a sound).</p>
+<p><strong>The binary</strong>: a project with <code>plugins/components</code> gets a generated crate <code>target/zestengine-server/</code>
+(<code>Cargo.toml</code> + <code>src/main.rs</code>, its own workspace root, lockfile seeded from the engine's) that depends on
+<code>zestengine-server</code> (library) and the project's component crate with <code>default-features = false</code> (no <code>editor</code>
+feature, so no editor UI or egui) and starts <code>zestengine_server::run_main(|registry| &lt;components&gt;::zestengine_register(registry))</code>. A project without components uses the stock <code>zestengine-server</code>
+from the engine checkout. Either way the binary is copied to <code>zestengine-server</code> in the output folder.
+<strong>Plugins at runtime.</strong> <code>server.ron</code> may list built component <code>cdylib</code>s: <code>plugins: ["plugins/libzestengine_project_components.so"]</code>
+(relative paths resolve against the server's working folder, as <code>log_path</code> does). They are loaded before the scene, so the scene's own
+components resolve. Each library must export the ABI stamp (<code>zestengine_core::export_plugin_abi!();</code> in the plugin crate, already in the
+scaffold) and must have been built by the same rustc, from the same engine version and with the same profile (debug / release) as the
+server; otherwise the server refuses to start and the error says which plugin and what differs. A missing file, a file that is not a
+shared library, a library without <code>zestengine_register</code> or without the stamp refuse the same way. Libraries stay loaded until exit.
+Build them with the project's normal plugin build (<code>cargo build -p &lt;plugin&gt;</code>) and copy the file next to the server.</p>
+<p><strong>Cross-compiling</strong>: the host triple is used. <code>ZESTENGINE_SERVER_TARGET=x86_64-unknown-linux-gnu just build-server ..</code>
+passes <code>--target &lt;triple&gt;</code> (install it with <code>rustup target add</code>, and configure a linker for it in
+<code>.cargo/config.toml</code>); from Windows or macOS to Linux a <code>musl</code> target with <code>rust-lld</code>, or <code>cargo zigbuild</code>,
+is the usual route. Only Linux x86_64 on a Linux host is the supported path today; see
+<code>docs/deployment/dedicated-server.md</code>, "Cross-compiling", for what was and was not checked
+(<code>scripts/check-server-cross.sh</code>).</p>
+<p><strong><code>deploy/</code></strong>: the build folder also gets a <code>deploy/</code> folder (systemd unit and <code>@</code> template unit, a production
+<code>server.ron</code> with <code>state_dir</code> outside the build folder, env file, Dockerfile, compose file, nftables / ufw and
+logrotate examples, <code>install.sh</code>, <code>kubernetes.yaml</code>), generated from the project's name; the game port is the one the
+scene's Network Manager names (9000 when the scene has none). Guide: <code>docs/deployment/dedicated-server.md</code>.</p>
+<p><strong>Content packages</strong>: a package extracted on a server (<code>ExtractOptions { server_side: true, .. }</code>) skips the
+files above (images, audio, shaders, materials ...), and the scene loader strips <code>Client</code> roles from its
+scenes and spawns like it does for project content.</p>
+<h2 id="not-there-yet"><a class="header" href="#not-there-yet">Not there yet</a></h2>
+<ul>
+<li>NET-3: a role change on several selected objects undoes only the primary object (server plugin loading and the plugins of "Play as Server" are done). A visual check of the new Project Settings &gt; Network roles list and the Play as Server button was not done.</li>
+<li>NET-4: a visual check of the Validation inspector section. Voice loudness cannot be limited by the server (it relays
+opaque Opus frames); the packet size and rate are limited instead.</li>
+<li>NET-5: a GUI check of the inspector section (the 50-VR-player measurement is done: <code>docs/networking.md</code>, "VR bandwidth"; the dense-plaza case stays above the 3.6 MB/s target). Host
+migration under interest is handled (aliases and per-client state are reset on both sides) but has no end-to-end test.</li>
+<li>NET-6: matchmaking beyond the list, a server browser inside a <em>game</em> (the editor's Network window has one; a game
+builds its menu on <code>zestengine_engine::server_browser::ServerBrowser</code>), an encrypted admin channel (see "Why admin
+replies are signed, not encrypted"), a <code>Persistent State</code> inspector check on screen, relay-side directory persistence
+(the list rebuilds itself from heartbeats within one interval), a real-runtime check of the redirect follow.</li>
+<li>NET-7: nothing was run under systemd, Docker or Kubernetes (the files are generated and unit-tested as text), no
+signed admin <code>status</code> JSON for external monitors.</li>
+</ul>
+<h2 id="server-services-net-6"><a class="header" href="#server-services-net-6">Server services (NET-6)</a></h2>
+<h3 id="persistent-state"><a class="header" href="#persistent-state">Persistent state</a></h3>
+<p>Add a <strong>Persistent State</strong> component (Add Component &gt; Network) to a scene object and the server keeps it across
+restarts. Flags: <code>transform</code> (position, rotation, scale), <code>variables</code> (the object's Network Variables), <code>per_player</code>
+(on the player prefab's root: its Network Variables are saved under the owner's player id and handed back when that
+player joins again, the prefab-spawned object being a different one every session).</p>
+<pre><code class="language-text">&lt;state_dir&gt;/world.state     per scene: flagged objects by scene object id (transform, variables)
+&lt;state_dir&gt;/players.state   per player id (fingerprint): name, first/last seen, sessions, saved variables
+&lt;state_dir&gt;/bans.ron        bans (engine format)
+&lt;state_dir&gt;/identity.key    the server's signing key
+</code></pre>
+<ul>
+<li>Restored when the scene loads (at start and after every scene switch); variables are written through the session
+(<code>NetSession::set_var</code>), so players that join later see them. Player data is restored as soon as the joiner's
+player object exists, and kept current every tick; nothing is restored for a player id the server has not seen.</li>
+<li>Written every <code>persist_interval</code> seconds, on the <code>save</code> command and at shutdown. Unchanged state is not rewritten,
+and a server whose project flags nothing writes no <code>world.state</code> at all. Scene objects are copied into the state every
+2 s and when <code>scene</code> is used, so a scene switch loses at most that.</li>
+<li><strong>File format</strong> (<code>ZESTSTATE 1 &lt;schema&gt; &lt;bytes&gt; &lt;crc32&gt;</code> line, then RON): a save writes <code>&lt;name&gt;.tmp</code>, syncs it, rotates
+<code>&lt;name&gt;</code> to <code>.bak1</code> (<code>.bak1</code> to <code>.bak2</code> ... up to <code>persist_keep</code>), renames the temp file into place and syncs the
+folder. A crash leaves the old or the new generation, never half. A load takes the newest generation whose length
+and checksum match; a damaged one is moved aside as <code>&lt;name&gt;.corrupt-&lt;unix&gt;</code> (never rotated over a good backup) and
+logged as an error; with nothing usable the server starts from the authored scene. A file with a newer schema than
+the server understands is left untouched and never overwritten (the server runs without it and says so).</li>
+<li>Not persisted: objects spawned at runtime (no stable id), physics velocities (bodies restart at rest), anything
+not flagged. A scene object's <em>name</em> and <em>id</em> must not change between runs for its state to find it.</li>
+</ul>
+<p>For a built server the project folder is the cooked <code>assets/</code>, so the default state folder is <code>build-server/assets/.server/</code>,
+which a rebuild replaces. In production set <code>state_dir</code> outside the build folder (<code>/var/lib/mygame</code>); it is the one
+directory that must survive redeploys (identity key, bans, world and player state).</p>
+<h3 id="signed-remote-admin"><a class="header" href="#signed-remote-admin">Signed remote admin</a></h3>
+<p><code>admin_port</code> opens a UDP port that takes the console's commands from holders of an admin key. Make one on your
+machine, list the public half in <code>server.ron</code>, and the server logs its own key at start (<code>server key ...</code>):</p>
+<pre><code class="language-sh">zestengine-admin keygen --out ops.key
+# server.ron:  admin_port: 9100,  admin_keys: [(name: "ops", key: "&lt;printed hex&gt;", role: Admin)],
+zestengine-admin --server host:9100 --server-key &lt;server key&gt; --key ops.key players
+zestengine-admin --server host:9100 --server-key &lt;server key&gt; --key ops.key ban 7 2h griefing
+</code></pre>
+<p>Roles: <code>Observer</code> (status, players, stats, bans, interest, help), <code>Moderator</code> (+ kick, ban, unban, say), <code>Admin</code> (+ scene,
+save, reload, restart, shutdown). The console on the host is always Admin. Exit code of the tool: 0 ran, 1 refused or
+failed, 3 no signed answer.</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Protection</th><th>How</th></tr>
+</thead>
+<tbody>
+<tr><td>Authentication</td><td>Ed25519 signature over a domain tag, <strong>the server's public key</strong>, and the request; only listed keys act</td></tr>
+<tr><td>Replay</td><td>timestamp within +/-30 s and not before the server started, and a <code>(key, nonce)</code> seen once; replays get <code>Stale</code></td></tr>
+<tr><td>Cross-server replay</td><td>the signature binds the target server's key</td></tr>
+<tr><td>Tampering</td><td>any changed byte fails the signature; no reply is sent to anything unauthenticated</td></tr>
+<tr><td>Amplification</td><td>unauthenticated sources get nothing; answers go to the sender of a valid signed request only</td></tr>
+<tr><td>Flooding</td><td>token bucket per source IP (10 burst, 5/s) before any signature is checked</td></tr>
+<tr><td>Spoofed answers</td><td>replies are signed with the server identity and bound to the requesting key and nonce</td></tr>
+</tbody>
+</table>
+</div>
+<p>Replies are signed, not encrypted: do not print secrets in command output. Keep <code>admin_port</code> firewalled to your
+operators if you can (see "Why admin replies are signed, not encrypted" below). <code>reload</code> re-reads the command line's <code>--config</code> and applies <code>motd</code>, <code>stats_interval</code>,
+<code>restart_on_scene_end</code>, <code>admin_keys</code>, <code>persist_interval</code> / <code>persist_keep</code>, <code>directory_interval</code>, <code>region</code>, <code>game</code>,
+<code>game_version</code>, <code>shutdown_redirect</code>; it lists the changed settings that need a restart (port, tick rate, player limit,
+password, project, ...) and refuses a file that does not validate. <code>restart</code> exits with code <strong>75</strong>; <code>shutdown</code>
+and <code>quit</code> exit 0.</p>
+<p><strong>Key rotation without a restart.</strong> <code>keys</code> lists the keys in force; <code>key add &lt;name&gt; &lt;64-hex&gt; &lt;observer|moderator|admin&gt;</code>
+lets a new key sign at once and <code>key remove &lt;name|8+ digits&gt;</code> retires one (Admin only). The changes are an overlay in
+<code>&lt;state_dir&gt;/admin_keys.ron</code> over <code>server.ron</code>'s <code>admin_keys</code>: they survive a restart and a <code>reload</code>, and the effective
+list is <code>(file keys - removed) + added</code>. The last Admin key cannot be removed, a key cannot be listed twice, and a
+retired key gets no answer at all, like any unknown key. Rotation: add the new Admin key, check it works, remove the old
+one.</p>
+<p><strong>Reports.</strong> A player (or a game script) calls <code>NetSession::report_player(peer, reason)</code>, or the RPC
+<code>zestengine.report</code> with <code>[Int(peer), Str(reason)]</code> aimed at the server. The server checks the target is a connected
+player other than the reporter and the reason fits a chat line, rate-limits it (3 burst, then one per 5 s), and logs it at
+<code>warn</code>, keeps the last 200 in memory (<code>reports</code> for Moderators, <code>reports clear</code> empties it) and appends a line to
+<code>&lt;state_dir&gt;/reports.log</code> with the reporter's and the target's fingerprints. Nobody else receives the report; act on it
+with <code>ban &lt;fingerprint&gt;</code>.</p>
+<p><strong>Bans.</strong> <code>ban</code> takes a connected player's id or a 32-digit fingerprint (offline players), an optional duration
+(<code>30m</code>, <code>2h</code>, <code>7d</code>, <code>perm</code>) and a reason (shown to the player, kept in <code>bans.ron</code>); it kicks the player if connected.
+<code>unban</code> accepts a fingerprint or a unique prefix of 8 or more digits; <code>bans</code> lists them with the time left. They go
+through the same list the strike system writes (<code>val.bans</code>), so a ban made by either survives restarts.</p>
+<p><strong>Account linking (anti-cheat).</strong> When a provider can name a client's account (<code>AntiCheatProvider::server_provider_id</code>:
+an EOS product user id, a Steam id ...), the server links it to the player id once the client is Trusted. A ban of the
+player (admin <code>ban</code>, or the strike system) also bans the account (a hashed key in the same ban list, so it survives
+restarts); the same account arriving later under a new player key is removed as soon as the provider names it, and the new
+key is banned too. The built-in providers name no accounts yet (the test provider can), so this is the plumbing, not a
+verified EOS/Steam integration. The link itself is kept in memory for the session; the <em>ban</em> is what persists.</p>
+<p><strong>Held clients.</strong> With anti-cheat <code>require</code> on, a client that is not Trusted yet is in the session but out of the world: it
+gets no catch-up (scene, objects, variables), no player object, and none of the broadcasts, snapshots, chat or RPCs, until
+the provider trusts it (then the catch-up and the player object follow) or the pending timeout removes it.</p>
+<h3 id="why-admin-replies-are-signed-not-encrypted"><a class="header" href="#why-admin-replies-are-signed-not-encrypted">Why admin replies are signed, not encrypted</a></h3>
+<p>A reply is a status line, a player list, a ban list or a settings summary: operational data about the server, not secrets (no
+password, key or token is ever printed, and no command reads one back). Signing (bound to the server identity, the
+requesting key and the nonce) stops a forged or replayed answer; encryption would only hide player names and
+fingerprints from someone who can already watch the operator's traffic, and it would need a key agreement and an AEAD on
+a path that is deliberately a single stateless datagram each way. Where that is not acceptable, bind <code>admin_bind</code> to a VPN
+or loopback address (or tunnel it); the port is never needed by players. If a future command has to return a secret it
+must not use this channel.</p>
+<h3 id="server-directory"><a class="header" href="#server-directory">Server directory</a></h3>
+<p>A relay started with <code>--directory</code> is also a server list (<code>zestengine-relay --directory [--dir-ttl 90] [--dir-max 4096] [--dir-per-ip 4] [--dir-allow KEYHEX]</code>). With <code>directory: "relay.example.com"</code> the server sends a signed announcement
+(name, game, version, scene, region, players / max, port, relay room code, password flag) every <code>directory_interval</code>
+seconds and a signed delisting at shutdown; a crashed server drops off when the TTL (default 90 s) runs out. Players
+list with filters (region, game, version, name, hide full / empty / password-protected) using
+<code>zestengine_relay::directory::query_blocking</code> (cookie handshake and paging are handled).</p>
+<ul>
+<li>The server cannot be spoofed: the entry is keyed by its Ed25519 identity, announcements are signed, timestamps must grow
+(a captured packet cannot relist a server that left), the listed address is where the announcement came from.</li>
+<li>Limits: token buckets per IP for announcements (6 burst, 0.5/s) and queries (8 burst, 2/s) before any signature work,
+4 listings per IP, 4096 in all, replies to unauthenticated senders are never larger than the request (queries need a
+cookie bound to the sender's address, the list itself is paged in packets of at most 1200 bytes).</li>
+<li>Also new on the relay: <code>--host-rate</code> / <code>--client-rate</code> (bytes per second, defaults 4 000 000 and 1 000 000) replace the
+fixed room cap.</li>
+<li>A server behind a NAT sets <code>relay</code> (and optionally <code>relay_room</code>): it opens a room, the directory entry carries the
+code, players join with it (<code>NetSession::join_with("CODE", ..)</code> with the relay set).</li>
+</ul>
+<h3 id="graceful-shutdown"><a class="header" href="#graceful-shutdown">Graceful shutdown</a></h3>
+<p>SIGTERM, <code>quit</code>, <code>shutdown</code> and <code>restart</code> save the state, delist, and tell every player why. <code>shutdown 10.0.0.2:9000</code>
+(or <code>shutdown_redirect</code> in the config, or a room code) adds <code>[redirect: ...]</code> to the notice; a player's game that was
+joined to a dedicated server follows it by joining the offered address with the same settings
+(<code>zestengine_engine::server::follow_redirect</code>; it never follows a listen host's notice).</p>
+<h2 id="tests"><a class="header" href="#tests">Tests</a></h2>
+<p><code>cargo test -p zestengine-server</code> (CPU only): config parsing, validation and flag override, console
+parsing, pacer and catch-up cap under a synthetic heavy tick, log rotation, and in-process loopback
+tests over real UDP (<code>tests/loopback.rs</code>): join and player spawn, replicated variable, motd, console
+commands, max players, wrong password, protocol mismatch, graceful shutdown notice within a time
+budget, port conflict and bad scene errors, <code>--headless-selftest</code>. NET-4 over real UDP
+(<code>tests/validation.rs</code>): topology announced, no succession plan, the key pinned, a restarted server accepted, a
+changed key refused with the clear error and accepted after the pin is cleared, abuse refused and counted, flood
+then kick then ban by key, <code>bans.ron</code> surviving a restart, <code>server.ron</code> <code>validation:</code> reaching the session.</p>
+<p>NET-6 tests (CPU only): the state file (<code>state_store.rs</code>: checksum, rotation, truncated / flipped / empty / garbage /
+extended files, crash between the rotation and the final rename, every generation damaged, newer container), the
+command language and roles (<code>admin.rs</code>), the signed admin wire (<code>remote.rs</code>: signatures, tampering, unknown keys,
+foreign server, replay, stale clocks, restart window, roles, flood), the directory (<code>relay/src/directory.rs</code> unit tests:
+forgery, replay, expiry, caps, rate limits, paging, text clamping; <code>relay/tests/directory.rs</code> over loopback UDP) and
+<code>server/tests/services.rs</code> over real UDP: world objects and player data surviving restarts with a truncated current file
+and with every generation damaged, interval and command saves, signed ban / unban / kick / say, replayed and forged
+packets, <code>restart</code> and <code>shutdown</code>, <code>reload</code>, directory listing with heartbeat and delisting, join by room code
+through the relay, and the shutdown redirect followed by a client.</p>
+<p>NET-3 tests (CPU only): role serialisation and old scenes (<code>assets/src/scene_file.rs</code>), prefab override and
+revert of roles (<code>prefab_link.rs</code>), strip rules, dangling-reference and asset lints (<code>net_strip.rs</code>),
+collision blob round trip (<code>server_model.rs</code>), runtime filtering of scenes and spawns on server, client and
+listen host (<code>engine/src/server.rs</code>), the cook of scaffolded <code>vr_social</code> and <code>topdown</code> projects with sizes,
+<code>server.ron</code>, generated crate and recipe checks (<code>engine/src/server_build.rs</code>), and the server hosting a
+scene with a test registry plus the generated <code>server.ron</code> parse (<code>zestengine-server/tests/roles.rs</code>).</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="shaders-unity-compat.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="deploy-dedicated-server.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="shaders-unity-compat.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="deploy-dedicated-server.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-09f2665d.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-609e4cb8.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

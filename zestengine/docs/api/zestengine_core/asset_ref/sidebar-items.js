@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["deleted","is_ref","is_sidecar","moved","reference","resolve","resolve_path","resolve_rel_path","with_fresh_id"]};

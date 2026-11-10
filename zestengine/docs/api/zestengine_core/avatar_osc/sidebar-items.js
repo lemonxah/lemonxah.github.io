@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["CHANGE_ADDRESS","DEFAULT_OUT_PORT","MAX_RATE_HZ","PARAM_PREFIX"],"fn":["encode_avatar_change","encode_param","param_address","param_name"],"struct":["OscBridge"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["AimUp","ConstraintKind"],"fn":["aim_rotation","solve_world"],"struct":["Constraint","ConstraintSource","ConstraintSpec","SolveParams","SourceSpec","SourceWorld","TrsOffset"]};

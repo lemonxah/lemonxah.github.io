@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["AVATAR_MENU_EXTENSION"],"enum":["AvatarLayer","MergeMode","MergePathMode","ToggleAction","ToggleMode"],"fn":["normalise_label","split_menu_path"],"struct":["AvatarMenu","AvatarMenuData","AvatarMenuNode","MenuInstaller","MenuToggle","MergeAnimator","MergeArmature","ObjectToggle","ObjectToggleEntry","SkinRebound"]};

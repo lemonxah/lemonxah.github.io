@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["MESH_RENDERER","SKINNED_MESH_RENDERER"],"enum":["MaterialSlot"],"fn":["is_renderer_kind","is_untouched","renderer_data_mut","renderer_of","renderer_of_mut"],"struct":["MeshRenderer","RendererRuntime","SkinnedMeshRenderer"],"trait":["RendererData"]};

@@ -1,0 +1,45 @@
+/* ZestEngine docs: lemon-green accents on top of mdBook's themes. */
+
+/* Light themes: a darker green so link text keeps its contrast on white. */
+.light,
+.rust {
+    --links: #3d6a05;
+    --sidebar-active: #3d6a05;
+    --inline-code-color: #3b4a1a;
+}
+
+/* Dark themes: the lemon-lime used on the ZestBay site. */
+.coal,
+.navy,
+.ayu {
+    --links: #c9e265;
+    --sidebar-active: #c9e265;
+}
+
+/* The guides are code-heavy tables: keep them readable instead of wrapping every cell. */
+.content table {
+    display: block;
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+.content table td:first-child code {
+    white-space: nowrap;
+}
+
+.content pre > code {
+    font-size: 0.85em;
+    line-height: 1.5;
+}
+
+/* The hero image on the overview page. */
+.content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+}
+
+/* A short "note" box: > **Note** ... */
+.content blockquote {
+    border-inline-start: 4px solid var(--links);
+}

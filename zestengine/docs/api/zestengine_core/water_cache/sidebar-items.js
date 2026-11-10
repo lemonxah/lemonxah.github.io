@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["WATER_CACHE_MAX_BYTES"],"struct":["WaterCacheSample","WaterCacheSettings","WaterSimulationCache"]};

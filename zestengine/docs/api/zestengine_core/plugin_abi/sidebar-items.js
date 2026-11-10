@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["PLUGIN_ABI_VERSION"],"struct":["PluginAbi"]};

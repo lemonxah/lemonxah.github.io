@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["scatter_debris"],"struct":["Debris","Destructible"]};

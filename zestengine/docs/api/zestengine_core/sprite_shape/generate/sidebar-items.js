@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["MAX_TILES"],"enum":["CornerKind","GroupKind"],"fn":["collider_outline","generate_shape","normal_angle","plan_tiles"],"struct":["ColliderOutline","FillTexture","GenInput","MeshGroup","ShapeMesh","ShapeStats","SpriteMetrics","TilePlan"]};

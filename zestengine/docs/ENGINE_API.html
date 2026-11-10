@@ -1,0 +1,763 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Engine API Guide - ZestEngine</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Documentation for the ZestEngine game engine: the ECS, the engine API and WASM scripting.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="shortcut icon" href="favicon-8e6b73bd.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-e96d0476.css">
+        <link rel="stylesheet" href="css/chrome-d279d366.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="theme/zestengine-9866fa4a.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-49b9e9f7.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-ffb240a5.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">ZestEngine</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/lemonxah/zestengine" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <!-- Copied from ENGINE_API.md in the engine repository by sync.py. Edit it there, then run ./sync.py. -->
+<h1 id="zestengine-engine-api-guide"><a class="header" href="#zestengine-engine-api-guide">ZestEngine Engine API Guide</a></h1>
+<p>What you can <em>do</em> from game code: move things, find and edit other objects, spawn and destroy, cast
+rays, push bodies, read input, play sounds, change scenes, save progress, talk over the network.</p>
+<p>This guide is organised by task. For how components, systems, stages and events fit together, read the
+<a href="ECS.html">ECS Guide</a> first. For the exact signature and full documentation of every function, use the
+<a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.EcsMoveHost.html">API reference</a>.
+The scripting sandbox has its own guide: <a href="WASM.html">WASM.md</a>.</p>
+<p>The code in the recipes at the end of this guide is compiled and run by
+<a href="https://github.com/lemonxah/zestengine/blob/main/crates/zestengine-core/tests/ecs_guide.rs"><code>crates/zestengine-core/tests/ecs_guide.rs</code></a>.</p>
+<h2 id="getting-started"><a class="header" href="#getting-started">Getting started</a></h2>
+<h3 id="a-project"><a class="header" href="#a-project">A project</a></h3>
+<p><strong>File → New Project</strong> scaffolds a standalone Cargo project:</p>
+<pre><code class="language-text">my-game/
+├── Cargo.toml            the game binary (links zestengine-engine, no editor)
+├── project.zestengine    name, starting scene, control bindings, physics and audio settings
+├── src/main.rs           the entry point
+├── plugins/components/   your components, systems and entities (see the ECS guide)
+├── scenes/  materials/  shaders/  textures/
+</code></pre>
+<p><code>src/main.rs</code> is short and yours to edit:</p>
+<pre><code class="language-rust">use anyhow::Result;
+
+fn main() -&gt; Result&lt;()&gt; {
+    zestengine_engine::init_logging();
+
+    // A shipped build carries assets.pak next to the executable; during `cargo run`
+    // the assets live in the project folder.
+    let exe_assets = std::env::current_exe()
+        .ok()
+        .and_then(|p| p.parent().map(|d| d.join("assets")))
+        .filter(|p| p.join("project.zestengine").is_file());
+    let assets_root = exe_assets.unwrap_or_else(|| std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")));
+
+    let config = zestengine_engine::GameConfig::from_project_dir(assets_root)?;
+    zestengine_engine::run_game(config, |registry| {
+        zestengine_project_components::zestengine_register(registry);
+    })
+}</code></pre>
+<ul>
+<li><code>GameConfig::from_project_dir</code> reads <code>project.zestengine</code>: the starting scene (<strong>Project Settings →
+Starting scene</strong>), window title, control bindings, physics, audio and rendering settings. Build a
+<code>GameConfig</code> by hand (<code>GameConfig { boot_scene: "scenes/main.scene".into(), width: 1280.0, height: 720.0, ..Default::default() }</code>)
+when you want full control; every field has a default.</li>
+<li><code>run_game(config, register)</code> opens the window, loads the boot scene and runs the frame loop until the
+window closes. <code>register</code> receives the <code>ComponentRegistry</code> after the built-in components are added: this
+is where your project's components, systems and entities are registered (see
+<a href="ECS.html#plugins-in-a-project">Plugins in a project</a>).</li>
+<li><strong>Editor Play mode and a shipped game run the same loop.</strong> <strong>File → Build Game</strong> (or
+<code>zestengine --build</code>) produces a standalone executable with an <code>assets.pak</code> next to it.</li>
+</ul>
+<h3 id="how-your-code-is-called"><a class="header" href="#how-your-code-is-called">How your code is called</a></h3>
+<p>You do not write a main loop. You register <strong>systems</strong>, and every frame the engine runs them stage by
+stage (see <a href="ECS.html#stages">Stages</a>). A system receives:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>You get</th><th>Is</th><th>Use it to</th></tr>
+</thead>
+<tbody>
+<tr><td><code>world: &amp;SystemWorld</code></td><td>Read access to every component through hecs queries</td><td>Find and edit component data</td></tr>
+<tr><td><code>ctx: &amp;mut SystemContext</code></td><td>The frame: <code>dt</code>, <code>time</code>, <code>input</code>, event bus, command queue, engine services</td><td>Read time and input, emit events, queue commands</td></tr>
+<tr><td><code>host: &amp;mut EcsMoveHost</code></td><td>A per-object toolbox (inside <code>run_ordered</code>)</td><td>Everything in this guide</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="immediate-and-queued"><a class="header" href="#immediate-and-queued">Immediate and queued</a></h3>
+<p>Every operation in this guide is one of two kinds, and the tables below say which:</p>
+<ul>
+<li><strong>Immediate</strong>: reads, and writes that edit component data in place (<code>host.edit::&lt;T&gt;(..)</code>,
+<code>host.set_translation(..)</code>). The change is visible to every system that runs later in the same stage.</li>
+<li><strong>Queued</strong>: anything that pushes a <code>ComponentCommand</code> (spawn, destroy, impulses, scene loads, sounds,
+saves, network). The engine applies queued commands, in order, when the stage finishes. Spawn calls
+return the new <code>ObjectId</code> right away, but the object exists only once the stage ends.</li>
+</ul>
+<h3 id="targets"><a class="header" href="#targets">Targets</a></h3>
+<p>Methods that act on another object take <code>impl Into&lt;ObjectRef&gt;</code>: an <code>ObjectRef</code> field from your
+component, or a plain <code>ObjectId</code>. An unset, deleted or hidden target is not an error: reads return <code>None</code>,
+writes return <code>false</code> or do nothing.</p>
+<h2 id="moving-things"><a class="header" href="#moving-things">Moving things</a></h2>
+<p><code>Transform</code> has three parts, <strong>local</strong> to the parent: <code>translation</code>, <code>rotation</code>, <code>scale</code>. For an object
+with no parent, local equals world. Pick the right space for the job:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Want to …</th><th>Call</th><th>Space</th><th>Timing</th></tr>
+</thead>
+<tbody>
+<tr><td>Read my position</td><td><code>host.translation()</code> / <code>host.world_position()</code></td><td>local / world</td><td>immediate</td></tr>
+<tr><td>Move me</td><td><code>host.set_translation(v)</code> / <code>host.set_world_position(v)</code></td><td>local / world</td><td>immediate</td></tr>
+<tr><td>Turn me</td><td><code>host.set_rotation(q)</code> / <code>host.set_world_rotation(q)</code></td><td>local / world</td><td>immediate</td></tr>
+<tr><td>Read my full world pose</td><td><code>host.self_transform()</code></td><td>world</td><td>immediate</td></tr>
+<tr><td>Read another object's pose</td><td><code>host.transform_of(target)</code>, <code>host.position_of(target)</code>, <code>host.matrix_of(target)</code></td><td>world</td><td>immediate</td></tr>
+<tr><td>Move another object</td><td><code>host.set_world_position_of(target, v)</code>, <code>host.set_world_transform_of(target, Some(pos), Some(rot))</code></td><td>world</td><td>immediate</td></tr>
+<tr><td>Change another object's local pose</td><td><code>host.set_local_transform(target, translation, rotation, scale)</code> (each <code>Option</code>)</td><td>local</td><td>immediate</td></tr>
+<tr><td>Slide a character through the world</td><td><code>host.move_character(delta)</code></td><td>world</td><td>queued</td></tr>
+</tbody>
+</table>
+</div>
+<p>Read a position, change it, write it back. Writing a world position to a parented object's <em>local</em>
+translation is the classic mistake; <code>set_world_position</code> converts through the parent chain for you:</p>
+<pre><code class="language-rust">fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
+    let direction = host.input.axis2("Move");
+    let step = Vec3::new(direction.x, 0.0, -direction.y) * self.speed * host.dt;
+    let position = host.translation() + step;
+    host.set_translation(position);
+}</code></pre>
+<p><code>Transform</code> itself has <code>forward()</code> (local −Z in world space), <code>right()</code>, <code>up()</code> and <code>matrix()</code>.</p>
+<p><strong>Frame-rate independent motion.</strong> Multiply speeds by <code>host.dt</code>. To ease toward a target, close a share
+of the gap each frame with <code>1 − e^(−k·dt)</code>, which gives the same result at any frame rate (see the
+<a href="#smooth-follow-camera">smooth follow recipe</a>):</p>
+<pre><code class="language-rust">let blend = 1.0 - (-sharpness * host.dt).exp();
+host.set_world_position(here.lerp(wanted, blend));</code></pre>
+<p><strong>Moving physical things.</strong> A character with a <code>Character</code> component moves with <code>move_character(delta)</code>
+(it slides along walls and climbs steps; gravity is yours to apply, and <code>host.grounded()</code> says whether it
+touched the ground). Rigid bodies move through forces and impulses (see <a href="#physics">Physics</a>). Writing
+the transform of a dynamic or fixed body teleports it to that pose; a kinematic body follows its
+transform every physics step (and pushes the dynamic bodies it meets), which is how platforms and doors
+are moved from code.</p>
+<p>The <code>translation()</code>, <code>set_translation()</code>, <code>world_position()</code> and similar methods come from the
+<code>MoveHost</code> trait: <code>use zestengine_core::MoveHost;</code>.</p>
+<p><strong>The camera</strong> is an object with a <code>Camera</code> component; <code>host.set_active_camera(target)</code> makes it the one
+that renders.</p>
+<h2 id="finding-and-reading-other-objects"><a class="header" href="#finding-and-reading-other-objects">Finding and reading other objects</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Want to …</th><th>Call</th><th>Returns</th></tr>
+</thead>
+<tbody>
+<tr><td>My own id</td><td><code>host.self_id()</code></td><td><code>ObjectId</code></td></tr>
+<tr><td>Read a component</td><td><code>host.get::&lt;T&gt;(target)</code> / <code>host.get_self::&lt;T&gt;()</code></td><td><code>Option&lt;Ref&lt;T&gt;&gt;</code></td></tr>
+<tr><td>Resolve an id to the runtime entity</td><td><code>host.entity_of(target)</code></td><td><code>Option&lt;Entity&gt;</code> (None if hidden)</td></tr>
+<tr><td>List objects that carry a component</td><td><code>host.objects_with::&lt;T&gt;()</code></td><td><code>Vec&lt;ObjectId&gt;</code> in scene order</td></tr>
+<tr><td>Find an object by name</td><td><code>host.find_object("Player")</code></td><td>first match in scene order</td></tr>
+<tr><td>Is it active?</td><td><code>host.is_active(target)</code></td><td><code>bool</code></td></tr>
+<tr><td>Pick a spawn location</td><td><code>host.spawn_point("Red Team")</code>, <code>host.spawn_point_for(tag, slot)</code></td><td><code>Option&lt;Transform&gt;</code></td></tr>
+</tbody>
+</table>
+</div>
+<p>Prefer <code>ObjectRef</code> fields over names: names are cosmetic, need not be unique, and cost a scan. <code>get</code>
+returns a checked borrow, so drop it before you edit the same component. Lookups find <strong>inactive</strong>
+objects too (<code>objects_with</code>, <code>find_object</code>, <code>get</code>): check <code>host.is_active(target)</code> when it matters.</p>
+<h2 id="editing-other-objects"><a class="header" href="#editing-other-objects">Editing other objects</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Want to …</th><th>Call</th><th>Timing</th></tr>
+</thead>
+<tbody>
+<tr><td>Change a component in place</td><td><code>host.edit::&lt;T&gt;(target, |c| c.hp -= 10.0)</code></td><td>immediate</td></tr>
+<tr><td>Switch an object on/off</td><td><code>host.set_active(target, false)</code></td><td>queued</td></tr>
+<tr><td>Edit a material parameter</td><td><code>host.modify_material(target, slot, |m| m.emission_intensity = 2.0)</code></td><td>queued</td></tr>
+<tr><td>Read a material</td><td><code>host.material_params(target, slot)</code></td><td>immediate</td></tr>
+<tr><td>Fire particles</td><td><code>host.emit_particles(target, 40)</code></td><td>immediate</td></tr>
+<tr><td>Steer a nav agent</td><td><code>host.set_destination(target, pos)</code>, <code>host.stop_agent(target)</code></td><td>immediate</td></tr>
+<tr><td>Write a synced variable</td><td><code>host.set_net_var(target, "key", value)</code></td><td>immediate locally, then replicated</td></tr>
+</tbody>
+</table>
+</div>
+<p><code>edit</code> returns <code>true</code> if it found the object and the component. The closure of <code>modify_material</code> runs
+later, so it must own what it uses (<code>move</code>). <code>modify_material</code> edits the scene's <strong>shared</strong> material
+entry, so every object that uses that material changes with it; give an object its own material
+(a <code>.material</code> file per object, or <code>PerInstance</code> parameters) when only one should change.</p>
+<h2 id="spawning-and-destroying"><a class="header" href="#spawning-and-destroying">Spawning and destroying</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Want to …</th><th>Call</th><th>Notes</th></tr>
+</thead>
+<tbody>
+<tr><td>Spawn a <code>.prefab</code></td><td><code>host.spawn_prefab("prefabs/enemy.prefab", pos, rot)</code></td><td>path relative to the project</td></tr>
+<tr><td>Spawn a registered entity</td><td><code>host.spawn_entity("Crate", pos, rot)</code></td><td>see <a href="ECS.html#entities">Entities</a></td></tr>
+<tr><td>Clone a scene object</td><td><code>host.instantiate(original, pos, rot)</code></td><td>returns <code>Option&lt;ObjectId&gt;</code>; the clone is a new root</td></tr>
+<tr><td>Spawn on every peer</td><td><code>host.net_spawn("prefabs/bullet.prefab", pos, rot)</code>, <code>net_spawn_server</code>, <code>net_clone</code></td><td>see <a href="#networking">Networking</a></td></tr>
+<tr><td>Remove an object and its children</td><td><code>host.destroy(target)</code> / <code>host.destroy_self()</code></td><td>queued</td></tr>
+<tr><td>Hide without removing</td><td><code>host.set_active(target, false)</code></td><td>queued</td></tr>
+</tbody>
+</table>
+</div>
+<p>All of these are queued. The spawn calls return the new <code>ObjectId</code> immediately so you can store it; the
+object exists, runs its <code>Start</code> systems and appears from the next stage on.</p>
+<p>A common pattern is a disabled template object in the scene that you clone and switch on:</p>
+<pre><code class="language-rust">if let Some(id) = host.instantiate(self.bullet_template, muzzle, rotation) {
+    host.set_active(id, true);
+}</code></pre>
+<p><code>instantiate</code> keeps the original's enabled state and scale, and returns an id even if the original no
+longer exists (that id then never resolves).</p>
+<p><strong>Initial velocity.</strong> A new object's physics body is created at the next physics sync, and
+<code>add_impulse</code> / <code>set_velocity</code> do nothing for an object without a body (and only affect <em>dynamic</em> bodies).
+So give a spawned projectile its speed from its own system on its first <code>Update</code> or <code>FixedUpdate</code>, not from the spawner in
+the same stage.</p>
+<h2 id="physics"><a class="header" href="#physics">Physics</a></h2>
+<p>Queries are immediate; pushes are queued.</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Want to …</th><th>Call</th><th>Timing</th></tr>
+</thead>
+<tbody>
+<tr><td>Cast a ray</td><td><code>host.raycast(origin, dir, max_dist)</code> → <code>Option&lt;RayHit&gt;</code></td><td>immediate</td></tr>
+<tr><td>Cast with a filter</td><td><code>host.raycast_filtered(origin, dir, max_dist, &amp;RayFilter { layer_mask, include_triggers, exclude })</code></td><td>immediate</td></tr>
+<tr><td>Find objects in a sphere</td><td><code>ctx.services.physics.unwrap().overlap_sphere(center, radius, &amp;filter)</code></td><td>immediate</td></tr>
+<tr><td>Read a body's velocity</td><td><code>ctx.services.physics.unwrap().velocity(id)</code></td><td>immediate</td></tr>
+<tr><td>Ask whether a character is grounded</td><td><code>host.grounded()</code></td><td>immediate</td></tr>
+<tr><td>Push a body</td><td><code>ctx.commands.push(ComponentCommand::AddForce { id, force })</code>, <code>host.add_impulse(target, impulse)</code></td><td>queued</td></tr>
+<tr><td>Set velocity</td><td><code>host.set_velocity(target, v)</code></td><td>queued</td></tr>
+<tr><td>Twist a body</td><td><code>ctx.commands.push(ComponentCommand::AddTorque { id, torque })</code></td><td>queued</td></tr>
+<tr><td>Drive a joint motor</td><td><code>ctx.commands.push(ComponentCommand::SetJointMotor { id, speed, max_force })</code></td><td>queued</td></tr>
+<tr><td>2D ray</td><td><code>host.raycast2d(origin, dir, max_dist)</code>, <code>raycast2d_filtered</code></td><td>immediate</td></tr>
+</tbody>
+</table>
+</div>
+<p>A <code>RayHit</code> has <code>object</code>, <code>point</code>, <code>normal</code> and <code>distance</code>. <code>raycast</code> ignores trigger colliders and the
+caster's own colliders; the filter's <code>layer_mask</code> has one bit per layer. Physics runs at a fixed 60 Hz:
+continuous forces belong in <code>FixedUpdate</code>, one-off impulses can go anywhere. 2D physics lives in the same
+queries (<code>overlap_circle2d</code>, <code>circle_cast2d</code>, <code>box_cast2d</code>, … on <code>PhysicsQuery</code>).</p>
+<p>If a system reads <code>services.physics</code> and there is no physics world (a test, a headless tool), it is
+<code>None</code>; <code>host.raycast</code> then returns <code>None</code> too.</p>
+<p><strong>Contacts</strong> (collisions and trigger overlaps) are not polled: they arrive as scene events in the
+<code>Events</code> stage. See <a href="ECS.html#scene-events-contacts-and-animation-markers">Scene events</a>.</p>
+<h2 id="input"><a class="header" href="#input">Input</a></h2>
+<p><code>ctx.input</code> / <code>host.input</code> is a snapshot of named actions:</p>
+<pre><code class="language-rust">host.input.down("Fire")       // held
+host.input.pressed("Jump")    // went down this frame
+host.input.released("Fire")   // went up this frame
+host.input.axis("Throttle")   // -1..1
+host.input.axis2("Move")      // Vec2: x right, y forward</code></pre>
+<p>Default actions: <code>Move</code>, <code>Look</code>, <code>Jump</code>, <code>Sprint</code>, <code>Crouch</code>, <code>Fire</code>, <code>Interact</code>, <code>Grab</code>, <code>Voice</code> on
+keyboard-and-mouse and gamepad; VR adds hand actions. Players can rebind them; an action that does not
+exist reads as "not pressed", never an error. See <a href="ECS.html#input">Input</a> in the ECS guide.</p>
+<p>Rebinding from game code (a controls menu) goes through queued input commands:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Call</th><th>Does</th></tr>
+</thead>
+<tbody>
+<tr><td><code>host.input_bindings()</code></td><td>The live <code>Bindings</code> (all schemes), if available</td></tr>
+<tr><td><code>host.control_scheme()</code></td><td>The scheme currently in use</td></tr>
+<tr><td><code>host.rebind_with(scheme, action, slot, index, source, policy)</code></td><td>Rebind one binding</td></tr>
+<tr><td><code>host.tune_action(scheme, action, tuning)</code></td><td>Change sensitivity, invert Y, deadzone</td></tr>
+<tr><td><code>host.reset_scheme_bindings(scheme)</code></td><td>Back to defaults</td></tr>
+<tr><td><code>host.capture_next_input(kind, device)</code> / <code>captured_input()</code> / <code>is_capturing_input()</code></td><td>"Press a key to bind"</td></tr>
+<tr><td><code>host.binding_conflicts(scheme)</code></td><td>Actions that share an input</td></tr>
+</tbody>
+</table>
+</div>
+<p>The built-in <code>Controls Menu</code> component does all of this without code.</p>
+<h2 id="screen-pointer-and-ui"><a class="header" href="#screen-pointer-and-ui">Screen pointer and UI</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Want to …</th><th>Call</th></tr>
+</thead>
+<tbody>
+<tr><td>Game view size in pixels</td><td><code>host.screen_size()</code></td></tr>
+<tr><td>Pointer position (top-left origin)</td><td><code>host.pointer_position()</code> → <code>Option&lt;Vec2&gt;</code></td></tr>
+<tr><td>Ray under the pointer</td><td><code>host.pointer_ray()</code> → <code>Option&lt;(origin, direction)&gt;</code>; <code>host.screen_ray(pixel)</code> for any pixel</td></tr>
+<tr><td>Project a world point to the screen</td><td><code>host.world_to_screen(position)</code></td></tr>
+<tr><td>Is the pointer over a UI element?</td><td><code>host.pointer_over_ui()</code>: skip world clicks when true</td></tr>
+<tr><td>Was a UI button clicked?</td><td><code>host.ui_clicked(button)</code> (reported the frame after the click)</td></tr>
+<tr><td>Escape / gamepad back pressed?</td><td><code>host.ui_cancel_pressed()</code></td></tr>
+<tr><td>Is a text field being edited?</td><td><code>host.ui_text_editing()</code>: skip gameplay input when true</td></tr>
+</tbody>
+</table>
+</div>
+<p>UI is built from components (<code>UI Canvas</code>, <code>UI Rect</code>, <code>UI Panel</code>, <code>UI Image</code>, <code>UI Text</code>, <code>UI Button</code>,
+<code>UI Toggle</code>, <code>UI Slider</code>, <code>UI Text Field</code>, <code>UI Progress Bar</code>, <code>UI Pause Menu</code>), laid out in the <strong>UI
+Editor</strong> tab. Gameplay reads and writes them like any other component:</p>
+<pre><code class="language-rust">host.edit::&lt;UiText&gt;(self.score_label, move |t| t.text = format!("Score {score}"));
+if host.ui_clicked(self.play_button) { host.load_scene("scenes/level1.scene"); }</code></pre>
+<p>Buttons also have an <strong>On click</strong> list that needs no code (load a scene, show/hide/toggle an object,
+quit).</p>
+<h2 id="audio"><a class="header" href="#audio">Audio</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Want to …</th><th>Call</th><th>Timing</th></tr>
+</thead>
+<tbody>
+<tr><td>One-shot sound at a position</td><td><code>host.play_sound_at("audio/boom.ogg", pos, volume)</code></td><td>queued</td></tr>
+<tr><td>One-shot, not positional</td><td><code>ctx.commands.push(ComponentCommand::PlaySound { clip, position: None, volume })</code></td><td>queued</td></tr>
+<tr><td>Start / stop an <code>Audio Source</code></td><td><code>ctx.commands.push(ComponentCommand::PlayAudio(id))</code> / <code>StopAudio(id)</code></td><td>queued</td></tr>
+<tr><td>Set a mixer bus volume (linear gain, 0 is silent)</td><td><code>host.set_bus_volume("music", 0.5)</code></td><td>queued</td></tr>
+<tr><td>Mute a bus</td><td><code>ctx.commands.push(ComponentCommand::SetBusMuted { bus, muted })</code></td><td>queued</td></tr>
+</tbody>
+</table>
+</div>
+<p>Clip paths are relative to the project (<code>.wav</code>, <code>.ogg</code>, <code>.flac</code>, <code>.mp3</code>). Put an <code>Audio Listener</code> on the
+camera or the player's head. Spatial sources (<code>Audio Source</code>) render through Steam Audio: HRTF,
+distance rolloff, directivity, occlusion and reflections.</p>
+<h2 id="animation"><a class="header" href="#animation">Animation</a></h2>
+<p>Animation state lives in the <code>Animator</code> component; edit it like any component:</p>
+<pre><code class="language-rust">host.edit::&lt;Animator&gt;(self.body, |a| {
+    a.set_float("Speed", speed);          // drives blend trees and transitions
+    a.set_bool("Grounded", grounded);
+    a.set_trigger("Jump");                // consumed by the transition it fires
+});
+host.edit::&lt;Animator&gt;(self.body, |a| a.play("Run", 0.2));      // cross-fade a clip over 0.2 s
+host.edit::&lt;Animator&gt;(self.body, |a| a.play_state("Die", 0.1)); // force a controller state</code></pre>
+<p>Read state back with <code>host.get::&lt;Animator&gt;(target)</code>: <code>is_playing(clip)</code>, <code>finished()</code>,
+<code>current_state(layer)</code>, <code>is_in_state(layer, state)</code>, <code>get_float</code> / <code>get_bool</code> / <code>get_int</code>. Clip event
+markers arrive as <code>SceneEvent::Animation</code> in the <code>Events</code> stage and as <code>AnimationEvent</code> broadcasts;
+every controller state change broadcasts <code>AnimatorStateChanged</code>. As a shortcut for movement code,
+<code>host.set_animator_bool(name, value)</code> sets a bool on the object's own Animator.</p>
+<h2 id="navigation"><a class="header" href="#navigation">Navigation</a></h2>
+<p>Add a <code>NavMesh Surface</code> (baked from colliders when play starts) and give characters a <code>Nav Agent</code>:</p>
+<pre><code class="language-rust">host.set_destination(self.enemy, player_position);   // immediate: edits the agent
+host.stop_agent(self.enemy);
+let walkable = host.nearest_walkable(point);          // Option&lt;Vec3&gt;
+let path = ctx.services.nav.and_then(|nav| nav.find_path(from, to)); // Option&lt;Vec&lt;Vec3&gt;&gt;
+host.rebake_navmesh();                                // queued: after the level changed</code></pre>
+<h2 id="scenes-saves-and-settings"><a class="header" href="#scenes-saves-and-settings">Scenes saves and settings</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Want to …</th><th>Call</th><th>Timing</th></tr>
+</thead>
+<tbody>
+<tr><td>Switch scene</td><td><code>host.load_scene("scenes/level2.scene")</code></td><td>queued; the host swaps after the stage</td></tr>
+<tr><td>Start loading in the background</td><td><code>host.preload_scene(path)</code>; a later <code>load_scene</code> is then instant</td><td>queued</td></tr>
+<tr><td>Stream a room in / out</td><td><code>host.load_scene_additive(path)</code> / <code>host.unload_scene(path)</code></td><td>queued</td></tr>
+<tr><td>Carry an object over a scene change</td><td><code>host.keep_on_scene_change(target, true)</code></td><td>queued</td></tr>
+<tr><td>Quit</td><td><code>host.quit()</code></td><td>queued</td></tr>
+<tr><td>Store a value</td><td><code>host.save_value("level", 3_i64)</code>, <code>remove_save_value(key)</code></td><td>queued</td></tr>
+<tr><td>Write / read a slot file</td><td><code>host.write_save("slot1")</code>, <code>host.load_save("slot1")</code></td><td>queued; a load takes effect next pass</td></tr>
+<tr><td>Read saved data</td><td><code>host.save_data()</code> → <code>Option&lt;&amp;SaveGame&gt;</code> with <code>int</code>, <code>float</code>, <code>bool</code>, <code>str</code>, <code>vec3</code></td><td>immediate</td></tr>
+<tr><td>Translate a string</td><td><code>host.tr("menu.play")</code>, <code>host.language()</code>, <code>host.set_language("fr")</code></td><td>tr/language immediate; set queued</td></tr>
+<tr><td>Lock the cursor</td><td><code>host.set_cursor_locked(true)</code></td><td>queued</td></tr>
+<tr><td>Pause / slow-mo</td><td><code>host.set_time_scale(0.0)</code> … <code>1.0</code></td><td>queued</td></tr>
+</tbody>
+</table>
+</div>
+<p><code>SaveValue</code> is <code>Bool</code>, <code>Int</code>, <code>Float</code>, <code>Str</code> or <code>Vec3</code>. Saves go to the user data folder in a built game.
+Localisation tables are <code>localization/*.loc</code> files. A scene with a <code>Scene Portal</code> component streams and
+switches with no code at all: a trigger collider, the target scene and a mode.</p>
+<h2 id="networking"><a class="header" href="#networking">Networking</a></h2>
+<p>Networking is built in: an offline game and a multiplayer game run the same systems.</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Want to …</th><th>Call</th></tr>
+</thead>
+<tbody>
+<tr><td>Am I in a session / the host / a client?</td><td><code>host.connected()</code>, <code>host.is_server()</code>, <code>host.is_client()</code></td></tr>
+<tr><td>Who am I, who is here?</td><td><code>host.local_peer()</code>, <code>host.peers()</code></td></tr>
+<tr><td>Do I control this object?</td><td><code>host.has_authority(id)</code>: its owner, the host for unowned objects, always true offline</td></tr>
+<tr><td>Is another peer driving this object?</td><td><code>host.driven_remotely()</code>: skip local input when true</td></tr>
+<tr><td>Spawn on every peer</td><td><code>host.net_spawn(prefab, pos, rot)</code>; as server-owned: <code>net_spawn_server</code>; clone: <code>net_clone</code></td></tr>
+<tr><td>Despawn on every peer</td><td><code>host.net_despawn(target)</code></td></tr>
+<tr><td>Write a synced variable</td><td><code>host.set_net_var(target, "key", NetValue::Int(3))</code> / <code>set_net_var_self</code>. Returns false without permission</td></tr>
+<tr><td>Read a synced variable</td><td><code>host.net_var(target, "key")</code> / <code>net_var_self("key")</code>; <code>net_var_changes()</code> lists what changed</td></tr>
+<tr><td>Send a remote call</td><td><code>host.rpc("Explode", args, RpcTarget::All)</code> (reliable), <code>rpc_unreliable(..)</code>, or <code>rpc_self(..)</code> for the object's own RPCs; <code>send_rpc(object, name, args, target, reliable)</code> is the general form</td></tr>
+<tr><td>Receive remote calls</td><td><code>host.rpcs()</code>, <code>host.rpcs_named("Explode")</code>, <code>host.rpcs_for_self()</code> (offline, an RPC addressed to yourself is delivered locally)</td></tr>
+<tr><td>Who owns this object?</td><td><code>host.owner_of(target)</code>; <code>has_authority_of(target)</code></td></tr>
+<tr><td>Claim / give up / hand over an object</td><td><code>host.request_ownership_of(target)</code>, <code>release_ownership_of(target)</code>, <code>transfer_ownership(target, peer)</code></td></tr>
+<tr><td>Session quality</td><td><code>host.net_rtt()</code> / <code>net_rtt_ms()</code>, <code>net_quality()</code>, <code>net_events()</code>, <code>peer_name(id)</code></td></tr>
+<tr><td>Host a session, join, leave</td><td><code>host.net_host(port)</code>, <code>host.net_join("1.2.3.4:7777")</code>, <code>host.net_disconnect()</code>, <code>host.net_load_scene(path)</code> (host switches every peer)</td></tr>
+<tr><td>Remove a player</td><td><code>host.net_kick(peer, reason, ban)</code> (host only)</td></tr>
+</tbody>
+</table>
+</div>
+<p><code>NetValue</code> is <code>Bool</code>, <code>Int</code>, <code>Float</code>, <code>Vec3</code>, <code>Quat</code>, <code>Str</code> or <code>Bytes</code>. <code>RpcTarget</code> is <code>All</code>, <code>Others</code>,
+<code>Server</code>, <code>Owner</code> or <code>Peer(id)</code>. Components can be restricted to one side with <code>TypedComponent::NET_ROLE</code>
+(a <code>Server</code> component is stripped from players, a <code>Client</code> one from a dedicated server). Session commands
+(<code>NetHost</code>, <code>NetJoin</code>, <code>NetDisconnect</code>, <code>NetKick</code>, …) are applied by the host application, not the play
+session, which is why they are queued like every other command.</p>
+<p><strong>Things that surprise people.</strong></p>
+<ul>
+<li><code>has_authority(id)</code> is true offline, but on a <em>client</em> it is false for any object with no recorded
+owner, including ordinary non-networked scene objects (an unowned object belongs to the host). Guard
+local-only objects with <code>driven_remotely()</code> instead, which checks that the object is actually networked.</li>
+<li><code>i_am_host()</code> is false offline (it needs a session); <code>has_authority</code> is true. They answer different questions.</li>
+<li>A synced variable another peer wrote is announced as an event at the start of the frame, but the
+component is updated at the end of it: in the frame you see the change, <code>net_var(..)</code> still returns the
+old value.</li>
+<li>The host cannot <code>net_despawn</code> an object a client owns (it fails the authority check): take the object
+with <code>transfer_ownership</code> first, or have the owner despawn it.</li>
+<li>A self-initiated <code>net_disconnect()</code> does not deliver a <code>Disconnected</code> event to your own systems.</li>
+<li><code>NetValue</code> has no 64-bit float: send a time or large number as <code>Bytes</code> (or two ints) to keep precision.</li>
+</ul>
+<p><strong>Lag compensation.</strong> For hit checks on a server, <code>host.ray_cast_rewound(shooter, origin, dir, max_dist)</code>
+casts against where the targets were when the shooter fired, and <code>ray_cast_at(time, …)</code> against any
+recent moment (<code>net_time()</code> is the current simulation time). The rewind window is the session's configured maximum (default 0.25 s, hard cap 0.9 s).</p>
+<h3 id="content-packages"><a class="header" href="#content-packages">Content packages</a></h3>
+<p><code>.zestenginepak</code> packages carry worlds, avatars and props that can be loaded at run time by path, URL or
+content id. The calls are queued; progress and results come back as events:</p>
+<pre><code class="language-rust">let request = host.load_content("https://example.com/forest.zestenginepak");
+let (request, root) = host.spawn_content("chair.zestenginepak", position, rotation);
+host.spawn_avatar(self.player, "avatars/robot.zestenginepak");
+host.enter_world(world_id);
+host.unload_content(id);
+for event in host.content_events() { /* progress, loaded, spawned, world entered, failed */ }</code></pre>
+<h2 id="time"><a class="header" href="#time">Time</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Value</th><th>Meaning</th></tr>
+</thead>
+<tbody>
+<tr><td><code>host.dt</code></td><td>Seconds this frame × time scale. <code>0</code> while paused. In <code>FixedUpdate</code>, the fixed step (1/60).</td></tr>
+<tr><td><code>host.unscaled_dt</code></td><td>Real frame time; use it for UI and pause menus. A single frame is clamped to 0.25 s.</td></tr>
+<tr><td><code>host.time</code></td><td>Scaled seconds since Play started.</td></tr>
+<tr><td><code>host.water_time</code></td><td>The shared water clock (networked clients agree on it).</td></tr>
+<tr><td><code>host.time_scale()</code></td><td>The current scale (1 normal).</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="events"><a class="header" href="#events">Events</a></h2>
+<p>Broadcasting between systems, contacts and animation markers, and action bindings are explained in
+<a href="ECS.html#events">Events</a>. The engine's own events are ordinary types you can read from any system with
+<code>host.events::&lt;T&gt;()</code>:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Event</th><th>Emitted when</th></tr>
+</thead>
+<tbody>
+<tr><td><code>DamageEvent { target, source, amount, point }</code></td><td>A weapon hit something</td></tr>
+<tr><td><code>DeathEvent { object }</code></td><td>A <code>Health</code> reached zero</td></tr>
+<tr><td><code>ScoreEvent { points }</code></td><td>A target dummy was knocked down</td></tr>
+<tr><td><code>AnimationEvent { object, name, args }</code></td><td>An animation clip marker fired</td></tr>
+<tr><td><code>AnimatorStateChanged { object, layer, from, to }</code></td><td>An animator controller changed state</td></tr>
+<tr><td><code>ActionEvent { name, source, instigator }</code></td><td>A binding ran the built-in <em>Emit Event</em> action</td></tr>
+<tr><td><code>NetRpc { from, object, name, args }</code></td><td>A remote call arrived (also through <code>rpcs_for_self</code>)</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="command-reference"><a class="header" href="#command-reference">Command reference</a></h2>
+<p>Systems queue <a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/enum.ComponentCommand.html"><code>ComponentCommand</code></a>s;
+<code>EcsMoveHost</code> has a helper for the common ones, and any command can be pushed with
+<code>ctx.commands.push(..)</code>. The play session applies most itself; the rest are handed to the host
+application (the window, the network session, content loading).</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Command</th><th>Helper</th><th>Applied by</th></tr>
+</thead>
+<tbody>
+<tr><td><code>SpawnPrefab</code>, <code>SpawnEntity</code>, <code>Instantiate</code>, <code>Destroy</code>, <code>SetActive</code></td><td><code>spawn_prefab</code>, <code>spawn_entity</code>, <code>instantiate</code>, <code>destroy</code>, <code>set_active</code></td><td>play session</td></tr>
+<tr><td><code>SetLocalTransform</code>, <code>SetWorldTransform</code></td><td>(edit the transform directly instead)</td><td>play session</td></tr>
+<tr><td><code>Modify { id, type_id, f }</code></td><td>(prefer <code>edit</code>)</td><td>play session</td></tr>
+<tr><td><code>ModifyMaterialParams</code>, <code>AssignMaterial</code></td><td><code>modify_material</code></td><td>play session</td></tr>
+<tr><td><code>AddForce</code>, <code>AddImpulse</code>, <code>AddTorque</code>, <code>SetVelocity</code>, <code>SetJointMotor</code>, <code>MoveCharacter</code></td><td><code>add_impulse</code>, <code>set_velocity</code>, <code>move_character</code></td><td>play session (physics)</td></tr>
+<tr><td><code>RebakeNavMesh</code></td><td><code>rebake_navmesh</code></td><td>play session</td></tr>
+<tr><td><code>PlaySound</code>, <code>PlayAudio</code>, <code>StopAudio</code>, <code>SetBusVolume</code>, <code>SetBusMuted</code></td><td><code>play_sound_at</code>, <code>set_bus_volume</code></td><td>play session (audio)</td></tr>
+<tr><td><code>SaveSet</code>, <code>SaveRemove</code>, <code>SaveWrite</code>, <code>SaveLoad</code>, <code>SetLanguage</code></td><td><code>save_value</code>, <code>remove_save_value</code>, <code>write_save</code>, <code>load_save</code>, <code>set_language</code></td><td>play session</td></tr>
+<tr><td><code>SetTimeScale</code></td><td><code>set_time_scale</code></td><td>play session</td></tr>
+<tr><td><code>Emit</code></td><td><code>ctx.emit(event)</code></td><td>play session (event bus)</td></tr>
+<tr><td><code>InvokeAction</code>, <code>FireActions</code></td><td>(action bindings)</td><td>play session</td></tr>
+<tr><td><code>NetSpawn</code>, <code>NetDespawn</code>, <code>NetSetVar</code></td><td><code>net_spawn</code>, <code>set_net_var</code></td><td>play session (replication)</td></tr>
+<tr><td><code>LoadScene</code>, <code>PreloadScene</code>, <code>LoadSceneAdditive</code>, <code>UnloadScene</code>, <code>KeepOnSceneChange</code></td><td><code>load_scene</code>, …</td><td>host application</td></tr>
+<tr><td><code>SetActiveCamera</code></td><td><code>set_active_camera</code></td><td>play session</td></tr>
+<tr><td><code>SetCursorLocked</code>, <code>SetResolution</code>, <code>SetVsync</code>, <code>SetShadowResolution</code>, <code>Quit</code></td><td><code>set_cursor_locked</code>, <code>quit</code></td><td>host application</td></tr>
+<tr><td><code>NetHost</code>, <code>NetJoin</code>, <code>NetDisconnect</code>, <code>NetKick</code>, <code>NetLoadScene</code>, <code>NetMessage</code>, <code>NetRpc</code>, <code>RequestOwnership</code>, <code>ReleaseOwnership</code>, <code>TransferOwnership</code></td><td><code>rpc_self</code>, <code>request_ownership_of</code></td><td>host application (network)</td></tr>
+<tr><td><code>Content(..)</code></td><td>(user-generated content: worlds, avatars, props)</td><td>host application</td></tr>
+<tr><td><code>Input(..)</code></td><td><code>input_command</code>, <code>rebind_with</code>, <code>tune_action</code></td><td>host application</td></tr>
+<tr><td><code>Body(..)</code>, <code>CalibrateTrackers</code>, <code>ClearTrackerCalibration</code>, <code>SetOscFaceTracking</code></td><td>(VR body and face tracking menus)</td><td>host application</td></tr>
+<tr><td><code>WaterImpact</code></td><td>(water effects)</td><td>play session</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="recipes"><a class="header" href="#recipes">Recipes</a></h2>
+<h3 id="smooth-follow-camera"><a class="header" href="#smooth-follow-camera">Smooth follow camera</a></h3>
+<p>Run in <code>LateUpdate</code>, after the target has moved this frame.</p>
+<pre><code class="language-rust">#[derive(Serialize, Deserialize)]
+pub struct SmoothFollow {
+    pub target: ObjectRef,
+    pub offset: [f32; 3],
+    pub sharpness: f32,
+}
+
+impl SmoothFollow {
+    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
+        let Some(goal) = host.position_of(self.target) else { return };
+        let wanted = goal + Vec3::from(self.offset);
+        let here = host.world_position();
+        // 1 - e^(-k·dt) is the share of the gap to close this frame: the result is
+        // the same whether the game runs at 30 or 240 frames per second.
+        let blend = 1.0 - (-self.sharpness * host.dt).exp();
+        host.set_world_position(here.lerp(wanted, blend));
+    }
+}
+
+registry.register_system_for::&lt;SmoothFollow&gt;("game::smooth_follow", Stage::LateUpdate, |world, ctx| {
+    run_ordered(world, ctx, SmoothFollow::update)
+});</code></pre>
+<h3 id="click-to-select"><a class="header" href="#click-to-select">Click to select</a></h3>
+<pre><code class="language-rust">#[derive(Default, Serialize, Deserialize)]
+pub struct ClickToSelect {
+    #[serde(skip)]
+    pub selected: Option&lt;ObjectId&gt;,
+}
+
+impl ClickToSelect {
+    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
+        if !host.input.pressed("Fire") || host.pointer_over_ui() { return; }
+        let Some((origin, direction)) = host.pointer_ray() else { return };
+        self.selected = host.raycast(origin, direction, 500.0).map(|hit| hit.object);
+    }
+}</code></pre>
+<h3 id="pause-menu"><a class="header" href="#pause-menu">Pause menu</a></h3>
+<p><code>set_time_scale(0.0)</code> stops <code>dt</code> (and physics), while systems keep running, so a pause menu keeps
+working on <code>unscaled_dt</code> and UI events.</p>
+<pre><code class="language-rust">#[derive(Default, Serialize, Deserialize)]
+pub struct PauseToggle {
+    #[serde(skip)]
+    pub paused: bool,
+}
+
+impl PauseToggle {
+    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
+        if host.ui_cancel_pressed() {
+            self.paused = !self.paused;
+            host.set_time_scale(if self.paused { 0.0 } else { 1.0 });
+            host.set_cursor_locked(!self.paused);
+        }
+    }
+}</code></pre>
+<h3 id="more"><a class="header" href="#more">More</a></h3>
+<p>The <a href="ECS.html">ECS guide</a> holds the full recipes for taking damage (events), pickups (contacts), doors
+(state and actions), spawners (entities), timers, a poison zone (two components) and a ray gun
+(physics). The production versions of all of these ship in <code>crates/zestengine-core/src/kit/</code>: read
+<code>combat.rs</code> (health, hitscan weapons), <code>character.rs</code> (first and third person controllers),
+<code>topdown.rs</code> (click-to-move, interactables) and <code>rts.rs</code> (selection and formations).</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="ecs-cheatsheet.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="WASM.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="ecs-cheatsheet.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="WASM.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-09f2665d.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-609e4cb8.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

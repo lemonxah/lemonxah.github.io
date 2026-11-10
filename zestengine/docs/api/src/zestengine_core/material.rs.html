@@ -1,0 +1,283 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/zestengine-core/src/material.rs`."><title>material.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-0c87338a.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="zestengine_core" data-themes="" data-resource-suffix="" data-rustdoc-version="1.99.1 (58cf8f9c3 2026-10-13)" data-channel="1.99.1" data-search-js="search-cf4fc35e.js" data-stringdex-js="stringdex-b5109af9.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="../../static.files/src-script-813739b1.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-417ebf0a.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-9f56287d.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><h1><div class="sub-heading">zestengine_core/</div>material.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-3"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="doccomment">//! Continuously editable material parameters: the single block of data
+<a href=#2 id=2 data-nosnippet>2</a>//! that describes how a surface shades. Plugins read and write materials
+<a href=#3 id=3 data-nosnippet>3</a>//! through this type (see `crate::ecs::EcsMoveHost::material_params` and
+<a href=#4 id=4 data-nosnippet>4</a>//! `crate::ecs::EcsMoveHost::modify_material`), so it lives in core where plugins link.
+<a href=#5 id=5 data-nosnippet>5</a>
+<a href=#6 id=6 data-nosnippet>6</a></span><span class="kw">use </span>serde::{Deserialize, Serialize};
+<a href=#7 id=7 data-nosnippet>7</a>
+<a href=#8 id=8 data-nosnippet>8</a><span class="doccomment">/// Continuously editable material parameters; delivered to the shader as
+<a href=#9 id=9 data-nosnippet>9</a>/// push constants every draw, so edits are live with zero sync hazards.
+<a href=#10 id=10 data-nosnippet>10</a></span><span class="attr">#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+<a href=#11 id=11 data-nosnippet>11</a>#[serde(default)]
+<a href=#12 id=12 data-nosnippet>12</a></span><span class="kw">pub struct </span>MaterialParams {
+<a href=#13 id=13 data-nosnippet>13</a>    <span class="doccomment">/// Base albedo, linear RGBA; the alpha is used by transparent materials.
+<a href=#14 id=14 data-nosnippet>14</a>    </span><span class="kw">pub </span>base_color: [f32; <span class="number">4</span>],
+<a href=#15 id=15 data-nosnippet>15</a>    <span class="doccomment">/// Emissive colour, linear RGB (only meaningful when the emission map or intensity makes it visible).
+<a href=#16 id=16 data-nosnippet>16</a>    </span><span class="kw">pub </span>emission_color: [f32; <span class="number">3</span>],
+<a href=#17 id=17 data-nosnippet>17</a>    <span class="doccomment">/// Multiplier on the emission colour / map (0 = off).
+<a href=#18 id=18 data-nosnippet>18</a>    </span><span class="kw">pub </span>emission_intensity: f32,
+<a href=#19 id=19 data-nosnippet>19</a>    <span class="doccomment">/// Mean LINEAR RGB of the emission map (1,1,1 = no map). Scales the per-
+<a href=#20 id=20 data-nosnippet>20</a>    /// instance emission fed to the RT reflection + RT GI gather so a mostly-black
+<a href=#21 id=21 data-nosnippet>21</a>    /// map (e.g. only a glowing visor) doesn't make the whole mesh reflect/bounce
+<a href=#22 id=22 data-nosnippet>22</a>    /// as a uniform light. The per-pixel forward emission is unaffected (it
+<a href=#23 id=23 data-nosnippet>23</a>    /// samples the actual map).
+<a href=#24 id=24 data-nosnippet>24</a>    </span><span class="kw">pub </span>emission_map_mean: [f32; <span class="number">3</span>],
+<a href=#25 id=25 data-nosnippet>25</a>    <span class="doccomment">/// Metalness 0 (dielectric) .. 1 (metal).
+<a href=#26 id=26 data-nosnippet>26</a>    </span><span class="kw">pub </span>metallic: f32,
+<a href=#27 id=27 data-nosnippet>27</a>    <span class="doccomment">/// Perceptual roughness 0 (mirror) .. 1 (diffuse).
+<a href=#28 id=28 data-nosnippet>28</a>    </span><span class="kw">pub </span>roughness: f32,
+<a href=#29 id=29 data-nosnippet>29</a>    <span class="doccomment">/// Toon cel-shading band count (1 = flat).
+<a href=#30 id=30 data-nosnippet>30</a>    </span><span class="kw">pub </span>toon_steps: f32,
+<a href=#31 id=31 data-nosnippet>31</a>    <span class="doccomment">/// Blend between PBR and toon shading, 0 = PBR .. 1 = toon.
+<a href=#32 id=32 data-nosnippet>32</a>    </span><span class="kw">pub </span>pbr_toon_blend: f32,
+<a href=#33 id=33 data-nosnippet>33</a>    <span class="doccomment">/// Alpha-test threshold 0..1 for cutout materials.
+<a href=#34 id=34 data-nosnippet>34</a>    </span><span class="kw">pub </span>alpha_cutoff: f32,
+<a href=#35 id=35 data-nosnippet>35</a>    <span class="doccomment">/// Normal-map intensity (0 = off).
+<a href=#36 id=36 data-nosnippet>36</a>    </span><span class="kw">pub </span>normal_strength: f32,
+<a href=#37 id=37 data-nosnippet>37</a>    <span class="doccomment">/// Ambient-occlusion map strength (0 = off).
+<a href=#38 id=38 data-nosnippet>38</a>    </span><span class="kw">pub </span>occlusion_strength: f32,
+<a href=#39 id=39 data-nosnippet>39</a>    <span class="comment">// --- extended "FX" params, delivered via a per-material UBO (set 1, binding
+<a href=#40 id=40 data-nosnippet>40</a>    // 4) so the built-in Standard/Toon shaders can have options beyond the
+<a href=#41 id=41 data-nosnippet>41</a>    // full 128-byte push block. ---
+<a href=#42 id=42 data-nosnippet>42</a>    </span><span class="doccomment">/// Toon rim-light colour.
+<a href=#43 id=43 data-nosnippet>43</a>    </span><span class="kw">pub </span>rim_color: [f32; <span class="number">3</span>],
+<a href=#44 id=44 data-nosnippet>44</a>    <span class="doccomment">/// Toon rim Fresnel exponent (higher = tighter edge).
+<a href=#45 id=45 data-nosnippet>45</a>    </span><span class="kw">pub </span>rim_power: f32,
+<a href=#46 id=46 data-nosnippet>46</a>    <span class="doccomment">/// Toon rim strength (0 = off).
+<a href=#47 id=47 data-nosnippet>47</a>    </span><span class="kw">pub </span>rim_strength: f32,
+<a href=#48 id=48 data-nosnippet>48</a>    <span class="doccomment">/// Toon cel-ramp edge softness.
+<a href=#49 id=49 data-nosnippet>49</a>    </span><span class="kw">pub </span>ramp_smoothness: f32,
+<a href=#50 id=50 data-nosnippet>50</a>    <span class="doccomment">/// Animated UV scroll for the base maps (uv units / second).
+<a href=#51 id=51 data-nosnippet>51</a>    </span><span class="kw">pub </span>base_scroll: [f32; <span class="number">2</span>],
+<a href=#52 id=52 data-nosnippet>52</a>    <span class="doccomment">/// Animated UV scroll for the emission map.
+<a href=#53 id=53 data-nosnippet>53</a>    </span><span class="kw">pub </span>emission_scroll: [f32; <span class="number">2</span>],
+<a href=#54 id=54 data-nosnippet>54</a>    <span class="doccomment">/// Emission pulse speed (0 = steady); brightness oscillates.
+<a href=#55 id=55 data-nosnippet>55</a>    </span><span class="kw">pub </span>emission_pulse: f32,
+<a href=#56 id=56 data-nosnippet>56</a>    <span class="doccomment">/// Additive matcap strengths (3 layers; 0 = off). Each layer samples its own
+<a href=#57 id=57 data-nosnippet>57</a>    /// matcap texture, multiplied by its mask.
+<a href=#58 id=58 data-nosnippet>58</a>    </span><span class="kw">pub </span>matcap_strength: [f32; <span class="number">3</span>],
+<a href=#59 id=59 data-nosnippet>59</a>    <span class="doccomment">/// Per-layer matcap blend mode encoded as a float: 0 = Add, 1 = Multiply,
+<a href=#60 id=60 data-nosnippet>60</a>    /// 2 = Replace.
+<a href=#61 id=61 data-nosnippet>61</a>    </span><span class="kw">pub </span>matcap_blend: [f32; <span class="number">3</span>],
+<a href=#62 id=62 data-nosnippet>62</a>    <span class="comment">// --- Per-texture UV transform for the main maps. `*_tiling` scales the UVs
+<a href=#63 id=63 data-nosnippet>63</a>    // (Unity tiling; default 1), `*_offset` shifts them (default 0). Mask slots
+<a href=#64 id=64 data-nosnippet>64</a>    // follow their parent map (opacity→albedo, emission_mask→emission). ---
+<a href=#65 id=65 data-nosnippet>65</a>    </span><span class="doccomment">/// UV scale for the albedo map (Unity tiling; default 1).
+<a href=#66 id=66 data-nosnippet>66</a>    </span><span class="kw">pub </span>albedo_tiling: [f32; <span class="number">2</span>],
+<a href=#67 id=67 data-nosnippet>67</a>    <span class="doccomment">/// UV shift for the albedo map (default 0).
+<a href=#68 id=68 data-nosnippet>68</a>    </span><span class="kw">pub </span>albedo_offset: [f32; <span class="number">2</span>],
+<a href=#69 id=69 data-nosnippet>69</a>    <span class="doccomment">/// UV scale for the normal map.
+<a href=#70 id=70 data-nosnippet>70</a>    </span><span class="kw">pub </span>normal_tiling: [f32; <span class="number">2</span>],
+<a href=#71 id=71 data-nosnippet>71</a>    <span class="doccomment">/// UV shift for the normal map.
+<a href=#72 id=72 data-nosnippet>72</a>    </span><span class="kw">pub </span>normal_offset: [f32; <span class="number">2</span>],
+<a href=#73 id=73 data-nosnippet>73</a>    <span class="doccomment">/// UV scale for the ORM map.
+<a href=#74 id=74 data-nosnippet>74</a>    </span><span class="kw">pub </span>orm_tiling: [f32; <span class="number">2</span>],
+<a href=#75 id=75 data-nosnippet>75</a>    <span class="doccomment">/// UV shift for the ORM map.
+<a href=#76 id=76 data-nosnippet>76</a>    </span><span class="kw">pub </span>orm_offset: [f32; <span class="number">2</span>],
+<a href=#77 id=77 data-nosnippet>77</a>    <span class="doccomment">/// UV scale for the emission map.
+<a href=#78 id=78 data-nosnippet>78</a>    </span><span class="kw">pub </span>emission_tiling: [f32; <span class="number">2</span>],
+<a href=#79 id=79 data-nosnippet>79</a>    <span class="doccomment">/// UV shift for the emission map.
+<a href=#80 id=80 data-nosnippet>80</a>    </span><span class="kw">pub </span>emission_offset: [f32; <span class="number">2</span>],
+<a href=#81 id=81 data-nosnippet>81</a>    <span class="comment">// Invert a split AO / Roughness / Metallic map (e.g. a smoothness map used in
+<a href=#82 id=82 data-nosnippet>82</a>    // the roughness slot). Only meaningful when the matching map is assigned.
+<a href=#83 id=83 data-nosnippet>83</a>    </span><span class="doccomment">/// Invert the AO channel of a split ORM map.
+<a href=#84 id=84 data-nosnippet>84</a>    </span><span class="kw">pub </span>ao_invert: bool,
+<a href=#85 id=85 data-nosnippet>85</a>    <span class="doccomment">/// Invert the roughness channel (e.g. a smoothness map).
+<a href=#86 id=86 data-nosnippet>86</a>    </span><span class="kw">pub </span>roughness_invert: bool,
+<a href=#87 id=87 data-nosnippet>87</a>    <span class="doccomment">/// Invert the metallic channel.
+<a href=#88 id=88 data-nosnippet>88</a>    </span><span class="kw">pub </span>metallic_invert: bool,
+<a href=#89 id=89 data-nosnippet>89</a>    <span class="doccomment">/// Parallax occlusion mapping strength (uv shift at full height). 0 = off.
+<a href=#90 id=90 data-nosnippet>90</a>    </span><span class="kw">pub </span>displacement_scale: f32,
+<a href=#91 id=91 data-nosnippet>91</a>    <span class="doccomment">/// Per-material reflection strength (1 = full, 0 = matte). Scales the env-cube
+<a href=#92 id=92 data-nosnippet>92</a>    /// probe reflection AND the screen-space/RT reflection for this material.
+<a href=#93 id=93 data-nosnippet>93</a>    </span><span class="kw">pub </span>reflection_intensity: f32,
+<a href=#94 id=94 data-nosnippet>94</a>    <span class="doccomment">/// Per-material screen-space/RT reflection toggle (true = on). Off keeps the
+<a href=#95 id=95 data-nosnippet>95</a>    /// env-cube reflection but skips the deferred SSR/RT resolve for this material.
+<a href=#96 id=96 data-nosnippet>96</a>    </span><span class="kw">pub </span>screen_reflections: bool,
+<a href=#97 id=97 data-nosnippet>97</a>    <span class="doccomment">/// Per-material reflection mode: 0 = the environment's global technique,
+<a href=#98 id=98 data-nosnippet>98</a>    /// 2 = baked probes only (no SSR / ray-traced resolve), 3 = none.
+<a href=#99 id=99 data-nosnippet>99</a>    /// Mirrors `zestengine_core::ReflectionMode` for the shader (fx.parallax.w).
+<a href=#100 id=100 data-nosnippet>100</a>    </span><span class="attr">#[serde(default)]
+<a href=#101 id=101 data-nosnippet>101</a>    </span><span class="kw">pub </span>reflection_mode: u8,
+<a href=#102 id=102 data-nosnippet>102</a>    <span class="doccomment">/// Detail layer (albedo / normal / ORM tiled over the base maps).
+<a href=#103 id=103 data-nosnippet>103</a>    </span><span class="kw">pub </span>detail: DetailParams,
+<a href=#104 id=104 data-nosnippet>104</a>    <span class="doccomment">/// Thin-surface translucency and see-through transmission.
+<a href=#105 id=105 data-nosnippet>105</a>    </span><span class="kw">pub </span>transmission: TransmissionParams,
+<a href=#106 id=106 data-nosnippet>106</a>    <span class="doccomment">/// Tessellation + height-map displacement (hardware tessellation stages).
+<a href=#107 id=107 data-nosnippet>107</a>    </span><span class="kw">pub </span>tess: TessParams,
+<a href=#108 id=108 data-nosnippet>108</a>}
+<a href=#109 id=109 data-nosnippet>109</a>
+<a href=#110 id=110 data-nosnippet>110</a><span class="doccomment">/// Displacement through hardware tessellation (UNITY-12): the mesh's triangles are
+<a href=#111 id=111 data-nosnippet>111</a>/// subdivided by their screen-space edge length and the new vertices pushed along
+<a href=#112 id=112 data-nosnippet>112</a>/// the (Phong-smoothed) normal by the material's height map (the Displacement
+<a href=#113 id=113 data-nosnippet>113</a>/// texture slot, white = peak). Off by default; a material without it pays
+<a href=#114 id=114 data-nosnippet>114</a>/// nothing (its pipelines have no tessellation stages). Needs a device with
+<a href=#115 id=115 data-nosnippet>115</a>/// `tessellationShader`; elsewhere the material draws flat (use parallax mapping).
+<a href=#116 id=116 data-nosnippet>116</a></span><span class="attr">#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+<a href=#117 id=117 data-nosnippet>117</a>#[serde(default)]
+<a href=#118 id=118 data-nosnippet>118</a></span><span class="kw">pub struct </span>TessParams {
+<a href=#119 id=119 data-nosnippet>119</a>    <span class="doccomment">/// Whether tessellation displacement is active for this material.
+<a href=#120 id=120 data-nosnippet>120</a>    </span><span class="kw">pub </span>enabled: bool,
+<a href=#121 id=121 data-nosnippet>121</a>    <span class="doccomment">/// Displacement at height 1 (above `midlevel`), in world units along the normal.
+<a href=#122 id=122 data-nosnippet>122</a>    </span><span class="kw">pub </span>scale: f32,
+<a href=#123 id=123 data-nosnippet>123</a>    <span class="doccomment">/// Height-map value that stays put (0.5: half the map raises, half sinks).
+<a href=#124 id=124 data-nosnippet>124</a>    </span><span class="kw">pub </span>midlevel: f32,
+<a href=#125 id=125 data-nosnippet>125</a>    <span class="doccomment">/// Target on-screen edge length of the generated triangles, in pixels.
+<a href=#126 id=126 data-nosnippet>126</a>    </span><span class="kw">pub </span>edge_px: f32,
+<a href=#127 id=127 data-nosnippet>127</a>    <span class="doccomment">/// Largest subdivision level (the device caps it at 64).
+<a href=#128 id=128 data-nosnippet>128</a>    </span><span class="kw">pub </span>max_factor: f32,
+<a href=#129 id=129 data-nosnippet>129</a>    <span class="doccomment">/// Phong smoothing of the subdivided surface, 0 (flat triangles) to 1.
+<a href=#130 id=130 data-nosnippet>130</a>    </span><span class="kw">pub </span>phong: f32,
+<a href=#131 id=131 data-nosnippet>131</a>}
+<a href=#132 id=132 data-nosnippet>132</a>
+<a href=#133 id=133 data-nosnippet>133</a><span class="kw">impl </span>Default <span class="kw">for </span>TessParams {
+<a href=#134 id=134 data-nosnippet>134</a>    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+<a href=#135 id=135 data-nosnippet>135</a>        <span class="self">Self </span>{ enabled: <span class="bool-val">false</span>, scale: <span class="number">0.05</span>, midlevel: <span class="number">0.5</span>, edge_px: <span class="number">12.0</span>, max_factor: <span class="number">32.0</span>, phong: <span class="number">0.5 </span>}
+<a href=#136 id=136 data-nosnippet>136</a>    }
+<a href=#137 id=137 data-nosnippet>137</a>}
+<a href=#138 id=138 data-nosnippet>138</a>
+<a href=#139 id=139 data-nosnippet>139</a><span class="doccomment">/// Standard-shader detail layer: a second set of albedo, normal and ORM maps
+<a href=#140 id=140 data-nosnippet>140</a>/// sampled at their own tiling, gated by a mask. Every strength is 0 by default,
+<a href=#141 id=141 data-nosnippet>141</a>/// which switches the layer off (old materials load unchanged).
+<a href=#142 id=142 data-nosnippet>142</a></span><span class="attr">#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+<a href=#143 id=143 data-nosnippet>143</a>#[serde(default)]
+<a href=#144 id=144 data-nosnippet>144</a></span><span class="kw">pub struct </span>DetailParams {
+<a href=#145 id=145 data-nosnippet>145</a>    <span class="doccomment">/// How strongly the detail albedo shows (0 = off).
+<a href=#146 id=146 data-nosnippet>146</a>    </span><span class="kw">pub </span>albedo_strength: f32,
+<a href=#147 id=147 data-nosnippet>147</a>    <span class="doccomment">/// Detail normal scale (0 = off).
+<a href=#148 id=148 data-nosnippet>148</a>    </span><span class="kw">pub </span>normal_strength: f32,
+<a href=#149 id=149 data-nosnippet>149</a>    <span class="doccomment">/// How strongly the detail ORM modulates occlusion / roughness / metallic.
+<a href=#150 id=150 data-nosnippet>150</a>    </span><span class="kw">pub </span>orm_strength: f32,
+<a href=#151 id=151 data-nosnippet>151</a>    <span class="doccomment">/// How the detail albedo combines: 0 Multiply x2 (Unity), 1 Overlay, 2 Add, 3 Replace.
+<a href=#152 id=152 data-nosnippet>152</a>    </span><span class="kw">pub </span>blend: f32,
+<a href=#153 id=153 data-nosnippet>153</a>    <span class="doccomment">/// UV scale for the detail maps (Unity tiling; default 1).
+<a href=#154 id=154 data-nosnippet>154</a>    </span><span class="kw">pub </span>tiling: [f32; <span class="number">2</span>],
+<a href=#155 id=155 data-nosnippet>155</a>    <span class="doccomment">/// UV shift for the detail maps (default 0).
+<a href=#156 id=156 data-nosnippet>156</a>    </span><span class="kw">pub </span>offset: [f32; <span class="number">2</span>],
+<a href=#157 id=157 data-nosnippet>157</a>}
+<a href=#158 id=158 data-nosnippet>158</a>
+<a href=#159 id=159 data-nosnippet>159</a><span class="kw">impl </span>Default <span class="kw">for </span>DetailParams {
+<a href=#160 id=160 data-nosnippet>160</a>    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+<a href=#161 id=161 data-nosnippet>161</a>        <span class="self">Self </span>{
+<a href=#162 id=162 data-nosnippet>162</a>            albedo_strength: <span class="number">0.0</span>,
+<a href=#163 id=163 data-nosnippet>163</a>            normal_strength: <span class="number">0.0</span>,
+<a href=#164 id=164 data-nosnippet>164</a>            orm_strength: <span class="number">0.0</span>,
+<a href=#165 id=165 data-nosnippet>165</a>            blend: <span class="number">0.0</span>,
+<a href=#166 id=166 data-nosnippet>166</a>            tiling: [<span class="number">1.0</span>, <span class="number">1.0</span>],
+<a href=#167 id=167 data-nosnippet>167</a>            offset: [<span class="number">0.0</span>, <span class="number">0.0</span>],
+<a href=#168 id=168 data-nosnippet>168</a>        }
+<a href=#169 id=169 data-nosnippet>169</a>    }
+<a href=#170 id=170 data-nosnippet>170</a>}
+<a href=#171 id=171 data-nosnippet>171</a>
+<a href=#172 id=172 data-nosnippet>172</a><span class="kw">impl </span>DetailParams {
+<a href=#173 id=173 data-nosnippet>173</a>    <span class="doccomment">/// True when any of the three detail strengths is above 0, i.e. the
+<a href=#174 id=174 data-nosnippet>174</a>    /// detail layer is active rather than fully switched off.
+<a href=#175 id=175 data-nosnippet>175</a>    </span><span class="kw">pub fn </span>is_on(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+<a href=#176 id=176 data-nosnippet>176</a>        <span class="self">self</span>.albedo_strength &gt; <span class="number">0.0 </span>|| <span class="self">self</span>.normal_strength &gt; <span class="number">0.0 </span>|| <span class="self">self</span>.orm_strength &gt; <span class="number">0.0
+<a href=#177 id=177 data-nosnippet>177</a>    </span>}
+<a href=#178 id=178 data-nosnippet>178</a>}
+<a href=#179 id=179 data-nosnippet>179</a>
+<a href=#180 id=180 data-nosnippet>180</a><span class="doccomment">/// Standard-shader translucency (light through a thin surface, leaves / paper /
+<a href=#181 id=181 data-nosnippet>181</a>/// cloth) and transmission (the scene behind a see-through surface, glass /
+<a href=#182 id=182 data-nosnippet>182</a>/// thin plastic). Both default to 0 = off.
+<a href=#183 id=183 data-nosnippet>183</a></span><span class="attr">#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+<a href=#184 id=184 data-nosnippet>184</a>#[serde(default)]
+<a href=#185 id=185 data-nosnippet>185</a></span><span class="kw">pub struct </span>TransmissionParams {
+<a href=#186 id=186 data-nosnippet>186</a>    <span class="doccomment">/// Back-lit translucency strength (0 = off).
+<a href=#187 id=187 data-nosnippet>187</a>    </span><span class="kw">pub </span>translucency: f32,
+<a href=#188 id=188 data-nosnippet>188</a>    <span class="doccomment">/// Colour of the light that comes through (linear).
+<a href=#189 id=189 data-nosnippet>189</a>    </span><span class="kw">pub </span>translucency_color: [f32; <span class="number">3</span>],
+<a href=#190 id=190 data-nosnippet>190</a>    <span class="doccomment">/// Sharpness of the transmitted glow (higher = tighter around the light).
+<a href=#191 id=191 data-nosnippet>191</a>    </span><span class="kw">pub </span>power: f32,
+<a href=#192 id=192 data-nosnippet>192</a>    <span class="doccomment">/// How much the surface normal bends the transmitted light.
+<a href=#193 id=193 data-nosnippet>193</a>    </span><span class="kw">pub </span>distortion: f32,
+<a href=#194 id=194 data-nosnippet>194</a>    <span class="doccomment">/// The translucency map holds thickness (1 = thick, passes less) instead of translucency.
+<a href=#195 id=195 data-nosnippet>195</a>    </span><span class="kw">pub </span>map_is_thickness: bool,
+<a href=#196 id=196 data-nosnippet>196</a>    <span class="doccomment">/// See-through amount 0..1 (glTF `KHR_materials_transmission`); needs "Scene Colour Read".
+<a href=#197 id=197 data-nosnippet>197</a>    </span><span class="kw">pub </span>transmission: f32,
+<a href=#198 id=198 data-nosnippet>198</a>    <span class="doccomment">/// Colour the scene behind takes on passing through (linear); glTF volume attenuation.
+<a href=#199 id=199 data-nosnippet>199</a>    </span><span class="kw">pub </span>tint: [f32; <span class="number">3</span>],
+<a href=#200 id=200 data-nosnippet>200</a>    <span class="doccomment">/// Screen-space refraction offset, in view-normal units.
+<a href=#201 id=201 data-nosnippet>201</a>    </span><span class="kw">pub </span>refraction: f32,
+<a href=#202 id=202 data-nosnippet>202</a>    <span class="doccomment">/// Rough transmission: how strongly roughness blurs the scene seen through
+<a href=#203 id=203 data-nosnippet>203</a>    /// the surface (0 = always sharp, 1 = the full roughness x thickness blur).
+<a href=#204 id=204 data-nosnippet>204</a>    </span><span class="kw">pub </span>blur: f32,
+<a href=#205 id=205 data-nosnippet>205</a>    <span class="doccomment">/// Volume thickness 0..1 that scales the blur (times the translucency /
+<a href=#206 id=206 data-nosnippet>206</a>    /// thickness map's red channel when `map_is_thickness`). glTF
+<a href=#207 id=207 data-nosnippet>207</a>    /// `KHR_materials_volume` thickness, normalised by the importer.
+<a href=#208 id=208 data-nosnippet>208</a>    </span><span class="kw">pub </span>thickness: f32,
+<a href=#209 id=209 data-nosnippet>209</a>    <span class="doccomment">/// The translucency / thickness map's GREEN channel also scales the
+<a href=#210 id=210 data-nosnippet>210</a>    /// transmission amount (glTF `transmissionTexture`).
+<a href=#211 id=211 data-nosnippet>211</a>    </span><span class="kw">pub </span>map_has_transmission: bool,
+<a href=#212 id=212 data-nosnippet>212</a>}
+<a href=#213 id=213 data-nosnippet>213</a>
+<a href=#214 id=214 data-nosnippet>214</a><span class="kw">impl </span>Default <span class="kw">for </span>TransmissionParams {
+<a href=#215 id=215 data-nosnippet>215</a>    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+<a href=#216 id=216 data-nosnippet>216</a>        <span class="self">Self </span>{
+<a href=#217 id=217 data-nosnippet>217</a>            translucency: <span class="number">0.0</span>,
+<a href=#218 id=218 data-nosnippet>218</a>            translucency_color: [<span class="number">1.0</span>, <span class="number">1.0</span>, <span class="number">1.0</span>],
+<a href=#219 id=219 data-nosnippet>219</a>            power: <span class="number">4.0</span>,
+<a href=#220 id=220 data-nosnippet>220</a>            distortion: <span class="number">0.2</span>,
+<a href=#221 id=221 data-nosnippet>221</a>            map_is_thickness: <span class="bool-val">false</span>,
+<a href=#222 id=222 data-nosnippet>222</a>            transmission: <span class="number">0.0</span>,
+<a href=#223 id=223 data-nosnippet>223</a>            tint: [<span class="number">1.0</span>, <span class="number">1.0</span>, <span class="number">1.0</span>],
+<a href=#224 id=224 data-nosnippet>224</a>            refraction: <span class="number">0.05</span>,
+<a href=#225 id=225 data-nosnippet>225</a>            blur: <span class="number">1.0</span>,
+<a href=#226 id=226 data-nosnippet>226</a>            thickness: <span class="number">1.0</span>,
+<a href=#227 id=227 data-nosnippet>227</a>            map_has_transmission: <span class="bool-val">false</span>,
+<a href=#228 id=228 data-nosnippet>228</a>        }
+<a href=#229 id=229 data-nosnippet>229</a>    }
+<a href=#230 id=230 data-nosnippet>230</a>}
+<a href=#231 id=231 data-nosnippet>231</a>
+<a href=#232 id=232 data-nosnippet>232</a>
+<a href=#233 id=233 data-nosnippet>233</a><span class="kw">impl </span>Default <span class="kw">for </span>MaterialParams {
+<a href=#234 id=234 data-nosnippet>234</a>    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+<a href=#235 id=235 data-nosnippet>235</a>        <span class="self">Self </span>{
+<a href=#236 id=236 data-nosnippet>236</a>            base_color: [<span class="number">1.0</span>; <span class="number">4</span>],
+<a href=#237 id=237 data-nosnippet>237</a>            emission_color: [<span class="number">0.0</span>; <span class="number">3</span>],
+<a href=#238 id=238 data-nosnippet>238</a>            emission_intensity: <span class="number">1.0</span>,
+<a href=#239 id=239 data-nosnippet>239</a>            emission_map_mean: [<span class="number">1.0</span>; <span class="number">3</span>],
+<a href=#240 id=240 data-nosnippet>240</a>            metallic: <span class="number">0.0</span>,
+<a href=#241 id=241 data-nosnippet>241</a>            roughness: <span class="number">0.7</span>,
+<a href=#242 id=242 data-nosnippet>242</a>            toon_steps: <span class="number">3.0</span>,
+<a href=#243 id=243 data-nosnippet>243</a>            pbr_toon_blend: <span class="number">1.0</span>,
+<a href=#244 id=244 data-nosnippet>244</a>            alpha_cutoff: <span class="number">0.5</span>,
+<a href=#245 id=245 data-nosnippet>245</a>            normal_strength: <span class="number">1.0</span>,
+<a href=#246 id=246 data-nosnippet>246</a>            occlusion_strength: <span class="number">1.0</span>,
+<a href=#247 id=247 data-nosnippet>247</a>            rim_color: [<span class="number">1.0</span>, <span class="number">1.0</span>, <span class="number">1.0</span>],
+<a href=#248 id=248 data-nosnippet>248</a>            rim_power: <span class="number">4.0</span>,
+<a href=#249 id=249 data-nosnippet>249</a>            rim_strength: <span class="number">0.0</span>,
+<a href=#250 id=250 data-nosnippet>250</a>            ramp_smoothness: <span class="number">0.12</span>,
+<a href=#251 id=251 data-nosnippet>251</a>            base_scroll: [<span class="number">0.0</span>, <span class="number">0.0</span>],
+<a href=#252 id=252 data-nosnippet>252</a>            emission_scroll: [<span class="number">0.0</span>, <span class="number">0.0</span>],
+<a href=#253 id=253 data-nosnippet>253</a>            emission_pulse: <span class="number">0.0</span>,
+<a href=#254 id=254 data-nosnippet>254</a>            matcap_strength: [<span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>],
+<a href=#255 id=255 data-nosnippet>255</a>            matcap_blend: [<span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>],
+<a href=#256 id=256 data-nosnippet>256</a>            ao_invert: <span class="bool-val">false</span>,
+<a href=#257 id=257 data-nosnippet>257</a>            roughness_invert: <span class="bool-val">false</span>,
+<a href=#258 id=258 data-nosnippet>258</a>            metallic_invert: <span class="bool-val">false</span>,
+<a href=#259 id=259 data-nosnippet>259</a>            displacement_scale: <span class="number">0.0</span>,
+<a href=#260 id=260 data-nosnippet>260</a>            reflection_intensity: <span class="number">1.0</span>,
+<a href=#261 id=261 data-nosnippet>261</a>            screen_reflections: <span class="bool-val">true</span>,
+<a href=#262 id=262 data-nosnippet>262</a>            reflection_mode: <span class="number">0</span>,
+<a href=#263 id=263 data-nosnippet>263</a>            albedo_tiling: [<span class="number">1.0</span>, <span class="number">1.0</span>],
+<a href=#264 id=264 data-nosnippet>264</a>            albedo_offset: [<span class="number">0.0</span>, <span class="number">0.0</span>],
+<a href=#265 id=265 data-nosnippet>265</a>            normal_tiling: [<span class="number">1.0</span>, <span class="number">1.0</span>],
+<a href=#266 id=266 data-nosnippet>266</a>            normal_offset: [<span class="number">0.0</span>, <span class="number">0.0</span>],
+<a href=#267 id=267 data-nosnippet>267</a>            orm_tiling: [<span class="number">1.0</span>, <span class="number">1.0</span>],
+<a href=#268 id=268 data-nosnippet>268</a>            orm_offset: [<span class="number">0.0</span>, <span class="number">0.0</span>],
+<a href=#269 id=269 data-nosnippet>269</a>            emission_tiling: [<span class="number">1.0</span>, <span class="number">1.0</span>],
+<a href=#270 id=270 data-nosnippet>270</a>            emission_offset: [<span class="number">0.0</span>, <span class="number">0.0</span>],
+<a href=#271 id=271 data-nosnippet>271</a>            detail: DetailParams::default(),
+<a href=#272 id=272 data-nosnippet>272</a>            transmission: TransmissionParams::default(),
+<a href=#273 id=273 data-nosnippet>273</a>            tess: TessParams::default(),
+<a href=#274 id=274 data-nosnippet>274</a>        }
+<a href=#275 id=275 data-nosnippet>275</a>    }
+<a href=#276 id=276 data-nosnippet>276</a>}
+<a href=#277 id=277 data-nosnippet>277</a>
+<a href=#278 id=278 data-nosnippet>278</a><span class="kw">impl </span>TransmissionParams {
+<a href=#279 id=279 data-nosnippet>279</a>    <span class="doccomment">/// True when the see-through part needs the opaque scene copy.
+<a href=#280 id=280 data-nosnippet>280</a>    </span><span class="kw">pub fn </span>needs_grab(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+<a href=#281 id=281 data-nosnippet>281</a>        <span class="self">self</span>.transmission &gt; <span class="number">0.0
+<a href=#282 id=282 data-nosnippet>282</a>    </span>}
+<a href=#283 id=283 data-nosnippet>283</a>}</code></pre></div></section></main></body></html>

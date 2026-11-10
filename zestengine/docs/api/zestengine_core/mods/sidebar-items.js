@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["relative_asset","resolve","valid_id","valid_mod_id"],"struct":["LockedMod","ModDependency","ModLock","ModManifest","ModProfile","ModSettings"]};

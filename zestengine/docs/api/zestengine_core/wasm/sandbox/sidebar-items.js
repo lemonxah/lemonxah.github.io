@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["ALL_CAPS","CAP_EVENTS","CAP_INVOKE","CAP_READ","CAP_STATE","MANIFEST_SECTION","UNTRUSTED_CAPS"],"enum":["CallError"],"fn":["inspect_module"],"mod":["code"],"struct":["HostState","Instance","ModuleInfo","Outputs","PendingCall","SandboxLimits"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["CLOTH_CACHE_MAX_BYTES","CLOTH_CACHE_MAX_FRAMES","CLOTH_CACHE_MAX_VERTICES"],"fn":["cloth_cache_signature","validate_dimensions"],"struct":["ClothCacheFrame","ClothCacheRecorder","ClothCacheRuntime","ClothCacheSettings","ClothSimulationCache"]};

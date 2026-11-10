@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["plan_tile_objects"],"struct":["HaveObject","TileObject","TileObjectPlan","WantObject"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ClothPanelSide"],"struct":["AssembledCloth","ClothPanel","ClothPanelEdge","ClothPattern","ClothSeam","ClothStitch"]};

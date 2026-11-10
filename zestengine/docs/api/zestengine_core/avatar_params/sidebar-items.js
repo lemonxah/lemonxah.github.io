@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["BOOL_BITS","DEFAULT_PARAM_BUDGET_BITS","MAX_MENU_CONTROLS","NUMBER_BITS"],"enum":["AvatarParamKind","AvatarParamScope","AvatarParamSync","BudgetLevel","BuiltinParam","MenuItemKind"],"fn":["quantise_float","synced_bits"],"struct":["AvatarMenuItem","AvatarParam","AvatarParamStore","AvatarParameters","ParamBudget","SavedParams"]};

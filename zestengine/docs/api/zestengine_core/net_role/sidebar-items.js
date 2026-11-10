@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["NetRole"],"fn":["builtin_client_only","builtin_default_role","process_role","set_process_role"]};

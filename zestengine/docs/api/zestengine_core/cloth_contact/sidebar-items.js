@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["cloth_shape_distance","project_cloth_contact","resolve_cloth_collider","resolve_cloth_segment","sweep_cloth_collider","sweep_cloth_edges","sweep_cloth_vertex_face"],"struct":["ClothColliderMotion","ClothColliderQuery","ClothContactMapping","ClothContactReport","ClothContactTopology","ClothFeatureContact","ClothSurfaceContact","ClothSweep"]};

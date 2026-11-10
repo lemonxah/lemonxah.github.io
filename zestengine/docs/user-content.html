@@ -1,0 +1,566 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>User-generated content - ZestEngine</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Documentation for the ZestEngine game engine: the ECS, the engine API and WASM scripting.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="shortcut icon" href="favicon-8e6b73bd.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-e96d0476.css">
+        <link rel="stylesheet" href="css/chrome-d279d366.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="theme/zestengine-9866fa4a.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-49b9e9f7.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-ffb240a5.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">ZestEngine</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/lemonxah/zestengine" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <!-- Copied from docs/user-content.md in the engine repository by sync.py. Edit it there, then run ./sync.py. -->
+<h1 id="user-generated-content-zestenginepak"><a class="header" href="#user-generated-content-zestenginepak">User-generated content (<code>.zestenginepak</code>)</a></h1>
+<p>Players and creators can bring worlds, avatars and props into a running zestengine
+game without recompiling it, the way VRChat loads worlds and avatars built in
+Unity. A creator builds a package in the editor (Tools &gt; Build Content
+Package); the game loads it from a file or URL at runtime.</p>
+<h2 id="why-this-works-without-recompiling"><a class="header" href="#why-this-works-without-recompiling">Why this works without recompiling</a></h2>
+<p>A zestengine game is already split into data and code:</p>
+<ul>
+<li>Scenes, materials, models, textures, audio, animation clips/controllers,
+baked lighting and custom shader <em>sources</em> are all data files.</li>
+<li>Behaviour comes from components. A component on an object is just a type
+name plus serde (RON) data; the logic is compiled Rust that the game links
+statically (<code>run_game(config, |registry| ...)</code>).</li>
+</ul>
+<p>So a package only has to carry the data. Every built-in component (lights,
+colliders, rigid bodies, joints, animators, audio sources, particles, UI,
+portals, nav agents, pawns, ...) already exists in every game, which covers a
+lot of behaviour. Components from a project's plugins only exist in games that
+link that plugin; the builder flags them and the loader drops any component the
+running game doesn't have, with a warning.</p>
+<p>Sandboxed WASM components can ship custom logic (see "WASM component modules"
+below). For session-wide asset overrides, scene additions and matching multiplayer
+mod profiles, see <a href="modding.html">Game mods</a>.</p>
+<h2 id="package-format"><a class="header" href="#package-format">Package format</a></h2>
+<p>A <code>.zestenginepak</code> is a zip archive (the <code>zip</code> crate was already in the dependency
+tree; entries are deflated except already-compressed images/audio):</p>
+<pre><code class="language-text">manifest.ron                  PackageManifest
+files/&lt;project-relative path&gt; entry .scene + every referenced asset
+texcache/&lt;path&gt;.&lt;srgb&gt;.cbc    BC import-cache blobs for material textures
+geocache/&lt;model path&gt;.zgeo    cluster DAGs of the models' big meshes (format 2)
+thumbnail.png                 optional preview
+</code></pre>
+<p><code>manifest.ron</code> holds:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Field</th><th>Meaning</th></tr>
+</thead>
+<tbody>
+<tr><td><code>format_version</code></td><td>archive layout version (<code>PACKAGE_FORMAT_VERSION</code>; 2 adds <code>geocache/</code>, version 1 packages still open and build their cluster data on first load)</td></tr>
+<tr><td><code>engine_format</code></td><td>asset format generation (<code>ENGINE_CONTENT_FORMAT</code>); newer packages are refused with a clear "update the game" error</td></tr>
+<tr><td><code>kind</code></td><td><code>World</code>, <code>Avatar</code> or <code>Prop</code></td></tr>
+<tr><td><code>name</code>, <code>author</code>, <code>version</code>, <code>description</code>, <code>thumbnail</code></td><td>metadata</td></tr>
+<tr><td><code>entry</code></td><td>the entry scene inside <code>files/</code></td></tr>
+<tr><td><code>components</code></td><td>every component kind the content uses</td></tr>
+<tr><td><code>stats</code></td><td>triangles, texture bytes, file bytes, objects, shaders (claims; re-measured at load)</td></tr>
+<tr><td><code>files</code></td><td>file table: archive path, size, SHA-256</td></tr>
+<tr><td><code>content_hash</code></td><td>SHA-256 over the file table: the package id and cache key</td></tr>
+</tbody>
+</table>
+</div>
+<p>All three kinds use a <code>.scene</code> as the entry. A world is the scene itself (with
+its <code>&lt;scene&gt;.lightmap/.lightdata/.occlusion/.reflprobe/.audiobake</code> sidecars);
+an avatar or prop is its object hierarchy saved as a one-root scene. That keeps
+a single loader path for everything.</p>
+<p>Material textures travel twice: the source image (for anything that decodes
+it) and the BC7/BC6H import-cache blob, so a game loads them without the
+decode + block-compress step. Blobs are re-bound to the extracted file and
+skipped on GPUs without BC support (the source is re-encoded instead).</p>
+<p>Custom shaders travel as <code>.frag</code> source and are compiled by the game when the
+content loads (<code>glslc</code>, like the editor). A game without <code>glslc</code> falls back to
+the standard shader for those materials.</p>
+<h2 id="building-editor"><a class="header" href="#building-editor">Building (editor)</a></h2>
+<p>Tools &gt; Build Content Package opens the build window:</p>
+<ul>
+<li><strong>World</strong>: packages the open scene. Save it first so its baked sidecars sit
+next to it.</li>
+<li><strong>Avatar / Prop</strong>: packages the selected object and its children. The root is
+moved to the origin.</li>
+</ul>
+<p>Analyse shows what would be written (files, size, triangles, texture memory,
+components, warnings, errors); Build writes <code>build/content/&lt;name&gt;.zestenginepak</code>
+(or the chosen output path).</p>
+<p>The builder (<code>zestengine_assets::package::plan_package</code>):</p>
+<ol>
+<li>Classifies each component: engine built-in (kept), plugin (kept with a
+warning, or stripped by option), unknown (stripped).</li>
+<li>Serializes the entry scene and collects its dependencies transitively by
+scanning every string in the RON (including strings nested inside component
+data) for project files, then the files those reference: materials -&gt;
+textures and shaders, scenes -&gt; models and bake sidecars, models -&gt; <code>.meta</code>
+import settings, <code>.lmuv</code> markers, glTF buffers/images and FBX textures.
+Only whitelisted file types are packed (no binaries, no precompiled <code>.spv</code>).</li>
+<li>Rejects shader sources that use <code>#include</code>.</li>
+<li>Measures triangles (per placement), texture memory and object count and
+checks them against the kind's limits.</li>
+<li>Avatars must have exactly one root; a missing Avatar Descriptor is added with
+defaults, and the skeleton is checked for a humanoid mapping.</li>
+</ol>
+<h3 id="avatar-descriptor"><a class="header" href="#avatar-descriptor">Avatar Descriptor</a></h3>
+<p>The <code>Avatar Descriptor</code> component marks an avatar root:</p>
+<ul>
+<li><code>view_position</code>: eye point relative to the root (y = eye height). When the
+avatar is worn, the player's camera child moves here.</li>
+<li><code>bone_map</code>: humanoid role -&gt; joint name overrides for rigs the automatic
+mapper doesn't recognise (<code>hips</code>, <code>head</code>, <code>left_upper_arm</code>, <code>left_lower_arm</code>,
+<code>left_hand</code>, <code>right_*</code>, <code>left_upper_leg</code>, <code>left_lower_leg</code>, <code>left_foot</code>,
+<code>right_*</code>, plus <code>chest</code>, <code>neck</code>, <code>left_shoulder</code>, <code>right_shoulder</code>).
+Validated at build time with <code>HumanoidRig::map_with_overrides</code>.</li>
+<li><code>collider_radius</code> / <code>collider_height</code>: applied to the player's Character
+Controller.</li>
+</ul>
+<p>When an avatar is worn, its skinned parts get a <code>Humanoid IK</code> (source Auto):
+the wearer's trackers drive it locally, and other players' copies follow their
+replicated trackers. The descriptor's bone map applies to that IK. Parts that
+carry blendshapes also get <code>Face Tracking</code> and <code>Lip Sync</code>, so faces and mouths
+work with no setup.</p>
+<h2 id="loading-at-runtime"><a class="header" href="#loading-at-runtime">Loading at runtime</a></h2>
+<p><code>ContentManager</code> (<code>crates/zestengine-engine/src/content.rs</code>) lives in the game
+runtime and in the editor's Play mode. Gameplay drives it through <code>ctx</code>:</p>
+<pre><code class="language-rust">// Load only (validate + upload); result arrives as ContentEvent::Loaded.
+let req = ctx.load_content("https://example.com/forest.zestenginepak");
+
+// Spawn a prop in front of the player.
+let (req, root) = ctx.spawn_content("/home/me/chair.zestenginepak", pos, rot);
+
+// Make an avatar package the player's body.
+ctx.spawn_avatar(self.player, avatar_id_or_path);
+
+// Seamless world switch (objects marked keep_on_scene_change come along).
+ctx.enter_world(world_id);
+
+ctx.unload_content(id);
+
+for e in ctx.content_events() {
+    match e {
+        ContentEvent::Progress { request, stage } =&gt; {}
+        ContentEvent::Loaded { request, info } =&gt; {}      // info.id = content hash
+        ContentEvent::Spawned { request, info, root } =&gt; {}
+        ContentEvent::WorldEntered { request, info } =&gt; {}
+        ContentEvent::Failed { request, source, error } =&gt; {}
+        ContentEvent::Unloaded { id } =&gt; {}
+    }
+}</code></pre>
+<p><code>source</code> is a file path, an <code>http(s)://</code> URL, or the content id (hash) of a
+package loaded before.</p>
+<p>Each request runs on a worker thread, mirroring the scene loader:</p>
+<ol>
+<li>Resolve the source. Ids come straight from the cache; URLs are looked up in
+the cache index first, then downloaded through the <code>ContentFetcher</code>.</li>
+<li>Open the archive and validate the manifest against the limits of its kind.</li>
+<li>Extract into the cache (<code>&lt;cache&gt;/&lt;content hash&gt;/</code>), verifying every file's
+size and SHA-256 and the content hash. RON assets are rewritten so packaged
+paths become absolute paths into the extraction directory (packages can't
+collide with game assets or each other); relative paths that aren't in the
+package still resolve against the game's own assets, so content can reuse
+base-game assets. Unknown components are dropped and BC blobs installed.
+The directory only appears once complete; a cached extraction is reused
+when the hash and the game's component set match.</li>
+<li>Decode models and textures and upload them on the transfer queue
+(<code>scene_loader::load_on_worker_checked</code>), with the real triangle count and
+texture memory checked before anything is uploaded.</li>
+</ol>
+<p>The main thread then:</p>
+<ul>
+<li><strong>World</strong>: hands the decoded scene to <code>SceneFlow::switch_to_loaded</code>, so the
+switch is the same seamless switch as <code>ctx.load_scene</code> (old world keeps
+running until the new one is ready, kept objects carried over).</li>
+<li><strong>Prop / Avatar</strong>: appends the hierarchy to the current scene with fresh
+object ids (id references inside component data follow), tagged with an
+origin for unloading. Later spawns of the same package reuse the installed
+meshes and textures. Avatars are parented to the player, replace its previous
+avatar, and move its camera / capsule to the descriptor.</li>
+</ul>
+<p>Downloads: the engine has no TLS client in its dependency tree, so the built-in
+<code>HttpFetcher</code> handles plain <code>http://</code> (redirects, chunked encoding, size cap).
+For HTTPS, a CDN or authentication, install a fetcher:</p>
+<pre><code class="language-rust">struct MyFetcher;
+impl zestengine_engine::content::ContentFetcher for MyFetcher {
+    fn fetch(&amp;self, url: &amp;str, dest: &amp;Path, max_bytes: u64, progress: &amp;dyn Fn(u64, Option&lt;u64&gt;)) -&gt; Result&lt;(), String&gt; {
+        // ureq / reqwest / platform HTTP here
+    }
+}
+content_manager.set_fetcher(Arc::new(MyFetcher));</code></pre>
+<h3 id="cache"><a class="header" href="#cache">Cache</a></h3>
+<p>The per-user cache defaults to <code>&lt;cache dir&gt;/&lt;game title&gt;/content</code>
+(<code>GameConfig::content_cache</code> overrides it; the editor uses
+<code>&lt;project&gt;/.zestengine_content</code>). It holds one directory per content hash,
+<code>sources.ron</code> (URL -&gt; hash, so a URL isn't downloaded twice) and <code>downloads/</code>.
+<code>ContentCache::prune(max_bytes, keep)</code> evicts least-recently-used packages;
+<code>evict(hash)</code> removes one.</p>
+<h3 id="developer-overlay"><a class="header" href="#developer-overlay">Developer overlay</a></h3>
+<p>Set <code>GameConfig::content_overlay</code> (or <code>ZESTENGINE_CONTENT_OVERLAY=1</code>) and press F8
+in a built game: it lists <code>.zestenginepak</code> files in <code>&lt;cache&gt;/inbox</code>,
+<code>&lt;assets&gt;/content</code> and <code>ZESTENGINE_CONTENT_DIR</code>, with Spawn / Wear / Enter buttons,
+the loaded packages with Unload, and a log of content events and warnings.</p>
+<h2 id="safety-model-untrusted-content"><a class="header" href="#safety-model-untrusted-content">Safety model (untrusted content)</a></h2>
+<ul>
+<li>
+<p><strong>No native code, ever.</strong> Nothing in a package is executed. File types are
+whitelisted at build and load; anything else (including <code>.so/.dll</code>) is
+dropped. Precompiled shader binaries (<code>.spv</code>) are never packed or extracted;
+shader sources are compiled by the game and <code>#include</code> is rejected, so a
+shader can't read local files at compile time.</p>
+</li>
+<li>
+<p><strong>No import hooks.</strong> Model import hooks (<code>ModelImportHook</code>, IMP-6) are native
+plugin code, so they are editor-only. They only run after the editor's plugin
+loader enabled them, never in the standalone player, never inside content
+extraction (<code>ContentCache::extract</code> suppresses them), and never for any file
+under a <code>ContentCache</code> root (<code>import_hooks::mark_untrusted_root</code>), even in the
+editor. If UGC ever needs import customisation it gets data-only import steps
+in the <code>.meta</code>, never code.</p>
+</li>
+<li>
+<p><strong>Integrity.</strong> Every file's size and SHA-256 is checked against the manifest
+and the manifest's file table against the content hash; a mismatch aborts the
+load and leaves nothing in the cache.</p>
+</li>
+<li>
+<p><strong>Paths.</strong> Manifest paths must be normalized relative paths (no <code>..</code>, no
+absolute or drive paths, no duplicates). On extraction, strings in RON assets
+that point outside the package (absolute, <code>~/</code>, or climbing with <code>..</code>) are
+blanked with a warning. glTF buffer/image URIs must resolve inside the
+package or the package is refused.</p>
+</li>
+<li>
+<p><strong>Resource limits</strong> (<code>ContentLimits::for_kind</code>, overridable with
+<code>ContentManager::set_limits</code>):</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th></th><th>World</th><th>Avatar</th><th>Prop</th></tr>
+</thead>
+<tbody>
+<tr><td>package size</td><td>512 MiB</td><td>64 MiB</td><td>64 MiB</td></tr>
+<tr><td>unpacked size</td><td>1 GiB</td><td>200 MiB</td><td>200 MiB</td></tr>
+<tr><td>files</td><td>4096</td><td>512</td><td>512</td></tr>
+<tr><td>triangles</td><td>5 M</td><td>150 k</td><td>250 k</td></tr>
+<tr><td>texture memory</td><td>1 GiB</td><td>150 MiB</td><td>128 MiB</td></tr>
+<tr><td>texture size</td><td>8192</td><td>4096</td><td>4096</td></tr>
+<tr><td>objects</td><td>50 k</td><td>2 k</td><td>2 k</td></tr>
+<tr><td>custom shaders</td><td>32</td><td>8</td><td>8</td></tr>
+<tr><td>cluster data (<code>max_dag_bytes</code>)</td><td>512 MiB</td><td>48 MiB</td><td>48 MiB</td></tr>
+</tbody>
+</table>
+</div>
+<p>Besides the hard limits, content gets a <strong>performance rank</strong> (Excellent to Very
+Poor) from its triangles, materials, bones, blendshapes and texture memory
+(<code>zestengine_assets::perf_rank</code>, budgets per kind and Desktop / Mobile tier;
+<code>PackageStats</code> records the counts). Players set a minimum rank, a maximum
+number of shown avatars and a culling distance; other players' avatars that
+fail are not drawn (Tools &gt; Performance in the editor).</p>
+<p>Limits are checked on the manifest's claims (fail fast), on archive entry
+sizes while reading (zip-bomb guard: reads are capped at the declared size),
+and on the measured data before upload, with errors naming each exceeded
+limit. BC cache blobs are fully validated (format, dimensions, per-mip byte
+counts) before they reach the GPU upload.</p>
+</li>
+<li>
+<p><strong>Unknown components</strong> are dropped with warnings; component data that fails
+to deserialize is dropped by the registry as for any scene.</p>
+</li>
+</ul>
+<p>Known gaps: an FBX can name an absolute texture path that the importer tries
+before the packaged relative one (read-only, local rendering only; prefer glb
+for UGC). Other scenes a world links to by portal load through the normal
+scene path, so the per-package limits only apply to the entry scene.</p>
+<h2 id="limitations"><a class="header" href="#limitations">Limitations</a></h2>
+<ul>
+<li>Unloading a prop/avatar removes its objects immediately; its GPU meshes and
+textures stay allocated until the next world switch (the renderer frees
+resources per scene, not per handle). Spawning the same package again reuses
+them.</li>
+<li>Worn avatars replicate (content id + URL on the player's Network Avatar,
+see <a href="https://github.com/lemonxah/zestengine/blob/main/docs/networking.md">networking.md</a>); one worn from a local file only reaches
+peers that already cached it.</li>
+<li>HTTPS needs a game-provided fetcher (no TLS client in the dependency tree).</li>
+<li>Custom shaders need <code>glslc</code> on the player's machine.</li>
+<li>Only one world switch per package can be pending at a time; content loaded in
+the editor's Play mode is forgotten when Play stops.</li>
+</ul>
+<h2 id="wasm-component-modules"><a class="header" href="#wasm-component-modules">WASM component modules</a></h2>
+<p>A package may carry <code>.wasm</code> modules that a <code>Wasm Script</code> component loads (the
+component's <code>module</code> field is path-rewritten like any other asset reference).
+The module's manifest actions show up in the event-binding dropdowns of other
+objects, and bindings call them with typed arguments. The ABI (manifest, value
+encoding, exports, host imports) is documented in
+<code>crates/zestengine-core/src/wasm/mod.rs</code>; <code>guest/zest-guest</code> is a Rust helper
+for authors.</p>
+<p>Validation, with no guest code run, at build (errors) and again at extraction
+(the package is refused):</p>
+<ul>
+<li>file size at most <code>ContentLimits::max_wasm_bytes</code> (1 MiB for worlds, 512 KiB
+for props), at most <code>max_wasm_modules</code> modules (16 / 4; avatars carry none);</li>
+<li>imports only from the <code>host</code> namespace and only functions on the allowlist;
+no WASI, no imported memory, table or global;</li>
+<li>exactly one exported 32-bit memory within the page cap (64 pages = 4 MiB);</li>
+<li>a valid <code>zest_manifest</code> custom section (modules in packages must have one),
+declaring only the capabilities untrusted content may use (<code>state</code>, <code>events</code>,
+<code>read</code>; never <code>invoke</code>), and the exports its actions and properties need.</li>
+</ul>
+<p>At run time a module inside an extracted package is untrusted: tighter limits
+(1 M instructions per call, 4 MiB, 256 KiB guest stack), and other objects'
+bindings may call only actions its manifest flags <code>ugc_safe</code>, and only if
+<code>allow_wasm_actions</code> is set in the package kind's limits. The content manager
+registers each extracted package's <code>files</code> folder as untrusted
+(<code>zestengine_core::wasm::register_untrusted_root</code>); the trust of a module is its
+location. A trap (out of fuel, stack overflow, <code>unreachable</code>) disables the
+component and logs one error.</p>
+<h2 id="game-wide-mods-and-further-scripting-work"><a class="header" href="#game-wide-mods-and-further-scripting-work">Game-wide mods and further scripting work</a></h2>
+<p><a href="modding.html">Game mods</a> reuse these archives and sandboxed components for asset
+replacements, additive scenes, explicit game-granted action permissions, offline
+UUID identities and multiplayer profile matching. A game's mod API version is
+separate from the engine's WASM ABI and package format versions.</p>
+<p>Further scripting APIs (for example additional physics queries or a visual
+scripting graph interpreter) can extend the existing deferred-command model.
+They should share its permission and resource boundaries rather than introduce
+a second unrestricted execution path.</p>
+<p>Native plugin dylibs (the editor's hot-reload path) are never an option for
+untrusted content.</p>
+<h2 id="code-map"><a class="header" href="#code-map">Code map</a></h2>
+<ul>
+<li><code>crates/zestengine-assets/src/package.rs</code>: format, builder (<code>plan_package</code>,
+<code>write_package</code>), reader (<code>PackageReader</code>), validation, <code>ContentCache</code>,
+extraction / sanitizing, SHA-256.</li>
+<li><code>crates/zestengine-core/src/wasm/</code>: the WASM component ABI (<code>abi.rs</code> codec and
+manifest, <code>sandbox.rs</code> inspection / limits / host imports, <code>component.rs</code> the
+<code>Wasm Script</code> component); <code>package::validate_wasm_module</code> applies it to packages.</li>
+<li><code>crates/zestengine-assets/src/tex_cache.rs</code>: <code>texture_cache_blob</code>,
+<code>seed_texture_cache</code>, <code>validate_compressed</code>.</li>
+<li><code>crates/zestengine-core/src/content.rs</code>: <code>ContentKind</code>, <code>ContentEvent</code>,
+<code>ContentCommand</code>, <code>AvatarDescriptor</code>, the <code>ctx</code> methods.</li>
+<li><code>crates/zestengine-engine/src/content.rs</code>: <code>ContentManager</code>, worker
+(<code>load_package_on_worker</code>), <code>HttpFetcher</code>, F8 overlay, editor build window.</li>
+<li><code>crates/zestengine-engine/src/scene_loader.rs</code>: <code>load_on_worker_checked</code>,
+<code>SceneFlow::switch_to_loaded</code>.</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="WASM.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="modding.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="WASM.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="modding.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-09f2665d.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-609e4cb8.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

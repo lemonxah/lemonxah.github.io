@@ -1,0 +1,1065 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>ECS Guide - ZestEngine</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Documentation for the ZestEngine game engine: the ECS, the engine API and WASM scripting.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="shortcut icon" href="favicon-8e6b73bd.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-e96d0476.css">
+        <link rel="stylesheet" href="css/chrome-d279d366.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="theme/zestengine-9866fa4a.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-49b9e9f7.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-ffb240a5.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">ZestEngine</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/lemonxah/zestengine" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <!-- Copied from ECS.md in the engine repository by sync.py. Edit it there, then run ./sync.py. -->
+<h1 id="zestengine-ecs-guide"><a class="header" href="#zestengine-ecs-guide">ZestEngine ECS Guide</a></h1>
+<p>How game logic is written in ZestEngine: <strong>components</strong> hold data, <strong>systems</strong> hold behaviour, and
+<strong>entities</strong> are ready-made objects you can place in a scene or spawn from code. This guide explains
+the model, then walks through the patterns that real games are made of: moving a player, taking
+damage, spawning things, picking up coins, opening doors, shooting.</p>
+<p>Every example in this guide is compiled and run by
+<a href="https://github.com/lemonxah/zestengine/blob/main/crates/zestengine-core/tests/ecs_guide.rs"><code>crates/zestengine-core/tests/ecs_guide.rs</code></a>, so the code
+you copy works. Companion guides: <a href="ENGINE_API.html">ENGINE_API.md</a> (what you can <em>do</em> from a system:
+move, spawn, raycast, play sounds, …) and <a href="WASM.html">WASM.md</a> (sandboxed scripts for user-generated
+content). The generated API reference is at
+<a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/index.html"><code>api/zestengine_core</code></a>.</p>
+<h2 id="the-big-picture"><a class="header" href="#the-big-picture">The big picture</a></h2>
+<p>ZestEngine's gameplay layer is an entity-component-system built on <a href="https://crates.io/crates/hecs">hecs</a>.
+The vocabulary maps like this:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Concept</th><th>In ZestEngine</th><th>Where</th></tr>
+</thead>
+<tbody>
+<tr><td>Entity</td><td>An <strong>object</strong> in the scene tree: a transform plus whatever components you attach. Saved with a stable <code>ObjectId</code> (UUID).</td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.SceneWorld.html"><code>SceneWorld</code></a></td></tr>
+<tr><td>Component</td><td>A plain Rust struct implementing <code>TypedComponent</code>: serializable data, shown in the inspector.</td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/trait.TypedComponent.html"><code>TypedComponent</code></a></td></tr>
+<tr><td>System</td><td>A function <code>fn(&amp;SystemWorld, &amp;mut SystemContext)</code> that queries components and changes them.</td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/type.SystemFn.html"><code>SystemFn</code></a></td></tr>
+<tr><td>Stage</td><td>The point in the frame a system runs: <code>Start</code>, <code>FixedUpdate</code>, <code>Update</code>, <code>Gameplay</code>, <code>LateUpdate</code>, <code>Events</code>.</td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/enum.Stage.html"><code>Stage</code></a></td></tr>
+<tr><td>Command</td><td>A request that changes the wider world (spawn, destroy, play a sound, load a scene). Queued by systems, applied at the end of the stage.</td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/enum.ComponentCommand.html"><code>ComponentCommand</code></a></td></tr>
+<tr><td>Event</td><td>A value any system can broadcast (<code>ctx.emit</code>) and any system can read next frame (<code>ctx.events</code>).</td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.SystemContext.html"><code>SystemContext</code></a></td></tr>
+<tr><td>Entity template</td><td>A named, ready-made object (mesh shape + starting components) registered by your project.</td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.EntityTemplate.html"><code>EntityTemplate</code></a></td></tr>
+</tbody>
+</table>
+</div>
+<p>A word on naming. In ECS terms every scene object is an <em>entity</em>. In the <strong>New Rust</strong> menu, <strong>Entity</strong>
+means the ready-made kind: a template such as "Enemy" or "Crate" that appears under <em>Create → Entity</em>
+and can be spawned from code. This guide says <strong>object</strong> for the scene-tree thing and <strong>entity</strong> for the
+template.</p>
+<p>Three rules shape everything else:</p>
+<ol>
+<li><strong>Data lives in components, behaviour lives in systems.</strong> A component never has an <code>update</code>
+method that the engine calls. Systems find components by querying for them.</li>
+<li><strong>Systems edit component data directly; they ask for everything else.</strong> Changing a <code>Transform</code> or a
+<code>Health</code> is an ordinary write. Spawning, destroying, sounds, scene loads and physics pushes are
+queued as commands, so the world never changes underneath a running query.</li>
+<li><strong>Systems run only while playing.</strong> The editor's Play mode and a shipped game run the same loop. While
+you author a scene, nothing ticks.</li>
+</ol>
+<h2 id="objects"><a class="header" href="#objects">Objects</a></h2>
+<p>An object is a hecs entity carrying a fixed set of built-in components, plus the ones you attach:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Built-in component</th><th>Meaning</th></tr>
+</thead>
+<tbody>
+<tr><td><code>ObjectId</code></td><td>Stable UUID. Saved in scenes, used by <a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/struct.ObjectRef.html"><code>ObjectRef</code></a> fields and the network. Survives reloads and reordering.</td></tr>
+<tr><td><code>Name</code></td><td>The display name. Cosmetic: not unique.</td></tr>
+<tr><td><code>Transform</code></td><td><strong>Local</strong> translation / rotation / scale (relative to the parent).</td></tr>
+<tr><td><code>Parent</code></td><td>The parent object, if any.</td></tr>
+<tr><td><code>Enabled</code></td><td>The checkbox in the inspector.</td></tr>
+<tr><td><code>Active</code></td><td><code>Enabled</code> <strong>and</strong> every ancestor enabled. Computed; skip objects where it is false.</td></tr>
+<tr><td><code>GlobalTransform</code></td><td>World matrix as of the last hierarchy propagation (a snapshot, refreshed at each stage boundary).</td></tr>
+<tr><td><code>Owner</code></td><td>The object a component instance belongs to. Objects own themselves.</td></tr>
+</tbody>
+</table>
+</div>
+<p>Two details matter in practice.</p>
+<p><strong>Local versus world.</strong> <code>Transform</code> is local. When you need a true world position, ask the host
+(<code>host.world_position()</code>, <code>host.position_of(target)</code>) or <code>world.world_transform(entity)</code>, which folds in
+every parent <em>including writes made earlier in the same stage</em>. <code>GlobalTransform</code> is only a snapshot.</p>
+<p><strong>Duplicate components.</strong> An object can carry two components of the same type. The first lives on the
+object's own hecs entity; later ones live on small auxiliary entities that point back with <code>Owner</code>.
+That is why systems query <code>(&amp;Owner, &amp;T)</code> rather than <code>&amp;T</code>: <code>Owner</code> is how you get from a component
+back to its object (for the transform, the <code>Active</code> flag, the <code>ObjectId</code>).</p>
+<pre><code class="language-rust">for (_, (owner, rotator)) in world.query::&lt;(&amp;Owner, &amp;Rotator)&gt;().iter() {
+    let object: hecs::Entity = owner.0;            // the object this Rotator is on
+    let id = world.object_id(object);              // its saved ObjectId
+}</code></pre>
+<p>You almost never build objects by hand in game code. The editor builds them from scenes, and systems
+spawn them with commands (see <a href="#spawning-and-destroying">Spawning and destroying</a>). Tests use
+<code>SceneWorld</code> directly (see <a href="#testing-systems">Testing systems</a>).</p>
+<h2 id="components"><a class="header" href="#components">Components</a></h2>
+<p>A component is a struct that implements <code>TypedComponent</code>. It must be
+<code>Serialize + Deserialize + Default + Send + Sync + 'static</code>.</p>
+<pre><code class="language-rust">use serde::{Deserialize, Serialize};
+use zestengine_core::TypedComponent;
+
+/// Spins the object around the Y axis.
+#[derive(Serialize, Deserialize)]
+pub struct Rotator {
+    pub degrees_per_second: f32,
+}
+
+impl Default for Rotator {
+    fn default() -&gt; Self { Self { degrees_per_second: 45.0 } }
+}
+
+impl TypedComponent for Rotator {
+    const NAME: &amp;'static str = "Rotator";
+}</code></pre>
+<p>Rules of thumb:</p>
+<ul>
+<li><strong><code>NAME</code> is permanent.</strong> It is the identity used by the Add Component menu, the <code>.scene</code> file and
+event bindings. Renaming it orphans saved data. If you must, keep the old one in <code>ALIASES</code>.</li>
+<li><strong>Saved versus runtime fields.</strong> Everything that is not <code>#[serde(skip)]</code> is saved in the scene and
+shown in the inspector. Mark scratch state (timers, "have I started", cached positions)
+<code>#[serde(skip)]</code>; it keeps its value while playing and resets when a plugin reloads or a scene loads.</li>
+<li><strong>Vectors.</strong> The workspace builds <code>glam</code> without its <code>serde</code> feature, so saved fields use arrays
+(<code>[f32; 3]</code>) and runtime-only fields use <code>Vec3</code>/<code>Quat</code> with <code>#[serde(skip)]</code>.</li>
+<li><strong>References to other objects</strong> are <a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/struct.ObjectRef.html"><code>ObjectRef</code></a>
+fields (<code>ObjectRef::NONE</code> when unset). The inspector renders a drop target; at runtime you resolve it
+with <code>host.get::&lt;T&gt;(self.target)</code>, <code>host.position_of(self.target)</code>, and so on. They return <code>None</code> when
+the target is unset or was deleted, so always handle that case.</li>
+<li><strong>Add <code>#[serde(default)]</code></strong> to a component's struct when you expect to add fields later: old scenes
+keep loading.</li>
+<li><strong>Network role.</strong> <code>const NET_ROLE</code> (default <code>Both</code>) says where a type exists: <code>Client</code> types are
+stripped from a dedicated server, <code>Server</code> types from players.</li>
+<li><strong>Disabled instances.</strong> Switching a component off in the inspector moves its value into a
+<code>DisabledComponent&lt;T&gt;</code> column. Ordinary <code>T</code> queries (and <code>register_system_for::&lt;T&gt;</code>) see only enabled
+instances; the value, including runtime state, is kept for when it is switched back on.</li>
+</ul>
+<p>Register the type so scenes can load it and systems can query it:</p>
+<pre><code class="language-rust">registry.register_ecs::&lt;Rotator&gt;();   // `register::&lt;T&gt;()` is the same call</code></pre>
+<h3 id="actions-and-properties"><a class="header" href="#actions-and-properties">Actions and properties</a></h3>
+<p>Components can expose <strong>actions</strong> (functions) and <strong>properties</strong> (readable values) to the editor's
+event bindings: "when the player enters this trigger, call <em>Door → Open</em>". Declare them as <code>static</code>
+tables and implement three methods. This is also what makes a component callable from a
+<a href="WASM.html">WASM script</a>.</p>
+<pre><code class="language-rust">use zestengine_core::{ActionCtx, ActionDesc, ActionType, ArgValue, ParamDesc, PropertyDesc};
+
+static DOOR_ACTIONS: &amp;[ActionDesc] = &amp;[
+    ActionDesc::new("Open", "Open", &amp;[], true),
+    ActionDesc::new("Close", "Close", &amp;[], true),
+    ActionDesc::new("SetSpeed", "Set Speed", &amp;[ParamDesc::float("speed", 2.0)], true),
+];
+static DOOR_PROPERTIES: &amp;[PropertyDesc] = &amp;[PropertyDesc::new("open", ActionType::Bool)];
+
+impl TypedComponent for Door {
+    const NAME: &amp;'static str = "Door";
+
+    fn actions(&amp;self) -&gt; &amp;'static [ActionDesc] { DOOR_ACTIONS }
+    fn properties(&amp;self) -&gt; &amp;'static [PropertyDesc] { DOOR_PROPERTIES }
+
+    fn read_property(&amp;self, property: &amp;str) -&gt; Option&lt;ArgValue&gt; {
+        (property == "open").then_some(ArgValue::Bool(self.wants_open))
+    }
+
+    fn invoke_action(&amp;mut self, _ctx: &amp;mut ActionCtx&lt;'_&gt;, action: &amp;str, args: &amp;[ArgValue]) -&gt; Result&lt;(), String&gt; {
+        match action {
+            "Open" =&gt; self.wants_open = true,
+            "Close" =&gt; self.wants_open = false,
+            "SetSpeed" =&gt; self.speed = args[0].as_f32().max(0.0),
+            _ =&gt; return Err(zestengine_core::actions::unknown_action(Self::NAME, action)),
+        }
+        Ok(())
+    }
+}</code></pre>
+<ul>
+<li>An action's <strong>name is permanent</strong> for the same reason <code>NAME</code> is; the label is what the editor shows.</li>
+<li>The last argument of <code>ActionDesc::new</code> is <code>ugc_safe</code>. Mark an action safe only if it cannot change
+scenes, hurt other players or leave the world. The editor's content-authoring dropdowns offer only
+safe actions, and sandboxed WASM modules in untrusted content can expose only safe ones; mods may
+additionally call only the actions the game's allow-list names. See
+<a href="WASM.html#ugc_safe"><code>ugc_safe</code> in the WASM Guide</a> for exactly what is enforced where.</li>
+<li>Arguments arrive already coerced to the declared types and as long as the parameter list, so
+<code>args[0]</code> is safe to index.</li>
+<li>An action cannot read <em>itself</em> back through a property reader while it runs, but it can read other
+components, including other instances of its own type. <code>ctx.emit(event)</code> and <code>ctx.commands</code> work
+inside actions.</li>
+</ul>
+<h3 id="editor-inspector-and-gizmo"><a class="header" href="#editor-inspector-and-gizmo">Editor inspector and gizmo</a></h3>
+<p>A component's inspector UI and viewport gizmo live in the editor crate (<code>Inspect</code>, <code>Gizmo</code>) behind the
+plugin's <code>editor</code> cargo feature, so a shipped game never links egui. The <strong>New Rust → Component</strong>
+template generates both (see <a href="#plugins-in-a-project">Plugins in a project</a>).</p>
+<h2 id="systems"><a class="header" href="#systems">Systems</a></h2>
+<p>A system is a plain function. It receives a read-only view of the world (components are borrowed
+through it) and a per-frame context.</p>
+<pre><code class="language-rust">use glam::Quat;
+use zestengine_core::Transform;
+use zestengine_core::ecs::{Owner, Stage, SystemContext, SystemWorld};
+
+fn rotate(world: &amp;SystemWorld&lt;'_&gt;, ctx: &amp;mut SystemContext&lt;'_&gt;) {
+    for (_, (owner, rotator)) in world.query::&lt;(&amp;Owner, &amp;Rotator)&gt;().iter() {
+        if !ctx.is_active(world, owner.0) { continue; }
+        let mut transform = world.get_mut::&lt;Transform&gt;(owner.0).expect("every object has a Transform");
+        let step = Quat::from_rotation_y(rotator.degrees_per_second.to_radians() * ctx.dt);
+        transform.rotation = (step * transform.rotation).normalize();
+    }
+}</code></pre>
+<p>Register it on the <code>ComponentRegistry</code>, together with its component:</p>
+<pre><code class="language-rust">pub fn register(registry: &amp;mut ComponentRegistry) {
+    registry.register_ecs::&lt;Rotator&gt;();
+    registry.register_system_for::&lt;Rotator&gt;("game::rotate", Stage::Update, rotate);
+}</code></pre>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Registration</th><th>Runs the system</th></tr>
+</thead>
+<tbody>
+<tr><td><code>register_system(name, stage, f)</code></td><td>Every time the stage runs.</td></tr>
+<tr><td><code>register_system_for::&lt;T&gt;(name, stage, f)</code></td><td>Only while at least one enabled <code>T</code> exists. Use this by default: unused features cost nothing.</td></tr>
+<tr><td><code>register_system_if(name, stage, f, condition)</code></td><td>Only while <code>condition(world)</code> is true. Used for start-up work (see <a href="#timers-and-state">Timers and state</a>).</td></tr>
+</tbody>
+</table>
+</div>
+<p>Names are unique. Registering an existing name replaces the code and stage in place (that is how a
+hot-reloaded plugin supersedes its old build). The function type is a plain <code>fn</code> pointer, so a system
+cannot capture variables: keep state in components, not in closures. (A non-capturing closure, like the
+<code>|world, ctx| run_ordered(...)</code> forms below, coerces to a <code>fn</code>.)</p>
+<h3 id="what-a-system-can-see"><a class="header" href="#what-a-system-can-see">What a system can see</a></h3>
+<p><code>SystemWorld</code> (the first argument):</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Method</th><th>Does</th></tr>
+</thead>
+<tbody>
+<tr><td><code>query::&lt;Q&gt;()</code></td><td>A hecs query, for example <code>(&amp;Owner, &amp;mut Health)</code>.</td></tr>
+<tr><td><code>get::&lt;T&gt;(entity)</code> / <code>get_mut::&lt;T&gt;(entity)</code></td><td>One component of one entity, shared or exclusive. <code>None</code> if it has none.</td></tr>
+<tr><td><code>entity(id)</code> / <code>object_id(entity)</code></td><td>Convert between a saved <code>ObjectId</code> and the runtime entity.</td></tr>
+<tr><td><code>world_transform(entity)</code></td><td>The current world matrix, including parent writes made earlier in this stage.</td></tr>
+<tr><td><code>current_active(entity)</code></td><td>Inherited activation right now.</td></tr>
+</tbody>
+</table>
+</div>
+<p><code>SystemContext</code> (the second argument):</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Field / method</th><th>Meaning</th></tr>
+</thead>
+<tbody>
+<tr><td><code>ctx.dt</code></td><td>Seconds this frame, <strong>scaled by the time scale</strong> (0 while paused). In <code>FixedUpdate</code> it is the fixed step (1/60 s).</td></tr>
+<tr><td><code>ctx.unscaled_dt</code></td><td>Ignores the time scale. Use it for pause menus and UI.</td></tr>
+<tr><td><code>ctx.time</code></td><td>Scaled seconds since Play started.</td></tr>
+<tr><td><code>ctx.input</code></td><td>The player's <a href="#input">actions</a> this frame.</td></tr>
+<tr><td><code>ctx.commands</code></td><td>The command queue (<code>push(ComponentCommand::…)</code>).</td></tr>
+<tr><td><code>ctx.emit(event)</code> / <code>ctx.events::&lt;E&gt;()</code></td><td>Broadcast and read <a href="#events">events</a>.</td></tr>
+<tr><td><code>ctx.is_active(world, entity)</code></td><td><code>Active</code> and visible in the scene. Check it before touching an object.</td></tr>
+<tr><td><code>ctx.services</code></td><td>Borrowed engine services: <code>physics</code>, <code>nav</code>, <code>net</code>, <code>screen</code>, <code>materials</code>, <code>save</code>, <code>strings</code>, <code>events</code>, <code>scene_events</code>, <code>components</code>, <code>order</code>.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="the-comfortable-way-run_ordered-and-ecsmovehost"><a class="header" href="#the-comfortable-way-run_ordered-and-ecsmovehost">The comfortable way: <code>run_ordered</code> and <code>EcsMoveHost</code></a></h3>
+<p>Most gameplay code wants "for each active instance of my component, in scene order, with helpers for
+this object". That is <code>run_ordered</code>, which gives your closure the component and an
+<a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.EcsMoveHost.html"><code>EcsMoveHost</code></a>:
+the per-object toolbox for moving, reading other objects, spawning, physics queries, sounds and more.
+It also dereferences to the <code>SystemContext</code>, so <code>host.dt</code>, <code>host.input</code> and <code>host.emit(..)</code> all work.</p>
+<pre><code class="language-rust">use glam::Vec3;
+use zestengine_core::MoveHost;                       // translation(), set_translation(), world_position(), …
+use zestengine_core::ecs::{EcsMoveHost, run_ordered};
+
+#[derive(Serialize, Deserialize)]
+pub struct PlayerMover {
+    pub speed: f32,
+}
+
+impl PlayerMover {
+    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
+        let direction = host.input.axis2("Move"); // x = right, y = forward
+        let step = Vec3::new(direction.x, 0.0, -direction.y) * self.speed * host.dt;
+        let position = host.translation() + step;
+        host.set_translation(position);
+    }
+}
+
+registry.register_system_for::&lt;PlayerMover&gt;("game::player_mover", Stage::Update, |world, ctx| {
+    run_ordered(world, ctx, PlayerMover::update)
+});</code></pre>
+<p><code>run_ordered</code> does three things a hand-written loop does not:</p>
+<ul>
+<li>skips inactive objects (disabled, or under a disabled parent);</li>
+<li>iterates in <strong>scene order</strong>, so behaviour is deterministic. That matters for networking, prediction
+replay and anything where two objects interact within one frame. A bare <code>world.query</code> iterates in
+archetype order, which is an implementation detail;</li>
+<li>hands you an <code>EcsMoveHost</code> bound to the object.</li>
+</ul>
+<p>Use a bare query when order is irrelevant and you have thousands of instances (it avoids collecting and
+sorting); use <code>run_ordered</code> otherwise. The full method list of <code>EcsMoveHost</code> is in
+<a href="ENGINE_API.html">ENGINE_API.md</a>.</p>
+<h3 id="borrowing-rules"><a class="header" href="#borrowing-rules">Borrowing rules</a></h3>
+<p>hecs checks borrows at run time, per component column, and the engine adds a lock for structural
+changes. The rules that matter:</p>
+<ul>
+<li><strong>Two borrows of the same component type conflict if either is mutable.</strong> <code>world.get_mut::&lt;Transform&gt;(e)</code>
+inside a query that already borrows <code>Transform</code> panics with <code>… already borrowed</code>. Nested queries are
+fine when they borrow different components (the <em>poison zone</em> example below).</li>
+<li><strong>No structural changes inside a system.</strong> You cannot insert, remove or despawn components or
+objects through the world while a system runs. The world is locked, and the call panics with
+<code>structural ECS access while component views are borrowed</code>. Spawn and destroy with commands.</li>
+<li><strong>Use the <code>SystemWorld</code> you were given.</strong> Editor-style component views
+(<code>SceneWorld::get</code>, <code>ComponentSet::get_typed</code>) panic inside a system with
+<code>component-view access during native ECS execution</code>.</li>
+<li><strong>A panic in a system is not swallowed.</strong> Locks are released and component values stay intact, but the
+panic propagates, so treat <code>expect</code> like any other assertion.</li>
+</ul>
+<p>When two of your own systems need the same data, run them in different stages or let one emit an event
+for the other (see <a href="#events">Events</a>).</p>
+<h2 id="stages"><a class="header" href="#stages">Stages</a></h2>
+<p>A frame runs the stages in this order. After each stage the engine applies the commands it queued.</p>
+<pre><code class="language-text">tick(dt)
+ ├─ Start          repeats (up to 8×) while start-up work keeps spawning objects
+ ├─ animation markers ──▶ Events stage (SceneEvent::Animation)
+ ├─ FixedUpdate  ┐ 0 to 8 times per frame at a fixed 60 Hz, dt = 1/60
+ │  physics step ┘
+ ├─ contacts ───────────▶ Events stage (SceneEvent::Contact, 3D then 2D)
+ ├─ Update
+ ├─ Gameplay
+ ├─ navigation agents move, animators evaluate
+ └─ LateUpdate
+</code></pre>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Stage</th><th>Use it for</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Start</code></td><td>Initialising new instances: capture a rest position, cache a reference, spawn initial children. Not called "once" by the engine: guard with a flag (see <a href="#timers-and-state">Timers and state</a>).</td></tr>
+<tr><td><code>FixedUpdate</code></td><td>Continuous forces and anything that must match the physics rate. Runs before each physics step with <code>dt = 1/60</code>.</td></tr>
+<tr><td><code>Update</code></td><td>Movement and general per-frame logic: controllers, AI steering, input handling.</td></tr>
+<tr><td><code>Gameplay</code></td><td>Logic that must see movement already resolved: weapons, damage, pickups, health. Runs after <code>Update</code>'s movement commands (a character move, a teleport) have been applied.</td></tr>
+<tr><td><code>LateUpdate</code></td><td>Things that read the final pose of the frame: cameras following a target, HUD bindings. Runs after animation and navigation.</td></tr>
+<tr><td><code>Events</code></td><td>Reacting to contacts and animation markers through <code>ctx.services.scene_events</code>. Runs when such events exist.</td></tr>
+</tbody>
+</table>
+</div>
+<p><code>ctx.dt</code> is <code>unscaled_dt × time_scale</code>, and the engine clamps a single frame to 0.25 s so a hitch
+cannot teleport everything.</p>
+<h2 id="commands"><a class="header" href="#commands">Commands</a></h2>
+<p>Anything that reaches outside component data is a <a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/enum.ComponentCommand.html"><code>ComponentCommand</code></a>
+pushed onto <code>ctx.commands</code>. The engine applies them, in order, right after the stage that queued them:</p>
+<pre><code class="language-rust">ctx.commands.push(ComponentCommand::Destroy(object_id));
+ctx.commands.push(ComponentCommand::PlaySound { clip: "audio/pop.ogg".into(), position: None, volume: 1.0 });</code></pre>
+<p><code>EcsMoveHost</code> wraps the common ones in readable methods (<code>host.destroy(target)</code>,
+<code>host.play_sound_at(..)</code>, <code>host.add_impulse(..)</code>), which is usually what you want. Two properties to
+remember:</p>
+<ul>
+<li><strong>Queued means "after this stage".</strong> <code>host.destroy_self()</code> does not remove the object while your system
+is still iterating; it disappears when the stage ends. Systems later in the <em>same</em> stage still see it.</li>
+<li><strong>Bad targets are ignored.</strong> A command that names an object that no longer exists does nothing.</li>
+</ul>
+<p>Direct writes to component data (<code>host.edit::&lt;T&gt;(target, |t| ..)</code>, <code>host.set_translation(..)</code>) are
+immediate and visible to systems that run later in the same stage. The full list of commands and which
+host methods queue them is in <a href="ENGINE_API.html">ENGINE_API.md</a>.</p>
+<h2 id="events"><a class="header" href="#events">Events</a></h2>
+<p>There are three ways for systems to react to something that happened.</p>
+<h3 id="broadcast-events"><a class="header" href="#broadcast-events">Broadcast events</a></h3>
+<p>Any <code>'static</code> type is an event. A system emits one; <strong>every</strong> system can read it <strong>next frame</strong>. The
+sender and the receiver never touch each other's data, which is the whole point.</p>
+<pre><code class="language-rust">/// Event: something hit `target` for `amount`.
+pub struct Hit { pub target: ObjectId, pub amount: f32 }
+/// Event: the object ran out of hitpoints.
+pub struct Died { pub object: ObjectId }
+
+#[derive(Serialize, Deserialize)]
+pub struct Hitpoints { pub current: f32, pub max: f32 }   // Default: 100 / 100
+
+fn apply_hits(world: &amp;SystemWorld&lt;'_&gt;, ctx: &amp;mut SystemContext&lt;'_&gt;) {
+    // Events emitted during the previous frame are readable now.
+    let hits: Vec&lt;&amp;Hit&gt; = ctx.events::&lt;Hit&gt;().collect();
+    if hits.is_empty() { return; }
+    for (_, (owner, hp)) in world.query::&lt;(&amp;Owner, &amp;mut Hitpoints)&gt;().iter() {
+        let Some(me) = world.object_id(owner.0) else { continue };
+        let before = hp.current;
+        for hit in hits.iter().filter(|hit| hit.target == me) {
+            hp.current = (hp.current - hit.amount).max(0.0);
+        }
+        if before &gt; 0.0 &amp;&amp; hp.current == 0.0 {
+            ctx.emit(Died { object: me }); // readable next frame
+        }
+    }
+}
+
+fn remove_the_dead(_: &amp;SystemWorld&lt;'_&gt;, ctx: &amp;mut SystemContext&lt;'_&gt;) {
+    for died in ctx.events::&lt;Died&gt;() {
+        ctx.commands.push(ComponentCommand::Destroy(died.object));
+    }
+}
+
+registry.register_system_for::&lt;Hitpoints&gt;("game::apply_hits", Stage::Gameplay, apply_hits);
+registry.register_system("game::remove_the_dead", Stage::Gameplay, remove_the_dead);</code></pre>
+<p>An event emitted in frame <em>N</em> is readable throughout frame <em>N + 1</em>; an event you emit is <strong>not</strong> visible
+to you in the same frame. The engine's own systems use the same bus: weapons emit <code>DamageEvent</code>, health
+emits <code>DeathEvent</code>, target dummies emit <code>ScoreEvent</code>, animators emit <code>AnimatorStateChanged</code> and
+<code>AnimationEvent</code>, and the HUD reads them. Subscribing to those from your own systems is just
+<code>ctx.events::&lt;DamageEvent&gt;()</code>.</p>
+<h3 id="scene-events-contacts-and-animation-markers"><a class="header" href="#scene-events-contacts-and-animation-markers">Scene events: contacts and animation markers</a></h3>
+<p>Collisions, trigger overlaps and animation markers arrive <strong>within the frame</strong> in the <code>Events</code> stage,
+as <code>ctx.services.scene_events</code>:</p>
+<pre><code class="language-rust">use zestengine_core::ecs::{ContactPhase, SceneEvent};
+
+#[derive(Default, Serialize, Deserialize)]
+pub struct Collector {}                       // marker: can pick coins up
+
+#[derive(Serialize, Deserialize)]
+pub struct Coin { pub value: u32 }            // Default: value 1
+
+/// Event: `by` picked up something worth `value`.
+pub struct Collected { pub by: ObjectId, pub value: u32 }
+
+registry.register_system_for::&lt;Coin&gt;("game::coin_pickup", Stage::Events, |world, ctx| {
+    let contacts = ctx.services.scene_events;
+    run_ordered(world, ctx, |coin: &amp;mut Coin, host| {
+        let me = host.self_id();
+        for contact in contacts {
+            if let SceneEvent::Contact { object, other, trigger: true, phase: ContactPhase::Enter, .. } = contact
+                &amp;&amp; *object == me
+                &amp;&amp; host.get::&lt;Collector&gt;(*other).is_some()
+            {
+                host.emit(Collected { by: *other, value: coin.value });
+                host.destroy_self();
+            }
+        }
+    })
+});</code></pre>
+<p>Both objects of a touching pair receive a <code>Contact</code> event (<code>object</code> is the receiver, <code>other</code> the one it
+touched), with <code>phase</code> <code>Enter</code>, <code>Stay</code> (2D) or <code>Exit</code>, <code>trigger</code> telling a trigger overlap from a
+solid collision, and <code>two_dimensional</code> for 2D physics. The coin needs a collider with <em>Is Trigger</em>
+on; the player needs a collider and a rigid body or character.</p>
+<h3 id="action-bindings"><a class="header" href="#action-bindings">Action bindings</a></h3>
+<p>The third way is data-driven: the inspector's <em>Trigger Events</em>, <em>Interactable</em>, <em>UI Button</em> and
+<em>Animation Event Bindings</em> components store lists of "call this action on that component" and the
+engine resolves and runs them. You get that for free for any component that declares
+<a href="#actions-and-properties">actions</a>. Gameplay that fires a binding from code uses
+<code>queue_actions(&amp;bindings, &amp;FireSource { … }, ctx.commands)</code>.</p>
+<h2 id="spawning-and-destroying"><a class="header" href="#spawning-and-destroying">Spawning and destroying</a></h2>
+<p>Spawning is a command; the call returns the new <code>ObjectId</code> immediately so you can wire it up, but the
+object exists from the next stage on.</p>
+<pre><code class="language-rust">let id = host.spawn_prefab("prefabs/enemy.prefab", position, rotation); // a .prefab asset
+let id = host.instantiate(self.bullet_template, position, rotation);    // clone a scene object
+let id = host.spawn_entity("Crate", position, rotation);                // a registered entity
+host.net_spawn("prefabs/bullet.prefab", position, rotation);            // on every peer
+host.destroy(target);                                                    // object and children
+host.destroy_self();
+host.set_active(door, false);                                            // disable without deleting</code></pre>
+<p>A timed self-destruct is the smallest useful spawn companion:</p>
+<pre><code class="language-rust">#[derive(Serialize, Deserialize)]
+pub struct Lifetime { pub seconds_left: f32 }   // Default: 3.0
+
+impl Lifetime {
+    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
+        self.seconds_left -= host.dt;
+        if self.seconds_left &lt;= 0.0 {
+            host.destroy_self();
+        }
+    }
+}</code></pre>
+<p>Objects spawned during a frame run their <code>Start</code> systems before the next <code>Update</code>, so a freshly
+spawned object is initialised before it acts. See <a href="#entities">Entities</a> for a spawner that drops
+crates.</p>
+<h2 id="entities"><a class="header" href="#entities">Entities</a></h2>
+<p>An <strong>entity</strong> is a named, ready-made object: a mesh shape plus the components it starts with. Register
+it once; it then appears under <strong>Create → Entity</strong> in the editor and any system can spawn it by name.</p>
+<pre><code class="language-rust">use zestengine_core::ecs::{EntityShape, EntityTemplate};
+
+/// The entity: a cube that deletes itself after ten seconds.
+fn crate_entity() -&gt; EntityTemplate {
+    EntityTemplate::new(EntityShape::Cube).with(Lifetime { seconds_left: 10.0 })
+}
+
+registry.register_entity("Crate", crate_entity);</code></pre>
+<ul>
+<li><code>EntityShape</code> is <code>Empty</code>, <code>Cube</code>, <code>Sphere</code>, <code>Capsule</code> or <code>Plane</code>. <code>Empty</code> makes a transform that only
+carries components (a spawner, a manager); the others also get a <code>MeshRenderer</code> with the default
+material.</li>
+<li><code>.with(component)</code> adds a component. Add as many as you like, in inspector order. The builder function
+runs for <strong>every</strong> new instance, so each object gets its own component values.</li>
+<li>The name is the identity: <code>spawn_entity("Crate", ..)</code> and the menu both use it. Registering an
+existing name replaces the builder, and a plugin reload drops entities the plugin no longer exports.</li>
+<li>An entity made in the editor is an ordinary scene object once placed: it saves as its components
+and mesh, and you can edit it freely.</li>
+<li>On a dedicated server (no renderer) an entity still spawns, with its components and without a GPU
+mesh.</li>
+</ul>
+<p>A spawner is just a component and a system:</p>
+<pre><code class="language-rust">#[derive(Serialize, Deserialize)]
+pub struct CrateSpawner {
+    pub every: f32,
+    #[serde(skip)]
+    pub timer: f32,
+}
+
+impl CrateSpawner {
+    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
+        self.timer -= host.dt;
+        if self.timer &lt;= 0.0 {
+            self.timer = self.every;
+            let above = host.world_position() + Vec3::Y;
+            host.spawn_entity("Crate", above, Quat::IDENTITY);
+        }
+    }
+}</code></pre>
+<h2 id="talking-to-other-objects"><a class="header" href="#talking-to-other-objects">Talking to other objects</a></h2>
+<p>Systems often need another object's data: a follower needs its target's position, a turret needs its
+target's health. Reference the other object with an <code>ObjectRef</code> field and ask the host.</p>
+<pre><code class="language-rust">#[derive(Serialize, Deserialize)]
+pub struct Follower {
+    pub target: ObjectRef,
+    pub speed: f32,
+}
+
+impl Follower {
+    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
+        let Some(goal) = host.position_of(self.target) else { return }; // world position
+        let here = host.world_position();
+        let to_goal = goal - here;
+        let step = self.speed * host.dt;
+        if to_goal.length() &lt;= step {
+            host.set_world_position(goal);
+        } else {
+            host.set_world_position(here + to_goal.normalize() * step);
+        }
+    }
+}</code></pre>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Want to …</th><th>Call</th><th>Timing</th></tr>
+</thead>
+<tbody>
+<tr><td>Read another object's component</td><td><code>host.get::&lt;T&gt;(target)</code></td><td>immediate</td></tr>
+<tr><td>Change it in place</td><td><code>host.edit::&lt;T&gt;(target, |t| …)</code></td><td>immediate (visible to later systems this stage)</td></tr>
+<tr><td>Read its world position</td><td><code>host.position_of(target)</code></td><td>immediate</td></tr>
+<tr><td>Find an object by name</td><td><code>host.find_object("Player")</code></td><td>immediate (names are cosmetic: prefer <code>ObjectRef</code>)</td></tr>
+<tr><td>List objects carrying a component</td><td><code>host.objects_with::&lt;T&gt;()</code></td><td>immediate, in scene order</td></tr>
+<tr><td>Ask the world to do something to it</td><td><code>host.destroy(target)</code>, <code>host.set_active(..)</code>, <code>host.add_impulse(..)</code></td><td>after the stage</td></tr>
+</tbody>
+</table>
+</div>
+<p><code>get</code> and <code>edit</code> return <code>None</code> / <code>false</code> for an unset, deleted or hidden target; handle it.</p>
+<p>When one component should act on <strong>every</strong> object of another kind, query both. This swamp hurts
+anything with <code>Hitpoints</code> inside its radius; the nested query is legal because the two loops borrow
+different components:</p>
+<pre><code class="language-rust">fn poison(world: &amp;SystemWorld&lt;'_&gt;, ctx: &amp;mut SystemContext&lt;'_&gt;) {
+    for (_, (owner, zone)) in world.query::&lt;(&amp;Owner, &amp;PoisonZone)&gt;().iter() {
+        if !ctx.is_active(world, owner.0) { continue; }
+        let Some(center) = world.world_transform(owner.0).map(|m| m.w_axis.truncate()) else { continue };
+        for (_, (victim, hp)) in world.query::&lt;(&amp;Owner, &amp;mut Hitpoints)&gt;().iter() {
+            let Some(at) = world.world_transform(victim.0).map(|m| m.w_axis.truncate()) else { continue };
+            if at.distance(center) &lt;= zone.radius {
+                hp.current = (hp.current - zone.damage_per_second * ctx.dt).max(0.0);
+            }
+        }
+    }
+}</code></pre>
+<h2 id="input"><a class="header" href="#input">Input</a></h2>
+<p>Input is a snapshot of <strong>actions</strong> (named, rebindable), not raw keys: <code>ctx.input</code> is an <code>InputState</code>.</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Call</th><th>Meaning</th></tr>
+</thead>
+<tbody>
+<tr><td><code>input.down("Fire")</code></td><td>Held this frame.</td></tr>
+<tr><td><code>input.pressed("Fire")</code></td><td>Went down this frame (edge).</td></tr>
+<tr><td><code>input.released("Fire")</code></td><td>Went up this frame (edge).</td></tr>
+<tr><td><code>input.axis("Throttle")</code></td><td>1D value, −1 to 1 (0/1 for a button).</td></tr>
+<tr><td><code>input.axis2("Move")</code></td><td>2D value. <code>x</code> is right, <code>y</code> is forward.</td></tr>
+</tbody>
+</table>
+</div>
+<p>The default keyboard-and-mouse scheme defines <code>Move</code> (WASD), <code>Look</code> (mouse), <code>Jump</code>, <code>Sprint</code>, <code>Crouch</code>,
+<code>Fire</code>, <code>Interact</code>, <code>Grab</code> and <code>Voice</code>; the gamepad scheme uses the same names on its sticks and
+buttons, so code written against action names works on every device. Players can rebind them, and a
+game can define its own actions in its control scheme. An action that does not exist reads as "not
+pressed". When the player is typing into a UI text field, <code>host.ui_text_editing()</code> is true: skip
+gameplay input then.</p>
+<p>For networked objects another peer may be driving, check <code>host.driven_remotely()</code> before applying
+local input, and <code>host.has_authority(id)</code> before changing shared state.</p>
+<h2 id="physics-and-contacts"><a class="header" href="#physics-and-contacts">Physics and contacts</a></h2>
+<p>Physics queries are immediate; pushes are commands. A ray gun:</p>
+<pre><code class="language-rust">#[derive(Serialize, Deserialize)]
+pub struct Laser { pub damage: f32, pub range: f32 }   // Default: 25 / 100
+
+impl Laser {
+    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
+        if !host.input.pressed("Fire") { return; }
+        let aim = host.self_transform(); // world position and orientation
+        let Some(hit) = host.raycast(aim.translation, aim.forward(), self.range) else { return };
+        let damage = self.damage;
+        host.edit::&lt;Hitpoints&gt;(hit.object, move |hp| hp.current = (hp.current - damage).max(0.0));
+        host.add_impulse(hit.object, aim.forward() * 5.0);
+        host.play_sound_at("audio/zap.ogg", hit.point, 1.0);
+    }
+}</code></pre>
+<p><code>host.raycast</code> ignores triggers and the caller's own colliders; use <code>raycast_filtered</code> with a
+<code>RayFilter</code> for layer masks. Rigid bodies move through commands (<code>add_force</code>, <code>add_impulse</code>,
+<code>set_velocity</code>); characters through <code>move_character</code>. Contacts arrive as <a href="#scene-events-contacts-and-animation-markers">scene events</a>.
+The ENGINE_API guide covers <a href="ENGINE_API.html#physics">physics</a> in full.</p>
+<h2 id="timers-and-state"><a class="header" href="#timers-and-state">Timers and state</a></h2>
+<p>Three patterns cover most state.</p>
+<p><strong>A cooldown</strong> is a <code>#[serde(skip)]</code> float you count down, as in <code>CrateSpawner::timer</code> above.</p>
+<p><strong>A state machine</strong> is an enum field. Derive <code>Serialize, Deserialize</code> on the enum and give the
+component a <code>Default</code>; match on it in the system and change it as conditions are met.</p>
+<p><strong>Start-up work</strong> uses the <code>Start</code> stage. The engine does not call "start once per instance"; the
+stage simply runs before <code>Update</code> each frame, and your component remembers whether it has initialised.
+Register the system with <code>register_system_if</code> so it costs nothing once every instance has started:</p>
+<pre><code class="language-rust">#[derive(Serialize, Deserialize)]
+pub struct Door {
+    pub lift: f32,
+    pub speed: f32,
+    #[serde(skip)]
+    pub wants_open: bool,
+    #[serde(skip)]
+    pub closed_y: Option&lt;f32&gt;,        // None until started
+}
+
+impl Door {
+    /// Runs once for each new instance (Stage::Start): remember where "closed" is.
+    fn start(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
+        if self.closed_y.is_none() {
+            self.closed_y = Some(host.translation().y);
+        }
+    }
+
+    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
+        let Some(closed) = self.closed_y else { return };
+        let goal = if self.wants_open { closed + self.lift } else { closed };
+        let mut position = host.translation();
+        let step = self.speed * host.dt;
+        position.y += (goal - position.y).clamp(-step, step);
+        host.set_translation(position);
+    }
+}
+
+registry.register_system_if(
+    "game::door_start",
+    Stage::Start,
+    |world, ctx| run_ordered(world, ctx, Door::start),
+    |world| world.query::&lt;&amp;Door&gt;().iter().any(|(_, door)| door.closed_y.is_none()),
+);
+registry.register_system_for::&lt;Door&gt;("game::door", Stage::Update, |world, ctx| {
+    run_ordered(world, ctx, Door::update)
+});</code></pre>
+<p>The <code>Door</code> of the <a href="#actions-and-properties">actions</a> example is this same component: <em>Open</em> and
+<em>Close</em> set <code>wants_open</code>, and any trigger, button or WASM script can bind to them.</p>
+<h3 id="showing-state-in-the-ui"><a class="header" href="#showing-state-in-the-ui">Showing state in the UI</a></h3>
+<p>UI elements are components too, so a system updates them like any other data:</p>
+<pre><code class="language-rust">/// Shows the score in this object's `UiText`.
+#[derive(Default, Serialize, Deserialize)]
+pub struct ScoreBoard {
+    #[serde(skip)]
+    pub score: u32,
+}
+
+impl ScoreBoard {
+    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
+        for collected in host.events::&lt;Collected&gt;() {
+            self.score += collected.value;
+        }
+        let id = host.self_id();
+        let text = format!("Score {}", self.score);
+        host.edit::&lt;UiText&gt;(id, move |ui| ui.text = text);
+    }
+}
+
+registry.register_system_for::&lt;ScoreBoard&gt;("game::score_board", Stage::LateUpdate, |world, ctx| {
+    run_ordered(world, ctx, ScoreBoard::update)
+});</code></pre>
+<p><code>LateUpdate</code> is the right stage for anything that mirrors the frame's final state onto the screen.</p>
+<h2 id="plugins-in-a-project"><a class="header" href="#plugins-in-a-project">Plugins in a project</a></h2>
+<p>Your game's components, systems and entities live in a Rust crate, <code>plugins/components</code>, that the
+editor builds and hot-reloads and a shipped game links. <strong>Files panel → Create → New Rust</strong> adds to it:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Menu item</th><th>Writes</th><th>Registers with</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>New Rust → Component</strong></td><td><code>src/components/new_component.rs</code>: data struct, <code>TypedComponent</code> impl, inspector and gizmo stubs</td><td><code>registry.register_ecs::&lt;T&gt;()</code> and the editor traits</td></tr>
+<tr><td><strong>New Rust → System</strong></td><td><code>src/systems/new_system.rs</code>: a system function with a query skeleton</td><td><code>registry.register_system(..)</code></td></tr>
+<tr><td><strong>New Rust → Entity</strong></td><td><code>src/entities/new_entity.rs</code>: an <code>EntityTemplate</code> builder</td><td><code>registry.register_entity(..)</code></td></tr>
+</tbody>
+</table>
+</div>
+<p>Each press creates the next free name (<code>new_component</code>, <code>new_component_1</code>, …), opens the file, and wires
+it into <code>lib.rs</code>. A fresh plugin crate looks like this (the <code>orbit</code> and <code>orbiter</code> files are a working
+starter that shows the three kinds side by side):</p>
+<pre><code class="language-text">plugins/components/
+├── Cargo.toml
+└── src/
+    ├── lib.rs                 ← consolidates everything into the game
+    ├── components/orbit.rs    ← data: the Orbit component (+ inspector)
+    ├── systems/orbit.rs       ← behaviour: moves every Orbit
+    └── entities/orbiter.rs    ← a ready-made sphere that carries an Orbit
+</code></pre>
+<p><code>lib.rs</code> is the one place that hands every component, system and entity to the engine:</p>
+<pre><code class="language-rust">mod components {
+    pub mod orbit;
+    // zestengine: new component modules here
+}
+mod systems {
+    pub mod orbit;
+    // zestengine: new system modules here
+}
+mod entities {
+    pub mod orbiter;
+    // zestengine: new entity modules here
+}
+
+zestengine_core::export_plugin_abi!();
+
+#[unsafe(no_mangle)]
+pub fn zestengine_register(registry: &amp;mut ComponentRegistry) {
+    // Components: data attached to objects.
+    components::orbit::register(registry);
+    // zestengine: new components register here
+
+    // Systems: behaviour that runs every frame over component data.
+    systems::orbit::register(registry);
+    // zestengine: new systems register here
+
+    // Entities: ready-made objects (Create &gt; Entity, `spawn_entity`).
+    entities::orbiter::register(registry);
+    // zestengine: new entities register here
+}</code></pre>
+<p>The <code>// zestengine:</code> comments are anchors the menu inserts above; leave them in place. Each module
+exports its own <code>register</code> function, so <code>lib.rs</code> never names the types inside: rename a struct freely,
+and when you rename or move a <em>file</em> just update its two lines in <code>lib.rs</code>. A plugin crate made before
+this layout keeps working: the menu falls back to flat modules next to <code>lib.rs</code> and registers them at
+the top of <code>zestengine_register</code>.</p>
+<p>How a plugin gets into the game:</p>
+<ul>
+<li><strong>In the editor</strong>, <strong>Tools → Build &amp; Reload Components</strong> compiles the crate with its <code>editor</code> feature
+and registers the new build over the old one. Component values are re-created from their serialized
+state, so <code>#[serde(skip)]</code> runtime fields reset on reload.</li>
+<li><strong>In a shipped game</strong>, <code>src/main.rs</code> calls <code>zestengine_project_components::zestengine_register(registry)</code>
+from <code>run_game</code>, linking the plugin statically (the editor feature, <code>egui</code> and the editor crate are
+not linked).</li>
+<li><strong>On a dedicated server</strong>, the built <code>cdylib</code> is listed in <code>server.ron</code> and loaded at start-up.</li>
+<li><strong>ABI stamp.</strong> <code>export_plugin_abi!()</code> lets a host refuse a plugin built with a different rustc, engine
+version or dependency features instead of crashing. Rebuild plugins and the engine together.</li>
+</ul>
+<h2 id="testing-systems"><a class="header" href="#testing-systems">Testing systems</a></h2>
+<p>Systems are plain functions over a world, so they test without a window, a GPU or the engine loop. Build
+a <code>SceneWorld</code>, register your component and systems on a <code>ComponentRegistry</code>, run a stage, and look at
+the data and the queued commands. This is the harness the examples in this guide use:</p>
+<pre><code class="language-rust">use zestengine_core::ecs::{SceneEvent, SceneWorld, Stage, SystemContext};
+use zestengine_core::{AnyBox, ComponentCommand, ComponentRegistry, InputState};
+
+#[derive(Default)]
+struct Frame {
+    dt: f32,
+    input: InputState,
+    events: Vec&lt;AnyBox&gt;,
+    scene_events: Vec&lt;SceneEvent&gt;,
+}
+
+/// Run every system registered for `stage` once and return the commands they queued.
+fn run(registry: &amp;ComponentRegistry, scene: &amp;SceneWorld, stage: Stage, frame: &amp;Frame) -&gt; Vec&lt;ComponentCommand&gt; {
+    let mut commands = Vec::new();
+    let mut ctx = SystemContext::new(&amp;frame.input, &amp;mut commands);
+    ctx.dt = frame.dt;
+    ctx.services.events = &amp;frame.events;
+    ctx.services.scene_events = &amp;frame.scene_events;
+    registry.run_systems(stage, scene, &amp;mut ctx);
+    commands
+}
+
+#[test]
+fn spins_active_objects_only() {
+    let mut registry = ComponentRegistry::default();
+    register(&amp;mut registry);
+    let mut scene = SceneWorld::new();
+    let spinning = scene.spawn("Spinning");
+    scene.insert(spinning, Rotator { degrees_per_second: 90.0 }).unwrap();
+    run(&amp;registry, &amp;scene, Stage::Update, &amp;Frame { dt: 1.0, ..Default::default() });
+    let expected = Quat::from_rotation_y(90f32.to_radians());
+    assert!(scene.get::&lt;Transform&gt;(spinning).unwrap().rotation.abs_diff_eq(expected, 1e-5));
+}</code></pre>
+<p>Useful pieces:</p>
+<ul>
+<li><code>SceneWorld::spawn</code>, <code>insert</code>, <code>get</code>, <code>get_mut</code>, <code>remove</code>, <code>set_parent</code>, <code>propagate</code> build and inspect
+scenes. After changing a parent or <code>Enabled</code> flag, call <code>propagate()</code> so <code>Active</code> and
+<code>GlobalTransform</code> update, as the engine does at stage boundaries.</li>
+<li><strong>Events</strong>: set <code>ctx.services.events = &amp;[AnyBox(Box::new(Hit { … }))]</code> to simulate last frame's
+broadcasts, and <code>ctx.services.scene_events</code> for contacts. Read what your system emitted from
+<code>commands</code> (<code>ComponentCommand::Emit</code>).</li>
+<li><strong>Services</strong>: set <code>ctx.services.physics = Some(&amp;mock)</code> with your own <code>PhysicsQuery</code> to fake raycasts
+(the <code>Laser</code> test does this), <code>nav</code>, <code>screen</code> and <code>net</code> likewise.</li>
+<li><strong>Actions</strong>: call <code>component.invoke_action(&amp;mut ActionCtx { … }, "Open", &amp;[])</code> directly.</li>
+<li>Multi-frame behaviour: call <code>run</code> in a loop and assert after each step; commands queued by one frame
+are not applied by the harness, so assert on them instead.</li>
+</ul>
+<h2 id="common-mistakes"><a class="header" href="#common-mistakes">Common mistakes</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symptom</th><th>Cause and fix</th></tr>
+</thead>
+<tbody>
+<tr><td>Panic: <code>… already borrowed</code></td><td>Two borrows of one component type, one mutable (often <code>get_mut::&lt;Transform&gt;</code> inside a query that has <code>&amp;mut Transform</code>). Query different components, or collect first.</td></tr>
+<tr><td>Panic: <code>structural ECS access while component views are borrowed</code></td><td>Inserting, removing or despawning inside a system. Queue a command.</td></tr>
+<tr><td>System never runs</td><td>Not registered (add it to <code>zestengine_register</code>), registered with <code>register_system_for::&lt;T&gt;</code> while no enabled <code>T</code> exists, or the object is inactive (disabled or under a disabled parent).</td></tr>
+<tr><td>Component missing from the Add menu or lost from scenes</td><td><code>register_ecs::&lt;T&gt;()</code> not called, or <code>NAME</code> changed.</td></tr>
+<tr><td>Object is in the wrong place under a parent</td><td>A world position written to the local <code>Transform</code>. Use <code>set_world_position</code> / <code>set_world_position_of</code>.</td></tr>
+<tr><td>Spawned object not found next line</td><td>Spawns are commands; it exists from the next stage. Keep the returned <code>ObjectId</code>.</td></tr>
+<tr><td>Event never arrives</td><td>Events emitted in frame <em>N</em> are readable in <em>N + 1</em>, never the same frame. Check the type is exactly the one emitted.</td></tr>
+<tr><td>Behaviour differs per frame rate</td><td>Multiplying by a constant instead of <code>ctx.dt</code>.</td></tr>
+<tr><td>Objects react in a different order each run</td><td>Iterating with a bare <code>query</code> where order matters. Use <code>run_ordered</code>.</td></tr>
+<tr><td>Runtime state lost after a reload</td><td>It is <code>#[serde(skip)]</code> and plugins re-create components on reload. Expected.</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="reference"><a class="header" href="#reference">Reference</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Item</th><th>API page</th></tr>
+</thead>
+<tbody>
+<tr><td><code>TypedComponent</code></td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/trait.TypedComponent.html">trait.TypedComponent</a></td></tr>
+<tr><td><code>ComponentRegistry</code> (<code>register_ecs</code>, <code>register_system*</code>, <code>register_entity</code>)</td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/struct.ComponentRegistry.html">struct.ComponentRegistry</a></td></tr>
+<tr><td><code>SystemWorld</code>, <code>SystemContext</code>, <code>SystemServices</code></td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.SystemWorld.html">ecs/struct.SystemWorld</a>, <a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.SystemContext.html">ecs/struct.SystemContext</a>, <a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.SystemServices.html">ecs/struct.SystemServices</a></td></tr>
+<tr><td><code>Stage</code>, <code>SceneEvent</code>, <code>ContactPhase</code></td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/enum.Stage.html">ecs/enum.Stage</a>, <a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/enum.SceneEvent.html">ecs/enum.SceneEvent</a></td></tr>
+<tr><td><code>run_ordered</code>, <code>EcsMoveHost</code></td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/fn.run_ordered.html">ecs/fn.run_ordered</a>, <a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.EcsMoveHost.html">ecs/struct.EcsMoveHost</a></td></tr>
+<tr><td><code>SceneWorld</code></td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.SceneWorld.html">ecs/struct.SceneWorld</a></td></tr>
+<tr><td><code>EntityTemplate</code>, <code>EntityShape</code></td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.EntityTemplate.html">ecs/struct.EntityTemplate</a>, <a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/enum.EntityShape.html">ecs/enum.EntityShape</a></td></tr>
+<tr><td><code>ComponentCommand</code></td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/enum.ComponentCommand.html">enum.ComponentCommand</a></td></tr>
+<tr><td><code>ObjectId</code>, <code>ObjectRef</code>, <code>Transform</code></td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/struct.ObjectId.html">struct.ObjectId</a>, <a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/struct.ObjectRef.html">struct.ObjectRef</a>, <a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/struct.Transform.html">struct.Transform</a></td></tr>
+<tr><td><code>InputState</code></td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/struct.InputState.html">struct.InputState</a></td></tr>
+</tbody>
+</table>
+</div>
+<p>Where to go next: <a href="ENGINE_API.html">ENGINE_API.md</a> for everything a system can do to the world,
+<a href="WASM.html">WASM.md</a> for scripting that runs in a sandbox, and the built-in gameplay kit
+(<code>crates/zestengine-core/src/kit/</code>: health, hitscan weapons, character controllers, RTS selection, VR
+rigs) for larger, production examples written with exactly the patterns above.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="ecs-tutorial.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="ecs-cheatsheet.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="ecs-tutorial.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="ecs-cheatsheet.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-09f2665d.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-609e4cb8.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

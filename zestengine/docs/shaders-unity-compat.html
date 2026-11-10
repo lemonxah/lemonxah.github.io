@@ -1,0 +1,552 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Unity shader compatibility - ZestEngine</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Documentation for the ZestEngine game engine: the ECS, the engine API and WASM scripting.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="shortcut icon" href="favicon-8e6b73bd.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-e96d0476.css">
+        <link rel="stylesheet" href="css/chrome-d279d366.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="theme/zestengine-9866fa4a.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-49b9e9f7.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-ffb240a5.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">ZestEngine</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/lemonxah/zestengine" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <!-- Copied from docs/shaders-unity-compat.md in the engine repository by sync.py. Edit it there, then run ./sync.py. -->
+<h1 id="unity-shader-compatibility-poiyomi-mochie-liltoon-mtoon-standard"><a class="header" href="#unity-shader-compatibility-poiyomi-mochie-liltoon-mtoon-standard">Unity shader compatibility (Poiyomi, Mochie, lilToon, MToon, Standard)</a></h1>
+<p>Avatars and props authored in Unity use third-party shaders.
+<strong>Convert Unity Material</strong> maps their <em>material values</em> onto ZestEngine shaders (<a href="shaders.html">ZestEngine Toon</a> and
+the PBR standard shader) and writes a report of everything it could not carry over.
+Gaps become plan tasks (IMPLEMENTATION_PLAN.md, "Shader gaps").</p>
+<h2 id="rules-this-work-follows"><a class="header" href="#rules-this-work-follows">Rules this work follows</a></h2>
+<ul>
+<li>Property names are the identifiers Unity serialises into every <code>.mat</code> file, and
+the meaning of their values comes from the shaders' public documentation
+(links below) and the labels the shaders show in the inspector.</li>
+<li>The converter scans <code>.shader</code> files for the declared shader name
+(<code>Shader "..."</code>) and uses it to identify the material mapping.</li>
+<li>Licences are recorded below for information; nothing here depends on them.</li>
+</ul>
+<h2 id="gap-status-unity-2--unity-14"><a class="header" href="#gap-status-unity-2--unity-14">Gap status (UNITY-2 .. UNITY-14)</a></h2>
+<p>What the engine gained for the Unity shader gaps, and what was left out with the reason.
+"Done" means implemented, converter-mapped where the Unity side has a known
+property, tested, and (for rendering) checked on a real device; the contact sheet
+<code>docs/design/unity-fx-contact-sheet.png</code> shows every rendering phase of
+<code>crates/zestengine-assets/tests/unity_fx.rs</code> (order is listed in the test output).</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Plan item</th><th>Status</th><th>What exists / why not</th></tr>
+</thead>
+<tbody>
+<tr><td>UNITY-2 Stencil effects</td><td><strong>Done</strong> (GUI unverified)</td><td>The scene depth is now a depth-stencil image (<code>D32_SFLOAT_S8_UINT</code>, else <code>D24_UNORM_S8_UINT</code> / <code>D16_UNORM_S8_UINT</code>; <code>ZESTENGINE_STENCIL=0</code> keeps plain <code>D32_SFLOAT</code>, where material stencil is ignored). Every colour pass attaches the stencil aspect (cleared to 0): main, depth prepass, Flux prepass, Hi-Z late split, planar mirrors, reflection capture, camera targets and preview, XR (single and multiview, MSAA resolve), impostor / text / VR overlay pipelines. Shadow maps stay depth-only <code>D32</code>; the opaque depth copy is a depth-only copy. <code>MaterialFeatures.stencil</code> (<code>StencilState</code>: reference, read / write mask, per face compare + pass / fail / zfail op, <code>color_mask</code>, <code>depth_write</code>) and the inspector's <strong>Stencil</strong> section drive a per-pipeline-variant stencil state (all eight Unity compare funcs and ops, front and back faces separate). The default state is inactive and draws byte-identically. The converter maps <code>_StencilRef</code> / <code>_StencilReference</code> / <code>_Stencil</code>, <code>_StencilComp</code> / <code>_StencilCompareFunction</code>, <code>_StencilPass</code> / <code>_StencilPassOp</code> / <code>_StencilOp</code>, <code>_StencilFail*</code>, <code>_StencilZFail*</code>, <code>_StencilReadMask</code>, <code>_StencilWriteMask</code>, the <code>...Front</code> / <code>...Back</code> variants, <code>_ColorMask</code> and <code>_ZWrite</code> (only next to stencil / colour masking), and the Poiyomi <code>_StencilType</code> preset (1 = writer: Always + Replace; 2 = reader: Equal; explicit compare / pass values win; the preset numbering is an unverified assumption). <strong>Draw order</strong>: a writer must draw before its readers: give it a lower render queue (Unity <code>Geometry-1</code> or <code>Geometry+1</code>). Within one queue the order is the renderer's state sort and gives no guarantee. Materials with a non-default stencil state skip the GPU-driven batches (they draw in strict queue order on the CPU path), and a writer with ZWrite off skips the depth prepass. Not done: a stencil <code>Ref</code> driven per instance or animated; Poiyomi's <code>_StencilType</code> UI presets beyond writer / reader; stencil in custom HLSL <code>Stencil{}</code> blocks of imported <code>.shader</code> files (only material properties are read). Sprite masks use stencil bit 7 (<code>0x80</code>) only, so 3D stencil bits 0..6 and sprite masks do not interact; keep 3D references below <code>0x80</code> in scenes with sprite masks.</td></tr>
+<tr><td>UNITY-3 Grab pass</td><td><strong>Done</strong> (mip chain only for transmission)</td><td><code>MaterialFeatures.grab</code> / model <code>grab</code> ("Scene Colour Read" in the inspector): the main pass copies opaque colour + depth before the first transparent or grab draw (the copy the water already used). Custom shaders get <code>u_opaque_color</code>, <code>u_opaque_depth</code>, <code>zestengine_grab(frag, offset_px, fallback)</code>, <code>zestengine_grab_blur(frag, offset_px, radius_px, fallback)</code> and <code>zestengine_grab_world_pos</code>. A custom shader with a <code>GRAB</code> toggle that is on sets the feature automatically. The copy has a mip chain only on frames that draw a transmission material (rough transmission, UNITY-8); the grab helpers read mip 0 and blur with a 16-tap jittered disc (coarse above about 20 px). Toon <code>GRAB</code> feature: tint, normal-driven distortion, blur, chromatic split. lilToon refraction mode and Poiyomi grab pass map to it. HLSL custom shaders do not get the grab helpers. The copy is taken only in the main camera pass: reflection captures, planar mirrors and the model preview see the fallback colour.</td></tr>
+<tr><td>UNITY-4 Screen FX volume</td><td><strong>Done</strong></td><td><code>shaders/zestengine_screenfx.frag</code> ("ZestEngine Screen FX"): a box or sphere mesh re-samples the opaque scene for the pixels where the scene point behind it lies inside the shape (reconstructed from the opaque depth copy), with filtering (hue, saturation, contrast, brightness, tint, invert), shake, distortion, blur, pixelate, chromatic split and noise, soft edge falloff. Mochie Screen FX materials are reported as having no converter (property names are unverified; set the volume up by hand with the presets). Not done: a global (non-mesh) screen volume that follows the camera, and the volume does not apply to transparent objects (it reads the opaque copy).</td></tr>
+<tr><td>UNITY-5 AudioLink-style input</td><td><strong>Partial</strong></td><td>Done: <code>audio_analysis.rs</code> (FFT band analyser: bass, low mid, high mid, treble, volume, 64-frame history; tested with sine sweeps), Toon <code>AUDIO</code> feature (band-driven emission, alpha, rim and hue shift), <code>LoadedScene::set_audio_bands</code> (writes only the uniform block, no dirty flag), Poiyomi AudioLink emission / rim band mapping. Not done: nothing taps the audio engine's mixed output yet, so the bands are zero until a caller feeds <code>AudioAnalyzer</code> with samples (or animates <code>audio_bands</code> by hand). Reason: the engine mixes through rodio sinks (and Steam Audio voices), and a correct tap needs the summed output, which rodio does not expose; a per-source tap would have to sum analyses. There is no AudioLink texture (history is on the CPU analyser only) and no vertex-offset modulation (no vertex hook, see UNITY-11).</td></tr>
+<tr><td>UNITY-6 Flipbook</td><td><strong>Done</strong></td><td>Toon <code>FLIPBOOK</code>: sprite sheet (columns, rows, frames), fps or manual frame, crossfade, tint, replace / add / multiply, emission; tile edges inset by half a texel so filtering never reads the next frame. Poiyomi stores frames in a <code>Texture2DArray</code> asset, which cannot be read, so the converter maps the numbers and reports the texture.</td></tr>
+<tr><td>UNITY-7 Toon additions</td><td><strong>Done</strong> (outline texture mask skipped)</td><td>Wrapped lighting mode (<code>wrap_amount</code>), shadow layer 3, RGBA colour masking (<code>COLOR_MASK</code>: per-channel tint and hue shift), <code>hue_shift</code> / <code>hue_speed</code> / <code>brightness</code>, per-vertex outline width (<code>outline_vertex_width</code>, red vertex colour), and converter aliases: matcap 2, emission 2, dissolve, decal (Poiyomi decal, lilToon Main 2nd), detail normal / albedo, lilToon reflection and specular, shadow 3, HSV. Skipped: outline width mask texture (the outline hull runs in the vertex stage, which has no material texture bound), Poiyomi specular / reflection aliases (property names not known well enough to guess).</td></tr>
+<tr><td>UNITY-8 PBR detail / transmission</td><td><strong>Done</strong> (GUI unverified)</td><td>Standard shader: a <strong>detail layer</strong> (albedo with Multiply x2 / Overlay / Add / Replace, normal, ORM, mask, own tiling / offset; each strength 0 = off), <strong>thin translucency</strong> (back-lit light through the surface: colour, power, normal distortion, a translucency or thickness map; the shadow lookup is offset to the light's side) and <strong>transmission</strong> (the opaque scene copy seen through the surface, tinted, offset by the shading normal; it turns Scene Colour Read on). Five new set-1 samplers (bindings 17-21) and five vec4s appended to the fx block; every existing binding keeps its number, and every pipeline shares the one <code>set1_layout</code> (cluster, prepass, shadow, XR, impostor, preview, skybox), whose sets are all written by <code>create_material</code> / <code>bind_material_slots</code> / the skybox set. Serde defaults load old materials unchanged. Checked on the real device by <code>tests/unity_fx.rs</code> phases P00-P15 (<code>docs/design/pbr-detail-transmission-contact-sheet.png</code>). <strong>Rough transmission, transmission texture, glTF thickness: done</strong> (GUI unverified): the opaque colour copy has a mip chain (box-filtered blits, built only on frames that draw a transmission material); the shader takes <code>lod = 6 x blur x roughness x (0.35 + 0.65 x thickness)</code> and averages a 5-tap tent over that level (new fx <code>trans3</code>: blur, thickness, map flag; inspector Blur / Thickness / Map Green = Transmission). The translucency / thickness map (binding 21) is shared: red = thickness (with Map Is Thickness), green = transmission factor (with Map Green = Transmission); a glTF model's <code>transmissionTexture</code> (R) and <code>thicknessTexture</code> (G) are repacked into it at import (<code>ModelIdentity::material_volume_maps</code>, import cache format 9), thickness factor <code>1 - exp(-2 x metres)</code>. Colour probes at roughness 0 / 0.5 / 1: blue leaking 5 px into the red half 0 / 148 / 200 of 231, thickness 0 gives 65. Found on the way: draws with Scene Colour Read were eligible for the GPU-culled camera batches, which never take the opaque copy, so transmission on standard materials saw a stale copy (the earlier P12-P15 passed on the previous test's copy); they now keep the CPU path. Not carried: dispersion, XR (no opaque copy in the VR pass), reflection captures, transmission on cluster-path meshes, a thickness texture with its own UV set (the packed map uses the material's).</td></tr>
+<tr><td>UNITY-9 VRM MToon in glTF</td><td><strong>Done</strong> (editor button unverified)</td><td><code>mtoon::import_mtoon_materials</code> turns the MToon materials of a VRM 1.0 / 0.x into ZestEngine Toon <code>.material</code> files: glTF textures are written out of the model and copied through the converter's own texture step, outline / rim / matcap / shade colour come from the same MToon table, and the model's material remap table is filled. It runs as part of the model importer's <strong>Extract Materials</strong> (before the plain extract, which then skips what is mapped); it is not automatic on first import because the importer does not write project files. Tested on a real VRM 0.x (<code>Vivixx Vtube.vrm</code>: 18 of 18 materials MToon, every base-colour texture resolved, 53 textures written; that avatar has no outlines) and on a synthetic VRM 1.0 with an outline. Not carried: the per-pixel shade texture, UV animation, outline width modes beyond a fixed scale.</td></tr>
+<tr><td>UNITY-10 Panosphere, hue / brightness, front-face cull, blend modes, distance fade</td><td><strong>Done</strong></td><td>Per-material <code>blend</code> (Alpha, Additive, Multiply, Premultiplied) and <code>cull_front</code> in the render pipeline key, model and inspector; Toon <code>PANOSPHERE</code> (equirectangular sky by view direction, spin, blend, unlit) and <code>DISTANCE_FADE</code> (screen-door dither when opaque), plus the hue / brightness controls. The converter maps Poiyomi modes 5-8 and <code>_SrcBlend</code> / <code>_DstBlend</code>.</td></tr>
+<tr><td>UNITY-11 Vertex hooks</td><td><strong>Done</strong> (GUI unverified)</td><td>A custom GLSL shader's <code>// @vertex</code> ... <code>// @endvertex</code> section defines <code>zestengine_vertex(inout VertexData v)</code> (object position / normal / tangent / UVs / colour, <code>model</code>, <code>world_position</code>, world-space <code>world_offset</code>, <code>time</code>, the shader's <code>// @property</code> block, textures, keywords, <code>frame</code>). It runs in every pass that draws the material with the same code: <code>standard.vert</code> for main / depth prepass / XR multiview / planar (one module, so the prepass and the EQUAL-tested main pass agree), <code>shadow.vert</code> for the shadow pass (swaying geometry casts the swayed shadow; its layer re-renders every frame). Built with <code>glslc</code> on first use (<code>vertex_hook.rs</code>); existing shaders are untouched (no section = no extra module). Template <code>shaders/zestengine_wind_sway.frag</code>; docs/shaders.md, "Vertex hook". GPU tests (<code>gpu_tests/vertex_tess.rs</code>, <code>zestengine-assets/tests/vertex_hook.rs</code>): lean 27.0 px vs 27.5 projected, hooked shadow tip px 151 vs 150.9 (unhooked 125 vs 124.9), prepass + EQUAL 0 of 867 px differ, shadow depth = camera depth. Not done: no baked sidecar for the hook SPIR-V; no instance colour / param; the previous-frame position assumes no hook motion (TAA ghosting when fast); HLSL has no hook. Cluster: custom-shader materials never use the cluster path, so there is no cluster hook module (hooked casters draw as ordinary meshes in the shadow pass too). <strong>Converter</strong>: Poiyomi / lilToon vertex manipulation (<code>_VertexManipulationLocalTranslation</code>, <code>_Wind</code>, ...) stays "not supported": the hook is shader code, not a property set, so there is nothing to map to.</td></tr>
+<tr><td>UNITY-12 Fur, tessellation, LTCGI, Voronoi / truchet, depth FX</td><td><strong>Partial</strong></td><td><strong>Fur: done</strong> (GUI unverified): Toon <code>FUR</code> feature (<code>fur_tip</code>, <code>fur_root</code>, <code>fur_length</code>, <code>fur_layers</code>, <code>fur_density</code>); the renderer draws the mesh once per shell (one instanced draw each, shell index in the push constants) with <code>fur.vert</code> / <code>fur.frag</code>: the shell is pushed out along its normals, a procedural strand grid on the UV keeps the pixels inside a tapering strand with a hashed length; opaque and alpha-tested so nothing needs sorting. Shaded by a wrapped key-light term over a root-to-tip ramp (no shadows, no GI, no wind or gravity). A fur material is excluded from the GPU-culled batches (like an outline) and is not drawn on the cluster path. <strong>Tessellation: done</strong> (GUI unverified): <code>MaterialParams::tess</code> (<code>TessParams</code>: enabled, scale, midlevel, target edge px, max factor, phong; inspector <strong>Tessellate</strong> under the Displacement slot) displaces the mesh by the height map through hardware tessellation stages (<code>tess.tesc</code> / <code>tess.tese</code>), levels from the screen-space edge length, Phong smoothing, height-slope normals. One extra pipeline-key bit; the stages are in the main pass, depth prepass (same modules: EQUAL agrees), XR multiview, planar / capture passes and the shadow pass (<code>shadow.vert -DZE_TESS</code> + <code>tess.* -DSHADOW</code>, tessellated from the same camera so the shadow follows the displaced surface). Casters with a displaced material draw separately from the shared shadow batches and re-render every frame; displaced materials skip the GPU-culled camera batches and the cluster path (ordinary draw). No tessellation on the device: draws flat. The compute pre-subdivision fallback was weighed and not built (docs/shaders.md). GPU tests: edge-on plateau top row 91 vs 90.6 projected, prepass + EQUAL 0 of 6 260 px differ (flat-prepass control 2 983), shadow depth = camera depth, wall shadow 211 vs 212.0 projected, XR multiview layers = per-eye passes (IoU 1.0). Not verified: planar / capture passes with a displaced material, Flux's depth prepass draws them flat. <strong>Area lights (LTCGI-equivalent): done</strong> (GUI unverified): the <code>Area Light</code> component (core, serde defaults, registered, inspector) is a rectangle or disc emitter with colour, intensity (emitted radiance), range, two sided and an optional emission texture (project path or <code>camera:&lt;id&gt;</code>, so a second camera is a live screen light). Shading is linearly transformed cosines written from the 2016 paper: diffuse is the exact clamped-cosine integral over the polygon (horizon clip + Lambert's edge sum), specular the same integral through the inverse LTC matrix of the GGX lobe at (N.V, roughness), scaled by the split-sum reflectance the shader already uses. The matrix table is our own Nelder-Mead fit (<code>crates/zestengine-render/src/ltc.rs</code>, 24 x 24 cells, relative L1 error 0-4 % up to N.V about 0.24 and 10-30 % beyond at mid roughness, the last column is reused for flatter angles), generated into <code>shaders/ltc_lut.glsl</code> (<code>cargo test -p zestengine-render --release --lib regenerate_lut -- --ignored</code>, 8 s). A light is two <code>frame.lights</code> entries (kinds 4 / 5 + continuation 6); the renderer packs the 8 nearest to the camera each frame ([<code>Renderer::set_area_lights</code>] fed by <code>gather_area_lights</code>) and copies each textured light's texture into a 4 x 2 tile RGBA16F atlas with a mip chain (set-1 binding 22, one shared image written into every material set; the lobe picks a mip by its width on the light's plane, so a screen light blurs with distance and roughness). Toon takes the diffuse form factor through its cel ramp. No shadows (v1), no tube shape, the texture is sampled once per lobe (not integrated over the polygon), not drawn in reflection captures, camera previews or XR. Checks (<code>tests/unity_fx.rs</code> A00-A10, <code>docs/design/area-lights-contact-sheet.png</code>): along a falloff line the GPU matches the CPU reference of the same math within 0.5 % (0.738 vs 0.736 at the centre), the specular peak of a glossy plane is at y 1.64 (CPU 1.68, mirror geometry 1.67) with equal level, a red</td></tr>
+<tr><td>UNITY-13 Verify alias tables against real avatars</td><td><strong>Partial</strong></td><td>A Unity project (735 <code>.mat</code>, 247 Poiyomi) and the Poiyomi / Mochie packages on this machine were read for <strong>property names only</strong> (no shader source). Verified and fixed in this pass: Poiyomi grab pass, dissolve, flipbook, panosphere, AudioLink, decal, detail, and the Mochie Screen FX names; see the tables below. Still unverified: the lilToon and MToon-on-Unity tables, Mochie Standard (no Mochie Standard material on the machine), Mochie Glass (none either), and the importer's "Convert Unity materials next to this model" button. The vertex-hook / tessellation work (UNITY-11, UNITY-12) added no converter mapping: Poiyomi / lilToon vertex manipulation, wind and tessellation property names were NOT in any real material read here (no Pro material on this machine), so they stay unmapped and are reported as unsupported rather than guessed.</td></tr>
+<tr><td>UNITY-14 Drag a package / folder onto the Files panel</td><td><strong>Skipped</strong></td><td>Files panel and <code>.prefab</code> / <code>.fbx</code> GUID maps are editor work outside this pass.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="zestengine-side-reference-new"><a class="header" href="#zestengine-side-reference-new">ZestEngine side reference (new)</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>Where</th><th>Notes</th></tr>
+</thead>
+<tbody>
+<tr><td>Blend mode, Cull Front Faces, Scene Colour Read</td><td>Material inspector (Transparency / Geometry) and <code>MaterialFeatures { blend, cull_front, grab }</code> in <code>.material</code> files</td><td>serde defaults: old materials load unchanged</td></tr>
+<tr><td><code>zestengine_blend_mode</code></td><td>custom shader constant (0 alpha, 1 additive, 2 multiply, 3 premultiplied)</td><td>Multiply has no alpha term, so shaders fade towards white themselves (Toon does)</td></tr>
+<tr><td>Grab helpers</td><td>custom GLSL preamble</td><td>see UNITY-3</td></tr>
+<tr><td>Custom texture slots</td><td>24 per shader (was 20)</td><td>Toon is at 22</td></tr>
+<tr><td>Toon <code>lighting_mode</code> Wrapped</td><td>appended after Flat, so existing indices are unchanged</td><td></td></tr>
+<tr><td>Toon features</td><td><code>COLOR_MASK</code>, <code>FLIPBOOK</code>, <code>PANOSPHERE</code>, <code>DISTANCE_FADE</code>, <code>GRAB</code>, <code>AUDIO</code></td><td>all off in the presets</td></tr>
+<tr><td><code>outline_vertex_width</code></td><td>Toon <code>OUTLINE</code> group</td><td>the renderer reads a negative outline width as "scale by red vertex colour"</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="converter-aliases-added-for-the-gaps-poiyomi-rows-checked-against-real-mat-files-liltoon-rows-unverified"><a class="header" href="#converter-aliases-added-for-the-gaps-poiyomi-rows-checked-against-real-mat-files-liltoon-rows-unverified">Converter aliases added for the gaps (Poiyomi rows checked against real <code>.mat</code> files; lilToon rows unverified)</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Concept</th><th>lilToon</th><th>Poiyomi</th></tr>
+</thead>
+<tbody>
+<tr><td>Cull front</td><td><code>_Cull</code> 1</td><td><code>_Cull</code> 1</td></tr>
+<tr><td>Blend mode</td><td><code>_SrcBlend</code> / <code>_DstBlend</code></td><td><code>_Mode</code> 5-8, <code>_SrcBlend</code> / <code>_DstBlend</code></td></tr>
+<tr><td>Refraction / grab</td><td><code>_TransparentMode</code> 3, <code>_RefractionStrength</code>, <code>_RefractionColor</code>, <code>_RefractionColorFromMain</code></td><td><code>_EnableGrabpass</code>, <code>_GrabpassColor</code>, <code>_GrabPassBrightness</code>, <code>_GrabBlurDistance</code> (x200 px) <strong>(names seen in real preset materials)</strong></td></tr>
+<tr><td>Hue / brightness</td><td><code>_MainTexHSVG</code></td><td><code>_MainHueShift</code>, <code>_MainBrightness</code> (present in real materials)</td></tr>
+<tr><td>Shadow layer 3</td><td><code>_Shadow3rdColor</code>, <code>_Shadow3rdBorder</code>, <code>_Shadow3rdBlur</code></td><td>n/a</td></tr>
+<tr><td>Matcap 2</td><td><code>_UseMatCap2nd</code>, <code>_MatCap2ndTex</code>, <code>_MatCap2ndBlend</code>, <code>_MatCap2ndBlendMode</code>, <code>_MatCap2ndBlendMask</code></td><td><code>_Matcap2</code>, <code>_Matcap2Intensity</code>, <code>_Matcap2Mask</code></td></tr>
+<tr><td>Emission 2</td><td><code>_UseEmission2nd</code>, <code>_Emission2ndMap</code>, <code>_Emission2ndColor</code></td><td><code>_EnableEmission1</code>, <code>_EmissionMap1</code>, <code>_EmissionColor1</code></td></tr>
+<tr><td>Second layer / decal</td><td><code>_UseMain2ndTex</code>, <code>_Main2ndTex</code>, <code>_Color2nd</code>, <code>_Main2ndTexBlendMode</code> (full-UV decal)</td><td><code>_DecalEnabled</code>, <code>_DecalTexture</code>, <code>_DecalColor</code>, <code>_DecalRotation</code>, <code>_DecalPosition</code>, <code>_DecalScale</code> <strong>(verified in real materials)</strong></td></tr>
+<tr><td>Detail</td><td><code>_UseBump2ndMap</code>, <code>_Bump2ndMap</code>, <code>_Bump2ndScale</code></td><td><code>_DetailTex</code>, <code>_DetailNormalMap</code>, <code>_DetailMask</code>, <code>_DetailTexIntensity</code>, <code>_DetailNormalMapScale</code> <strong>(verified)</strong></td></tr>
+<tr><td>Dissolve</td><td>n/a</td><td><code>_EnableDissolve</code>, <code>_DissolveNoiseTexture</code>, <code>_DissolveAlpha</code> (the amount; <code>_DissolveCutoff</code> does not exist), <code>_DissolveEdgeWidth</code>, <code>_DissolveEdgeColor</code>, <code>_DissolveEdgeEmission</code> <strong>(verified)</strong></td></tr>
+<tr><td>Reflection / specular</td><td><code>_UseReflection</code>, <code>_Smoothness</code>, <code>_Metallic</code>, <code>_ApplySpecular</code></td><td>n/a</td></tr>
+<tr><td>Flipbook</td><td>n/a</td><td><code>_EnableFlipbook</code>, <code>_FlipbookTexArray</code> (a Texture2DArray asset: unreadable, reported), <code>_FlipbookTotalFrames</code>, <code>_FlipbookFPS</code>, <code>_FlipbookCurrentFrame</code> (with <code>_FlipbookManualFrameControl</code>), <code>_FlipbookCrossfadeEnabled</code>, <code>_FlipbookColor</code> <strong>(verified; <code>_FlipbookTex</code>, <code>_FlipbookColumns</code>, <code>_FlipbookRows</code> do not exist)</strong></td></tr>
+<tr><td>Panosphere</td><td>n/a</td><td><code>_PanoToggle</code>, <code>_PanosphereTexture</code>, <code>_PanosphereColor</code>, <code>_PanospherePan</code> (x = spin) <strong>(verified; <code>_PanoRotationSpeed</code> does not exist)</strong></td></tr>
+<tr><td>AudioLink</td><td>n/a</td><td><code>_EnableAudioLink</code>; add rows are vectors whose green is the gain: <code>_AudioLinkRimEmissionAdd</code> / <code>_AudioLinkRimBrightnessAdd</code> + <code>_AudioLinkRimEmissionBand</code>, <code>_AudioLinkAddEmission</code> / <code>_AudioLinkEmission0CenterOut</code> + their <code>..Band</code> (0-3) <strong>(verified present; only 3 of ~480 materials set a non-zero gain)</strong></td></tr>
+<tr><td>Outline vertex width</td><td><code>_OutlineVertexR2Width</code></td><td>n/a (width mask textures are reported)</td></tr>
+<tr><td>Lighting Wrapped</td><td>n/a</td><td><code>_LightingMode</code> 2</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="how-conversion-works"><a class="header" href="#how-conversion-works">How conversion works</a></h2>
+<ol>
+<li><strong>Read</strong> the Unity <code>.mat</code> (text YAML; <code>unity_mat.rs</code>). Tolerates Unity versions,
+the older <code>first:/second:</code> layout, multi-document files and garbage. Binary <code>.mat</code>
+files are reported (switch Unity to Force Text).</li>
+<li><strong>Identify</strong> the shader: built-in Standard by GUID; then by name (from the
+<code>.shader</code> file the material's shader GUID points at, e.g. <code>.poiyomi/Poiyomi Toon</code>,
+<code>Hidden/Locked/.poiyomi/...</code>, <code>Mochie/Standard</code>, <code>lilToon</code>, <code>VRM/MToon</code>); then by
+<strong>property signature</strong> for locked / renamed shaders.</li>
+<li><strong>Map</strong> (<code>unity_convert.rs</code>) through alias tables into a ZestEngine material.
+Colours are converted sRGB to linear (HDR emission colours are stored linear by
+Unity and are kept), tiling/offset is carried, alpha mode from the shader's
+mode property (or keywords / render queue), cull mode, cutoff, emission, matcaps,
+rim, shadow layers, normal map, outline.</li>
+<li><strong>Resolve textures</strong>: Unity GUIDs are looked up through the <code>.meta</code> files of the
+folder you point at; the textures are copied to <code>textures/unity/</code> and given the
+right import kind with <code>ensure_first_import_for_slot</code> (sRGB colour, normal map).
+Metallic / smoothness / occlusion are repacked into one ORM texture
+(R occlusion, G roughness = 1 - smoothness, B metallic). Formats the engine does
+not load (PSD, TIFF, DDS) are reported.</li>
+<li><strong>Write</strong> <code>materials/unity/&lt;name&gt;.material</code> and <code>&lt;name&gt;.convert.txt</code> beside it.
+The report lists Mapped, Approximated, Not supported yet, unmapped properties
+with a value, and a one-line list of zero / empty ones. Nothing is dropped silently.</li>
+</ol>
+<p>Entry points (Files panel context menu): <strong>Convert Unity Material...</strong> on a <code>.mat</code>,
+<strong>Convert Unity folder...</strong> on a directory (task with progress and a summary
+notification), <strong>Import Unity package...</strong> on a <code>.unitypackage</code> (gzip tar, read
+with <code>flate2</code> already in the tree; extracted to a temp folder, then converted as a
+folder). The model importer's <em>Search and Remap</em> picks converted materials
+by name (the <code>.material</code> is named after the Unity material, which is the FBX
+material name); <code>unity_convert::add_to_model_remap</code> fills the remap table directly.</p>
+<h2 id="support-summary"><a class="header" href="#support-summary">Support summary</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Shader</th><th>Converts to</th><th>Level</th></tr>
+</thead>
+<tbody>
+<tr><td>Poiyomi Toon (free), Poiyomi Pro</td><td>ZestEngine Toon</td><td>core look: base, alpha, shadows, rim, matcap, emission, outline, normal</td></tr>
+<tr><td>lilToon</td><td>ZestEngine Toon</td><td>same set (property names from the lilToon material layout)</td></tr>
+<tr><td>VRM/MToon (Unity side)</td><td>ZestEngine Toon</td><td>base, shade colour/shift/toony, rim, emission, outline, cull, alpha</td></tr>
+<tr><td>Mochie Standard (+ Lite / Mobile)</td><td>PBR standard</td><td>textures, metallic / roughness / occlusion packed, normal, emission, alpha, cull</td></tr>
+<tr><td>Unity Standard, Standard (Specular), URP/Lit</td><td>PBR standard</td><td>as above; specular setup approximated</td></tr>
+<tr><td>Mochie Screen FX / Screen FX X</td><td>ZestEngine Screen FX</td><td>filtering, blur, shake, distortion, pixelation, noise, chromatic split; amounts approximate; fog / DoF / zoom / SST / Sobel / triplanar reported unsupported; volume = Everywhere</td></tr>
+<tr><td>Mochie Water / Glass / Particle / LED / Uber, others</td><td>placeholder PBR + report</td><td>colour, textures, alpha only; the report says "unsupported". Glass has no converter: no Mochie Glass material exists on this machine to read its property names from</td></tr>
+</tbody>
+</table>
+</div>
+<p>Confidence: the <strong>Poiyomi, lilToon and MToon property names</strong> below are the serialised
+names as used in <code>.mat</code> files, from the public documentation labels and the
+serialisation conventions; they were not verified against a real exported
+avatar in this pass (see "Unverified"). Poiyomi renames some properties
+between 8.x, 9.x and 10.x, so each concept lists aliases and the converter takes the
+first present.</p>
+<h2 id="poiyomi-toon-free-and-pro"><a class="header" href="#poiyomi-toon-free-and-pro">Poiyomi Toon (free) and Pro</a></h2>
+<p>Docs sections used: Color and Normals, Shading (Lighting Modes, Matcap, Rim Lighting,
+Reflections and Specular), Special FX, Outlines, Rendering. Priority is for <em>importing
+avatars that look right</em>.</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Poiyomi feature (property)</th><th>ZestEngine</th><th>Priority</th></tr>
+</thead>
+<tbody>
+<tr><td>Main texture <code>_MainTex</code>, colour <code>_Color</code>, tiling/offset</td><td>Albedo slot, <code>main_color</code> (linear), <code>main_st</code></td><td>done</td></tr>
+<tr><td>Rendering mode <code>_Mode</code> (opaque, cutout, fade, transparent)</td><td>features alpha mode</td><td>done</td></tr>
+<tr><td>Additive / multiplicative modes (<code>_Mode</code> 5-8)</td><td><code>blend</code> Additive / Multiply</td><td>done</td></tr>
+<tr><td><code>_Cutoff</code></td><td><code>alpha_cutoff</code></td><td>done</td></tr>
+<tr><td><code>_Cull</code> (off / back)</td><td>double sided</td><td>done</td></tr>
+<tr><td><code>_Cull</code> front</td><td><code>cull_front</code> (Cull Front Faces)</td><td>done</td></tr>
+<tr><td>Normal map <code>_BumpMap</code>, <code>_BumpScale</code></td><td>Normal slot, <code>normal_strength</code></td><td>done</td></tr>
+<tr><td>Second normal map / detail normal</td><td><code>DETAIL</code> (<code>detail_normal</code>, <code>detail_albedo</code>)</td><td>done (unverified names)</td></tr>
+<tr><td><code>_Saturation</code> (main colour adjust)</td><td><code>saturation</code></td><td>done (approx)</td></tr>
+<tr><td>Hue shift, brightness</td><td><code>hue_shift</code>, <code>brightness</code></td><td>done; colour grading not supported</td></tr>
+<tr><td>RGBA colour masking</td><td>Toon <code>COLOR_MASK</code></td><td>engine side done; converter does not map it (property names unknown)</td></tr>
+<tr><td>Lighting: Texture Ramp, Multilayer Math, Flat, Realistic</td><td><code>lighting_mode</code> Ramp / Multilayer / Flat / Realistic</td><td>done</td></tr>
+<tr><td>Lighting: Wrapped</td><td><code>lighting_mode</code> Wrapped</td><td>done</td></tr>
+<tr><td>Lighting: Skin, ShadeMap, Cloth, SDF, PBR</td><td>Multilayer / Realistic (approx)</td><td>low: SDF face shadow</td></tr>
+<tr><td>Shadow colour, strength, layers 1-2 (border, blur)</td><td><code>shadow_color</code>, <code>shadow_strength</code>, <code>layer1_*</code>, <code>layer2_*</code></td><td>done</td></tr>
+<tr><td>Shadow layer 3</td><td><code>layer3_*</code></td><td>done (lilToon mapped; Poiyomi has none)</td></tr>
+<tr><td>Toon ramp <code>_ToonRamp</code>, offset</td><td><code>ramp_tex</code>, <code>ramp_offset</code></td><td>done</td></tr>
+<tr><td>Min / max light brightness</td><td><code>light_min</code>, <code>light_max</code></td><td>done</td></tr>
+<tr><td>Rim lighting (colour, width, sharpness, strength, mask)</td><td><code>RIM</code> + <code>rim_*</code></td><td>done</td></tr>
+<tr><td>Rim blend modes, environmental rim, depth rim</td><td>not supported</td><td>low: add <code>rim_blend</code> aliases; depth rim needs depth access</td></tr>
+<tr><td>Matcap 1 (texture, mask, add / multiply / replace, intensity)</td><td><code>MATCAP</code> + <code>matcap_*</code></td><td>done</td></tr>
+<tr><td>Matcap 2</td><td><code>MATCAP2</code></td><td>done (unverified names)</td></tr>
+<tr><td>Matcap 3-4, matcap normal map, border, tint colour</td><td>not supported</td><td>low; tint into the texture</td></tr>
+<tr><td>Emission (map, colour, strength, mask, scroll)</td><td><code>EMISSION</code> + <code>emission_*</code></td><td>done</td></tr>
+<tr><td>Second emission</td><td><code>EMISSION2</code></td><td>done (unverified names)</td></tr>
+<tr><td>Third / fourth emission</td><td>not supported</td><td>low</td></tr>
+<tr><td>Specular / reflections (<code>_Metallic</code>, <code>_Smoothness</code>, maps)</td><td><code>metallic</code> / <code>roughness</code> for Realistic lighting only</td><td>medium: Toon SPECULAR / REFLECTIONS aliases</td></tr>
+<tr><td>Clear coat, anisotropic (hair)</td><td>anisotropic exists in Toon, mapping not done</td><td>medium</td></tr>
+<tr><td>Outline (width, colour)</td><td><code>OUTLINE</code> + <code>outline_width</code> (x5, approx)</td><td>done; per-vertex width done (<code>outline_vertex_width</code>); outline mask / texture not supported</td></tr>
+<tr><td>Alpha mask, alpha mod</td><td><code>alpha_mask</code>, <code>alpha_mod</code></td><td>done</td></tr>
+<tr><td>Distance fade</td><td>Toon <code>DISTANCE_FADE</code></td><td>engine side done; converter does not map it</td></tr>
+<tr><td>Dither, fresnel alpha</td><td>Toon has <code>alpha_dither</code>, <code>alpha_fresnel</code>; not mapped</td><td>low</td></tr>
+<tr><td>Dissolve, decals</td><td><code>DISSOLVE</code>, <code>DECAL</code></td><td>done (unverified names)</td></tr>
+<tr><td>Glitter, UV tile discard, parallax</td><td>Toon features exist; not mapped</td><td>low</td></tr>
+<tr><td>Stencil effects (type, reference, comparison, ops, masks)</td><td><code>MaterialFeatures.stencil</code></td><td>done, see UNITY-2; <code>_ColorMask</code> 0 and <code>_ZWrite</code> 0 writers map to <code>color_mask</code> / <code>depth_write</code></td></tr>
+<tr><td>Flipbook / sprite sheet</td><td>Toon <code>FLIPBOOK</code></td><td>done; frame texture arrays cannot be read</td></tr>
+<tr><td>Panosphere / sky texture</td><td>Toon <code>PANOSPHERE</code></td><td>done</td></tr>
+<tr><td>Grab-pass refraction / blur / distortion</td><td>Toon <code>GRAB</code></td><td>done (tint, blur, distortion; no normal-map distortion)</td></tr>
+<tr><td>AudioLink</td><td>Toon <code>AUDIO</code> + <code>audio_analysis.rs</code></td><td>partial: the mixed output is not tapped yet, see UNITY-5</td></tr>
+<tr><td>Vertex options (local translation, rotation, scale)</td><td>not mapped</td><td>the engine has a vertex hook now (UNITY-11) but it is shader code, so a converted material has nothing to map these to: write the hook by hand (template <code>zestengine_wind_sway.frag</code>); the report still lists them</td></tr>
+<tr><td>Voronoi, truchet, pathing, depth FX, mirror, proximity colour, stats overlay</td><td>not supported</td><td>low</td></tr>
+<tr><td>TPS, SSAO, contact shadows, squish, fur, tessellation (Pro)</td><td>fur and tessellation exist in the engine (UNITY-12) but are not mapped from Poiyomi properties (names unverified: no Pro material on this machine); the rest not supported</td><td>low</td></tr>
+<tr><td>LTCGI-style area lights</td><td>engine <code>Area Light</code> component (own LTC implementation)</td><td>rectangle / disc, texture, no shadows, 8 nearest; see the UNITY-12 notes below. No Unity converter (LTCGI is a scripted integration)</td></tr>
+<tr><td>Light Volumes</td><td>engine <code>Light Probe Volume</code> in Light Volume mode (blend distance &gt; 0)</td><td>L1 SH, weight blend, edge fade; no converter (VRC Light Volumes are an external tool)</td></tr>
+<tr><td>Bakery and other baked-lighting options</td><td>not supported</td><td>low</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="mochie-shaders"><a class="header" href="#mochie-shaders">Mochie shaders</a></h2>
+<p>Source: the project wiki lists Standard, Water, Glass, Particle, Screen FX, LED Screen,
+Uber, Avatar Props, Underwater Visuals, Corruption, Splat mapping and Taken
+(some Patreon-only). Only <strong>Standard</strong> has a converter.</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Mochie Standard feature</th><th>ZestEngine</th><th>Priority</th></tr>
+</thead>
+<tbody>
+<tr><td>Base colour / albedo, tiling and offset</td><td>Albedo slot, base colour (linear)</td><td>done</td></tr>
+<tr><td>Normal map and strength</td><td>Normal slot, <code>normal_strength</code></td><td>done</td></tr>
+<tr><td>Metallic and roughness / smoothness maps, occlusion</td><td>repacked ORM texture</td><td>done (check the roughness direction visually)</td></tr>
+<tr><td>Packed map workflow</td><td>repacked ORM covers the common layouts</td><td>done as a repack; no separate feature</td></tr>
+<tr><td>Specular workflow</td><td>approximated</td><td>low</td></tr>
+<tr><td>Emission map, colour, mask</td><td>Emission slot, colour</td><td>done; mask low</td></tr>
+<tr><td>Emission pulse, audio link</td><td>not supported</td><td>low / medium (with AudioLink)</td></tr>
+<tr><td>Height map, parallax occlusion mapping</td><td>Displacement slot</td><td>done (approx)</td></tr>
+<tr><td>Detail textures (albedo / normal / metallic / roughness, blend modes)</td><td><code>detail</code> layer (albedo, normal, ORM, mask)</td><td>done for Unity Standard / URP / HDRP names (Mochie's own property names are unverified: no Mochie Standard material on the machine)</td></tr>
+<tr><td>Alpha: blending mode, cutoff, alpha source</td><td>alpha mode and cutoff</td><td>done</td></tr>
+<tr><td>Culling</td><td>double sided</td><td>done</td></tr>
+<tr><td>Screen-space reflections, contact hardening, specular occlusion</td><td>not supported (the engine has its own SSR / RT reflections)</td><td>low: map <code>_SSR</code> to <code>screen_reflections</code></td></tr>
+<tr><td>Reflection / specular models (Unity Standard, Filament)</td><td>not supported</td><td>low</td></tr>
+<tr><td>Subsurface scattering</td><td>thin translucency exists in the PBR shader</td><td>the Mochie property names are unverified (no Mochie Standard material on the machine); HDRP <code>_MaterialID</code> / <code>_ThicknessMap</code> / <code>_TransmissionTint</code> map to it</td></tr>
+<tr><td>Rain, puddles, wind (vertex)</td><td>not supported</td><td>low</td></tr>
+<tr><td>Triplanar, mip-map rescaling, extra UV sets</td><td>not supported</td><td>low</td></tr>
+<tr><td>Integrations: Bakery, AreaLit</td><td>not supported</td><td>low</td></tr>
+<tr><td>Water, Glass, Particle, Screen FX, LED, Uber, Underwater, Corruption</td><td>not supported; placeholder + report</td><td>Screen FX: use the ZestEngine Screen FX shader by hand (no converter); Glass: the grab pass now exists, no converter (property names unknown); Water: the engine has its own water; the rest low</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="liltoon-and-mtoon-also-converted"><a class="header" href="#liltoon-and-mtoon-also-converted">lilToon and MToon (also converted)</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Concept</th><th>Properties (serialised names)</th><th>ZestEngine</th></tr>
+</thead>
+<tbody>
+<tr><td>lil base</td><td><code>_Color</code>, <code>_MainTex</code>, <code>_Cutoff</code>, <code>_TransparentMode</code>, <code>_Cull</code></td><td>albedo, alpha, cull (refraction / fur / gem modes reported)</td></tr>
+<tr><td>lil shadows</td><td><code>_UseShadow</code>, <code>_ShadowColor</code>, <code>_ShadowBorder</code>, <code>_ShadowBlur</code>, <code>_ShadowStrength</code>, <code>_Shadow2nd*</code></td><td>layers 1-2</td></tr>
+<tr><td>lil rim</td><td><code>_UseRim</code>, <code>_RimColor</code>, <code>_RimBorder</code>, <code>_RimBlur</code></td><td><code>rim_*</code> (approx)</td></tr>
+<tr><td>lil matcap</td><td><code>_UseMatCap</code>, <code>_MatCapTex</code>, <code>_MatCapBlend</code>, <code>_MatCapBlendMode</code>, <code>_MatCapBlendMask</code></td><td><code>matcap_*</code></td></tr>
+<tr><td>lil emission, outline</td><td><code>_UseEmission</code>, <code>_EmissionMap</code>, <code>_EmissionColor</code>; <code>_OutlineWidth</code>, <code>_OutlineColor</code> (outline shader variants only)</td><td><code>emission_*</code>, <code>OUTLINE</code></td></tr>
+<tr><td>MToon</td><td><code>_ShadeColor</code>, <code>_ShadeShift</code>, <code>_ShadeToony</code>, <code>_ReceiveShadowRate</code>, <code>_RimColor</code>, <code>_RimFresnelPower</code>, <code>_SphereAdd</code>, <code>_OutlineWidth</code>, <code>_BlendMode</code>, <code>_CullMode</code></td><td>shadow colour / border / blur, rim, additive sphere as matcap, outline, alpha, cull</td></tr>
+<tr><td>MToon gaps</td><td><code>_ShadeTexture</code>, UV animation, outline width modes</td><td>not supported (low)</td></tr>
+</tbody>
+</table>
+</div>
+<p>VRM models imported as glTF (<code>VRMC_materials_mtoon</code>, VRM 0.x <code>materialProperties</code>) are read by
+<code>mtoon.rs</code>, which feeds the same table; wiring it into the model importer is open (UNITY-9).</p>
+<h2 id="licences-recorded-not-depended-on"><a class="header" href="#licences-recorded-not-depended-on">Licences (recorded, not depended on)</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Project</th><th>Licence as stated publicly</th><th>Note</th></tr>
+</thead>
+<tbody>
+<tr><td>Poiyomi Toon Shader (free, 9.x-10.x)</td><td>MIT (<code>LICENSE.txt</code> in the repository)</td><td>The repository asks that avatars do <strong>not</strong> bundle the <code>_PoiyomiShaders</code> folder. Pro is a paid Patreon tier; its shader source is private and its terms apply.</td></tr>
+<tr><td>PoiyomiDocs (documentation)</td><td>MIT</td><td></td></tr>
+<tr><td>ThryEditor (Poiyomi's inspector)</td><td>MIT</td><td></td></tr>
+<tr><td>Mochie's Unity Shaders</td><td>MIT (public repository); some shaders Patreon-only (terms of that distribution apply)</td><td></td></tr>
+<tr><td>lilToon</td><td>MIT (public repository; not re-checked in this pass)</td><td></td></tr>
+<tr><td>UniVRM MToon</td><td>MIT (not re-checked in this pass)</td><td></td></tr>
+<tr><td>Unity built-in shaders</td><td>Unity's terms; the built-in Standard is identified by GUID only</td><td></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="sources"><a class="header" href="#sources">Sources</a></h2>
+<ul>
+<li>Poiyomi documentation source (Docusaurus): https://github.com/poiyomi/PoiyomiDocs
+(sections <code>docs/shading</code>, <code>docs/color-and-normals</code>, <code>docs/special-fx</code>, <code>docs/outlines</code>,
+<code>docs/rendering</code>, <code>docs/vertex-options</code>, <code>docs/audio-link</code>; the hosted site
+docs.poiyomi.com was not reachable from the build machine, so the repository's
+<code>shading/main.mdx</code> and <code>color-and-normals/alpha-options.mdx</code> were read for the
+lighting modes and alpha options)</li>
+<li>Poiyomi Toon Shader repository and licence: https://github.com/poiyomi/PoiyomiToonShader</li>
+<li>Mochie's Unity Shaders repository: https://github.com/MochiesCode/Mochies-Unity-Shaders</li>
+<li>Mochie wiki, Standard Shader page (setting labels):
+https://github.com/MochiesCode/Mochies-Unity-Shaders/wiki/Standard-Shader</li>
+<li>Mochie wiki, Home (shader list): https://github.com/MochiesCode/Mochies-Unity-Shaders/wiki</li>
+</ul>
+<h2 id="unverified"><a class="header" href="#unverified">Unverified</a></h2>
+<ul>
+<li>Serialised property names for Poiyomi 9/10, Mochie Standard, lilToon and MToon
+come from the documented labels and naming conventions; the Mochie Standard and
+Poiyomi blend-mode enum values and the Poiyomi lighting mode order follow the
+docs' list order. Verify with a real exported avatar and adjust the alias tables
+(<code>POIYOMI</code>, <code>LILTOON</code>, <code>MTOON</code> in <code>unity_convert.rs</code>).</li>
+<li>Outline width scale (Poiyomi x5) and the lilToon / MToon rim mappings are
+approximations. Everything marked Approximated in a report needs a visual check.</li>
+<li>Unity <code>.mat</code> files that Unity wrote in binary mode are not read.</li>
+<li>The aliases added for UNITY-3 to UNITY-10 (table above) are likewise names from
+the shaders' documentation and conventions; lilToon's refraction, <code>_MainTexHSVG</code>,
+<code>_Shadow3rd*</code>, <code>_MatCap2nd*</code>, <code>_Emission2nd*</code> and <code>_Main2nd*</code> names are the
+better known ones, the Poiyomi grab pass, flipbook, panosphere, AudioLink,
+dissolve and decal names are the least certain. A wrong name only means the
+feature is not carried over and shows in the report as an unmapped property.</li>
+<li>VRM 0.x <code>vectorProperties</code> colours are read as linear (UniVRM writes them
+linear); VRM outline widths use a fixed scale (0.002 m, or 0.4 cm in 0.x, is one
+ZestEngine outline unit).</li>
+<li>The grab pass was checked in the main viewport pass of a real renderer only. The
+Toon <code>GRAB</code> distortion direction (normal x to the right, y up on screen) was
+checked by the seam moving; the VR multiview path was not exercised.</li>
+</ul>
+<h2 id="real-data-check-this-pass"><a class="header" href="#real-data-check-this-pass">Real-data check (this pass)</a></h2>
+<p>Property names were read from <code>.mat</code> files only: a Unity project (<code>~/storage/avis/lemon_meringue</code>,
+735 materials, 247 identified as Poiyomi), the Poiyomi 9.3 / 10 / 11 and Mochie 1.65 / 1.69 / 1.75
+<code>.unitypackage</code> files and several avatar packages. <code>unity_convert.rs</code> carries
+<code>real_poiyomi_materials_map_the_verified_names</code> (skipped when the project is absent). Findings:
+the grab-pass names in the first draft were wrong (<code>_EnableGrabpass</code>, <code>_GrabpassColor</code>,
+<code>_GrabBlurDistance</code> are the real ones), as were <code>_DissolveCutoff</code>, <code>_FlipbookTex</code>,
+<code>_FlipbookColumns</code> / <code>_Rows</code>, <code>_PanoRotationSpeed</code> and the AudioLink emission / rim names; decal,
+detail, panosphere, dissolve and flipbook-enable names were right. The only real grab-pass materials
+found are Poiyomi <em>preset</em> files (shader guid 0), so the grab mapping is checked on names, not on a
+shipped avatar. Mochie Screen FX has one real material (the prefab) whose effect toggles are all off,
+so the effect-amount scales (px per unit) are choices, and the <code>*Model</code> enums are only assumed to
+be 0 = off. No Mochie Glass or Mochie Standard material exists on the machine.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="shaders.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="dedicated-server.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="shaders.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="dedicated-server.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-09f2665d.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-609e4cb8.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

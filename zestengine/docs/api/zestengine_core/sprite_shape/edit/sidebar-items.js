@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["SplineOp"],"fn":["append_point","apply_op","cycle_mode","move_point","move_tangent","nearest_on_spline","segment_count","set_height","set_mode","snap","split_segment","toggle_corner"],"struct":["SplineHistory"]};

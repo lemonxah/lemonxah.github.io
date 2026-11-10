@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["ResolvedWaterConnection","WaterConnection","WaterOverlap","WaterSurfaceConnection"]};

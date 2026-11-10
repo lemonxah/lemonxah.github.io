@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["mod_actions","register_mod_root","register_untrusted_root","unregister_mod_root","untrusted_policy"],"mod":["abi","component","sandbox"],"struct":["UntrustedPolicy"]};

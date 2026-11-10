@@ -1,0 +1,378 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/zestengine-core/src/cloth_contact.rs`."><title>cloth_contact.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-0c87338a.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="zestengine_core" data-themes="" data-resource-suffix="" data-rustdoc-version="1.99.1 (58cf8f9c3 2026-10-13)" data-channel="1.99.1" data-search-js="search-cf4fc35e.js" data-stringdex-js="stringdex-b5109af9.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="../../static.files/src-script-813739b1.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-417ebf0a.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-9f56287d.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><h1><div class="sub-heading">zestengine_core/</div>cloth_contact.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-3"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="doccomment">//! Swept cloth contact primitives. Conservative advancement uses a bound on
+<a href=#2 id=2 data-nosnippet>2</a>//! relative feature speed, not a fixed number of time samples. Queries that
+<a href=#3 id=3 data-nosnippet>3</a>//! exhaust their iteration budget return a conservative contact at the last
+<a href=#4 id=4 data-nosnippet>4</a>//! proven-safe time rather than silently accepting a possible crossing.
+<a href=#5 id=5 data-nosnippet>5</a></span><span class="kw">use </span>glam::{Vec3, Quat};
+<a href=#6 id=6 data-nosnippet>6</a><span class="kw">use </span><span class="kw">crate</span>::ClothShapeWorld;
+<a href=#7 id=7 data-nosnippet>7</a><span class="attr">#[path=<span class="string">"cloth_contact_mapping.rs"</span>]
+<a href=#8 id=8 data-nosnippet>8</a></span><span class="kw">mod </span>mapping;
+<a href=#9 id=9 data-nosnippet>9</a><span class="kw">pub use </span>mapping::ClothContactMapping;
+<a href=#10 id=10 data-nosnippet>10</a><span class="attr">#[path=<span class="string">"cloth_surface.rs"</span>]
+<a href=#11 id=11 data-nosnippet>11</a></span><span class="kw">mod </span>surface;
+<a href=#12 id=12 data-nosnippet>12</a><span class="kw">pub use </span>surface::ClothSurfaceContact;
+<a href=#13 id=13 data-nosnippet>13</a><span class="attr">#[path=<span class="string">"cloth_untangle.rs"</span>]
+<a href=#14 id=14 data-nosnippet>14</a></span><span class="kw">mod </span>untangling;
+<a href=#15 id=15 data-nosnippet>15</a>
+<a href=#16 id=16 data-nosnippet>16</a><span class="attr">#[derive(Clone, Debug)]
+<a href=#17 id=17 data-nosnippet>17</a></span><span class="kw">pub struct </span>ClothColliderMotion {
+<a href=#18 id=18 data-nosnippet>18</a>    <span class="kw">pub </span>start: ClothShapeWorld,
+<a href=#19 id=19 data-nosnippet>19</a>    <span class="kw">pub </span>end: ClothShapeWorld,
+<a href=#20 id=20 data-nosnippet>20</a>}
+<a href=#21 id=21 data-nosnippet>21</a><span class="kw">impl </span>ClothColliderMotion {
+<a href=#22 id=22 data-nosnippet>22</a>    <span class="kw">pub fn </span>stationary(shape:ClothShapeWorld)-&gt;<span class="self">Self</span>{<span class="self">Self</span>{start:shape.clone(),end:shape}}
+<a href=#23 id=23 data-nosnippet>23</a>    <span class="doccomment">/// Prepare field motion once per collider/substep rather than per particle.
+<a href=#24 id=24 data-nosnippet>24</a>    </span><span class="kw">pub fn </span>prepare(<span class="kw-2">&amp;</span><span class="self">self</span>)-&gt;ClothColliderQuery&lt;<span class="lifetime">'_</span>&gt;{ClothColliderQuery{motion:<span class="self">self</span>,field:<span class="self">self</span>.level_set()}}
+<a href=#25 id=25 data-nosnippet>25</a>    <span class="kw">fn </span>level_set(<span class="kw-2">&amp;</span><span class="self">self</span>)-&gt;<span class="prelude-ty">Option</span>&lt;<span class="kw">crate</span>::cloth_sdf::ClothSdfMotion&gt;{
+<a href=#26 id=26 data-nosnippet>26</a>        <span class="kw">let </span>ClothShapeWorld::LevelSet(end)=<span class="kw-2">&amp;</span><span class="self">self</span>.end <span class="kw">else</span>{<span class="kw">return </span><span class="prelude-val">None</span>};
+<a href=#27 id=27 data-nosnippet>27</a>        <span class="kw">let </span>start=<span class="kw">if let </span>ClothShapeWorld::LevelSet(start)=<span class="kw-2">&amp;</span><span class="self">self</span>.start{start.clone()}<span class="kw">else</span>{end.clone()};
+<a href=#28 id=28 data-nosnippet>28</a>        <span class="comment">// A handedness flip cannot be swept through a nonsingular frame.
+<a href=#29 id=29 data-nosnippet>29</a>        // Treat it as replacement geometry and still enforce its final body.
+<a href=#30 id=30 data-nosnippet>30</a>        </span><span class="kw">crate</span>::cloth_sdf::ClothSdfMotion::new(start,end.clone()).or_else(|<span class="kw">_</span>|<span class="kw">crate</span>::cloth_sdf::ClothSdfMotion::new(end.clone(),end.clone())).ok()
+<a href=#31 id=31 data-nosnippet>31</a>    }
+<a href=#32 id=32 data-nosnippet>32</a>    <span class="kw">pub fn </span>at(<span class="kw-2">&amp;</span><span class="self">self</span>,t:f32)-&gt;ClothShapeWorld {
+<a href=#33 id=33 data-nosnippet>33</a>        <span class="kw">use </span>ClothShapeWorld::<span class="kw-2">*</span>;
+<a href=#34 id=34 data-nosnippet>34</a>        <span class="kw">match </span>(<span class="self">self</span>.start.clone(),<span class="self">self</span>.end.clone()) {
+<a href=#35 id=35 data-nosnippet>35</a>            (Sphere{c:a,r:ra},Sphere{c:b,r:rb})=&gt;Sphere{c:a.lerp(b,t),r:ra+(rb-ra)<span class="kw-2">*</span>t},
+<a href=#36 id=36 data-nosnippet>36</a>            (Capsule{a:a0,b:b0,ra:ra0,rb:rb0},Capsule{a:a1,b:b1,ra:ra1,rb:rb1})=&gt;Capsule{a:a0.lerp(a1,t),b:b0.lerp(b1,t),ra:ra0+(ra1-ra0)<span class="kw-2">*</span>t,rb:rb0+(rb1-rb0)<span class="kw-2">*</span>t},
+<a href=#37 id=37 data-nosnippet>37</a>            (Plane{p:a,n:na},Plane{p:b,n:nb})=&gt;{
+<a href=#38 id=38 data-nosnippet>38</a>                <span class="kw">let </span>na=na.normalize_or(Vec3::Y);<span class="kw">let </span>nb=nb.normalize_or(Vec3::Y);
+<a href=#39 id=39 data-nosnippet>39</a>                <span class="kw">let </span>n=Quat::IDENTITY.slerp(Quat::from_rotation_arc(na,nb),t)<span class="kw-2">*</span>na;
+<a href=#40 id=40 data-nosnippet>40</a>                Plane{p:a.lerp(b,t),n}
+<a href=#41 id=41 data-nosnippet>41</a>            },
+<a href=#42 id=42 data-nosnippet>42</a>            (LevelSet(a),LevelSet(b))=&gt;{
+<a href=#43 id=43 data-nosnippet>43</a>                <span class="kw">let </span>world=<span class="kw">crate</span>::cloth_sdf::ClothSdfMotion::new(a,b.clone()).map(|m|m.at(t)).unwrap_or(b.transform());
+<a href=#44 id=44 data-nosnippet>44</a>                <span class="kw">crate</span>::cloth_sdf::ClothSdfShape::new(b.field.clone(),world).map(|s|LevelSet(std::sync::Arc::new(s))).unwrap_or(Disabled)
+<a href=#45 id=45 data-nosnippet>45</a>            },
+<a href=#46 id=46 data-nosnippet>46</a>            <span class="comment">// A replacement is a new collider, not a sweep through unrelated geometry.
+<a href=#47 id=47 data-nosnippet>47</a>            </span><span class="kw">_</span>=&gt;<span class="self">self</span>.end.clone(),
+<a href=#48 id=48 data-nosnippet>48</a>        }
+<a href=#49 id=49 data-nosnippet>49</a>    }
+<a href=#50 id=50 data-nosnippet>50</a>    <span class="kw">pub fn </span>interval(<span class="kw-2">&amp;</span><span class="self">self</span>,a:f32,b:f32)-&gt;<span class="self">Self</span>{<span class="self">Self</span>{start:<span class="self">self</span>.at(a),end:<span class="self">self</span>.at(b)}}
+<a href=#51 id=51 data-nosnippet>51</a>    <span class="kw">fn </span>speed_bound(<span class="kw-2">&amp;</span><span class="self">self</span>,p0:Vec3,p1:Vec3)-&gt;f32 {
+<a href=#52 id=52 data-nosnippet>52</a>        <span class="kw">use </span>ClothShapeWorld::<span class="kw-2">*</span>;
+<a href=#53 id=53 data-nosnippet>53</a>        <span class="kw">let </span>v=p1-p0;
+<a href=#54 id=54 data-nosnippet>54</a>        <span class="kw">match </span>(<span class="self">self</span>.start.clone(),<span class="self">self</span>.end.clone()) {
+<a href=#55 id=55 data-nosnippet>55</a>            (Sphere{c:a,r:ra},Sphere{c:b,r:rb})=&gt;(v-(b-a)).length()+(rb-ra).abs(),
+<a href=#56 id=56 data-nosnippet>56</a>            (Capsule{a:a0,b:b0,ra:ra0,rb:rb0},Capsule{a:a1,b:b1,ra:ra1,rb:rb1})=&gt;
+<a href=#57 id=57 data-nosnippet>57</a>                (v-(a1-a0)).length().max((v-(b1-b0)).length())+(ra1-ra0).abs().max((rb1-rb0).abs()),
+<a href=#58 id=58 data-nosnippet>58</a>            (Plane{p:a,n:na},Plane{p:b,n:nb})=&gt;{
+<a href=#59 id=59 data-nosnippet>59</a>                <span class="kw">let </span>angle=na.normalize_or(Vec3::Y).dot(nb.normalize_or(Vec3::Y)).clamp(-<span class="number">1.0</span>,<span class="number">1.0</span>).acos();
+<a href=#60 id=60 data-nosnippet>60</a>                (v-(b-a)).length()+angle<span class="kw-2">*</span>(p0-a).length().max((p1-b).length())
+<a href=#61 id=61 data-nosnippet>61</a>            },
+<a href=#62 id=62 data-nosnippet>62</a>            <span class="kw">_</span>=&gt;v.length(),
+<a href=#63 id=63 data-nosnippet>63</a>        }
+<a href=#64 id=64 data-nosnippet>64</a>    }
+<a href=#65 id=65 data-nosnippet>65</a>}
+<a href=#66 id=66 data-nosnippet>66</a>
+<a href=#67 id=67 data-nosnippet>67</a><span class="kw">pub struct </span>ClothColliderQuery&lt;<span class="lifetime">'a</span>&gt;{motion:<span class="kw-2">&amp;</span><span class="lifetime">'a </span>ClothColliderMotion,field:<span class="prelude-ty">Option</span>&lt;<span class="kw">crate</span>::cloth_sdf::ClothSdfMotion&gt;}
+<a href=#68 id=68 data-nosnippet>68</a><span class="kw">impl </span>ClothColliderQuery&lt;<span class="lifetime">'_</span>&gt;{
+<a href=#69 id=69 data-nosnippet>69</a>    <span class="kw">pub fn </span>end(<span class="kw-2">&amp;</span><span class="self">self</span>)-&gt;<span class="kw-2">&amp;</span>ClothShapeWorld{<span class="kw-2">&amp;</span><span class="self">self</span>.motion.end}
+<a href=#70 id=70 data-nosnippet>70</a>    <span class="kw">pub fn </span>resolve(<span class="kw-2">&amp;</span><span class="self">self</span>,p0:Vec3,p1:Vec3,radius:f32)-&gt;<span class="prelude-ty">Option</span>&lt;(Vec3,Vec3,Vec3)&gt;{
+<a href=#71 id=71 data-nosnippet>71</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(field)=<span class="kw-2">&amp;</span><span class="self">self</span>.field{field.resolve(p0,p1,radius)}<span class="kw">else</span>{resolve_cloth_collider(p0,p1,radius,<span class="self">self</span>.motion.clone())}
+<a href=#72 id=72 data-nosnippet>72</a>    }
+<a href=#73 id=73 data-nosnippet>73</a>    <span class="kw">pub fn </span>segment(<span class="kw-2">&amp;</span><span class="self">self</span>,start:[Vec3;<span class="number">2</span>],end:[Vec3;<span class="number">2</span>],radii:[f32;<span class="number">2</span>])-&gt;<span class="prelude-ty">Option</span>&lt;(f32,Vec3,Vec3,Vec3)&gt;{
+<a href=#74 id=74 data-nosnippet>74</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(field)=<span class="kw-2">&amp;</span><span class="self">self</span>.field{field.resolve_segment(start,end,radii)}<span class="kw">else</span>{resolve_cloth_segment(start,end,radii,<span class="self">self</span>.motion.clone())}
+<a href=#75 id=75 data-nosnippet>75</a>    }
+<a href=#76 id=76 data-nosnippet>76</a>}
+<a href=#77 id=77 data-nosnippet>77</a>
+<a href=#78 id=78 data-nosnippet>78</a><span class="attr">#[derive(Clone, Copy, Debug)]
+<a href=#79 id=79 data-nosnippet>79</a></span><span class="kw">pub struct </span>ClothSweep {
+<a href=#80 id=80 data-nosnippet>80</a>    <span class="kw">pub </span>time:f32,
+<a href=#81 id=81 data-nosnippet>81</a>    <span class="doccomment">/// Outward normal from the obstacle/second feature to the first feature.
+<a href=#82 id=82 data-nosnippet>82</a>    </span><span class="kw">pub </span>normal:Vec3,
+<a href=#83 id=83 data-nosnippet>83</a>    <span class="doccomment">/// A conservative bound was reached before an exact proximity was found.
+<a href=#84 id=84 data-nosnippet>84</a>    </span><span class="kw">pub </span>conservative:bool,
+<a href=#85 id=85 data-nosnippet>85</a>}
+<a href=#86 id=86 data-nosnippet>86</a><span class="attr">#[derive(Clone, Copy, Debug)]
+<a href=#87 id=87 data-nosnippet>87</a></span><span class="kw">pub struct </span>ClothFeatureContact {
+<a href=#88 id=88 data-nosnippet>88</a>    <span class="kw">pub </span>sweep:ClothSweep,
+<a href=#89 id=89 data-nosnippet>89</a>    <span class="doccomment">/// Coefficients of first feature minus second feature (sum is zero).
+<a href=#90 id=90 data-nosnippet>90</a>    </span><span class="kw">pub </span>coefficients:[f32;<span class="number">4</span>],
+<a href=#91 id=91 data-nosnippet>91</a>}
+<a href=#92 id=92 data-nosnippet>92</a>
+<a href=#93 id=93 data-nosnippet>93</a><span class="doccomment">/// Returns the first proximity along a continuous path. Distance is Lipschitz
+<a href=#94 id=94 data-nosnippet>94</a>/// with `speed`; all skipped intervals are therefore proven separated.
+<a href=#95 id=95 data-nosnippet>95</a></span><span class="kw">fn </span>advance(<span class="kw-2">mut </span>distance:<span class="kw">impl </span>FnMut(f32)-&gt;f32,speed:f32,margin:f32)-&gt;<span class="prelude-ty">Option</span>&lt;(f32,bool)&gt; {
+<a href=#96 id=96 data-nosnippet>96</a>    <span class="kw">let </span>tolerance=(margin<span class="kw-2">*</span><span class="number">1e-4</span>).max(<span class="number">1e-7</span>);
+<a href=#97 id=97 data-nosnippet>97</a>    <span class="kw">let </span><span class="kw-2">mut </span>t=<span class="number">0.0</span>;
+<a href=#98 id=98 data-nosnippet>98</a>    <span class="kw">for _ in </span><span class="number">0</span>..<span class="number">192 </span>{
+<a href=#99 id=99 data-nosnippet>99</a>        <span class="kw">let </span>gap=distance(t)-margin;
+<a href=#100 id=100 data-nosnippet>100</a>        <span class="kw">if </span>!gap.is_finite(){<span class="kw">return </span><span class="prelude-val">None</span>;}
+<a href=#101 id=101 data-nosnippet>101</a>        <span class="kw">if </span>gap&lt;=tolerance{<span class="kw">return </span><span class="prelude-val">Some</span>((t,<span class="bool-val">false</span>));}
+<a href=#102 id=102 data-nosnippet>102</a>        <span class="kw">if </span>speed&lt;=<span class="number">1e-12</span>{<span class="kw">return </span><span class="prelude-val">None</span>;}
+<a href=#103 id=103 data-nosnippet>103</a>        <span class="kw">let </span>safe=gap/speed;
+<a href=#104 id=104 data-nosnippet>104</a>        <span class="kw">if </span>safe&gt;<span class="number">1.0</span>-t{<span class="kw">return </span><span class="prelude-val">None</span>;}
+<a href=#105 id=105 data-nosnippet>105</a>        <span class="kw">let </span>next=t+safe<span class="kw-2">*</span><span class="number">0.9</span>;
+<a href=#106 id=106 data-nosnippet>106</a>        <span class="kw">if </span>next&lt;=t{<span class="kw">return </span><span class="prelude-val">Some</span>((t,<span class="bool-val">true</span>));}
+<a href=#107 id=107 data-nosnippet>107</a>        t=next;
+<a href=#108 id=108 data-nosnippet>108</a>    }
+<a href=#109 id=109 data-nosnippet>109</a>    <span class="prelude-val">Some</span>((t,<span class="bool-val">true</span>))
+<a href=#110 id=110 data-nosnippet>110</a>}
+<a href=#111 id=111 data-nosnippet>111</a>
+<a href=#112 id=112 data-nosnippet>112</a><span class="doccomment">/// Signed distance to the union of linearly tapered spheres. Unlike projecting
+<a href=#113 id=113 data-nosnippet>113</a>/// onto the axis, this finds the true closest taper parameter.
+<a href=#114 id=114 data-nosnippet>114</a></span><span class="kw">fn </span>shape_sample(p:Vec3,shape:ClothShapeWorld)-&gt;(f32,Vec3,f32) {
+<a href=#115 id=115 data-nosnippet>115</a>    <span class="kw">match </span>shape {
+<a href=#116 id=116 data-nosnippet>116</a>        ClothShapeWorld::Disabled=&gt;(f32::INFINITY,Vec3::Y,<span class="number">0.0</span>),
+<a href=#117 id=117 data-nosnippet>117</a>        ClothShapeWorld::LevelSet(sdf)=&gt;{<span class="kw">let</span>(d,n)=sdf.sample(p);(d,n,<span class="number">0.0</span>)},
+<a href=#118 id=118 data-nosnippet>118</a>        ClothShapeWorld::Sphere{c,r}=&gt;{<span class="kw">let </span>d=p-c;(d.length()-r.max(<span class="number">0.0</span>),d.normalize_or(Vec3::Y),<span class="number">0.0</span>)},
+<a href=#119 id=119 data-nosnippet>119</a>        ClothShapeWorld::Capsule{a,b,ra,rb}=&gt;{
+<a href=#120 id=120 data-nosnippet>120</a>            <span class="kw">let </span>e=b-a;<span class="kw">let </span>length=e.length();<span class="kw">let </span>dr=rb-ra;
+<a href=#121 id=121 data-nosnippet>121</a>            <span class="kw">let </span>t=<span class="kw">if </span>length&lt;<span class="number">1e-8 </span>{<span class="kw">if </span>rb&gt;ra{<span class="number">1.0</span>}<span class="kw">else</span>{<span class="number">0.0</span>}}
+<a href=#122 id=122 data-nosnippet>122</a>                <span class="kw">else if </span>dr.abs()&gt;=length{<span class="kw">if </span>dr&gt;<span class="number">0.0</span>{<span class="number">1.0</span>}<span class="kw">else</span>{<span class="number">0.0</span>}}
+<a href=#123 id=123 data-nosnippet>123</a>                <span class="kw">else</span>{<span class="kw">let </span>axis=e/length;<span class="kw">let </span>x=(p-a).dot(axis);<span class="kw">let </span>h=((p-a)-axis<span class="kw-2">*</span>x).length();((x+dr<span class="kw-2">*</span>h/(length<span class="kw-2">*</span>length-dr<span class="kw-2">*</span>dr).sqrt())/length).clamp(<span class="number">0.0</span>,<span class="number">1.0</span>)};
+<a href=#124 id=124 data-nosnippet>124</a>            <span class="kw">let </span>d=p-a.lerp(b,t);(d.length()-(ra+dr<span class="kw-2">*</span>t).max(<span class="number">0.0</span>),d.normalize_or(e.normalize_or(Vec3::Y).any_orthonormal_vector()),t)
+<a href=#125 id=125 data-nosnippet>125</a>        },
+<a href=#126 id=126 data-nosnippet>126</a>        ClothShapeWorld::Plane{p:o,n}=&gt;{<span class="kw">let </span>n=n.normalize_or(Vec3::Y);((p-o).dot(n),n,<span class="number">0.0</span>)},
+<a href=#127 id=127 data-nosnippet>127</a>    }
+<a href=#128 id=128 data-nosnippet>128</a>}
+<a href=#129 id=129 data-nosnippet>129</a><span class="kw">pub fn </span>cloth_shape_distance(p:Vec3,shape:ClothShapeWorld)-&gt;(f32,Vec3){<span class="kw">let</span>(d,n,<span class="kw">_</span>)=shape_sample(p,shape);(d,n)}
+<a href=#130 id=130 data-nosnippet>130</a>
+<a href=#131 id=131 data-nosnippet>131</a><span class="kw">pub fn </span>sweep_cloth_collider(p0:Vec3,p1:Vec3,radius:f32,motion:ClothColliderMotion)-&gt;<span class="prelude-ty">Option</span>&lt;ClothSweep&gt;{
+<a href=#132 id=132 data-nosnippet>132</a>    <span class="kw">if </span>!p0.is_finite()||!p1.is_finite(){<span class="kw">return </span><span class="prelude-val">None</span>;}
+<a href=#133 id=133 data-nosnippet>133</a>    <span class="kw">if let </span><span class="prelude-val">Some</span>(sdf)=motion.level_set(){<span class="kw">return </span>sdf.first_contact(p0,p1,radius);}
+<a href=#134 id=134 data-nosnippet>134</a>    <span class="kw">let</span>(t,conservative)=advance(|t|shape_sample(p0.lerp(p1,t),motion.at(t)).<span class="number">0</span>,motion.speed_bound(p0,p1),radius.max(<span class="number">0.0</span>))<span class="question-mark">?</span>;
+<a href=#135 id=135 data-nosnippet>135</a>    <span class="prelude-val">Some</span>(ClothSweep{time:t,normal:shape_sample(p0.lerp(p1,t),motion.at(t)).<span class="number">1</span>,conservative})
+<a href=#136 id=136 data-nosnippet>136</a>}
+<a href=#137 id=137 data-nosnippet>137</a>
+<a href=#138 id=138 data-nosnippet>138</a><span class="doccomment">/// Position response against a moving primitive, and its contact displacement
+<a href=#139 id=139 data-nosnippet>139</a>/// over the whole interval (used for friction in the collider's moving frame).
+<a href=#140 id=140 data-nosnippet>140</a></span><span class="kw">pub fn </span>resolve_cloth_collider(p0:Vec3,p1:Vec3,radius:f32,motion:ClothColliderMotion)-&gt;<span class="prelude-ty">Option</span>&lt;(Vec3,Vec3,Vec3)&gt; {
+<a href=#141 id=141 data-nosnippet>141</a>    <span class="kw">if let </span><span class="prelude-val">Some</span>(sdf)=motion.level_set(){<span class="kw">return </span>sdf.resolve(p0,p1,radius);}
+<a href=#142 id=142 data-nosnippet>142</a>    <span class="kw">let </span>hit=sweep_cloth_collider(p0,p1,radius,motion.clone())<span class="question-mark">?</span>;
+<a href=#143 id=143 data-nosnippet>143</a>    respond_to_collider(p0,p1,radius,motion,hit)
+<a href=#144 id=144 data-nosnippet>144</a>}
+<a href=#145 id=145 data-nosnippet>145</a>
+<a href=#146 id=146 data-nosnippet>146</a><span class="kw">fn </span>respond_to_collider(p0:Vec3,p1:Vec3,radius:f32,motion:ClothColliderMotion,hit:ClothSweep)-&gt;<span class="prelude-ty">Option</span>&lt;(Vec3,Vec3,Vec3)&gt; {
+<a href=#147 id=147 data-nosnippet>147</a>    <span class="kw">let </span>at=p0.lerp(p1,hit.time);<span class="kw">let </span>(<span class="kw">_</span>,normal,u)=shape_sample(at,motion.at(hit.time));
+<a href=#148 id=148 data-nosnippet>148</a>    <span class="kw">let </span>surface=|shape| <span class="kw">match </span>shape {
+<a href=#149 id=149 data-nosnippet>149</a>        ClothShapeWorld::Disabled | ClothShapeWorld::LevelSet(<span class="kw">_</span>) =&gt; at,
+<a href=#150 id=150 data-nosnippet>150</a>        ClothShapeWorld::Sphere{c,r}=&gt;c+normal<span class="kw-2">*</span>(r+radius),
+<a href=#151 id=151 data-nosnippet>151</a>        ClothShapeWorld::Capsule{a,b,ra,rb}=&gt;a.lerp(b,u)+normal<span class="kw-2">*</span>(ra+(rb-ra)<span class="kw-2">*</span>u+radius),
+<a href=#152 id=152 data-nosnippet>152</a>        ClothShapeWorld::Plane{p,n}=&gt;at-n.normalize_or(Vec3::Y)<span class="kw-2">*</span>((at-p).dot(n.normalize_or(Vec3::Y))-radius),
+<a href=#153 id=153 data-nosnippet>153</a>    };
+<a href=#154 id=154 data-nosnippet>154</a>    <span class="kw">let </span>support=surface(motion.end.clone());<span class="kw">let </span>displacement=surface(motion.end.clone())-surface(motion.start.clone());
+<a href=#155 id=155 data-nosnippet>155</a>    <span class="kw">let </span><span class="kw-2">mut </span>out=p1;
+<a href=#156 id=156 data-nosnippet>156</a>    <span class="kw">let </span>depth=(out-support).dot(normal);
+<a href=#157 id=157 data-nosnippet>157</a>    <span class="kw">if </span>depth&lt;<span class="number">0.0</span>{out-=normal<span class="kw-2">*</span>depth;}
+<a href=#158 id=158 data-nosnippet>158</a>    <span class="kw">let </span>(distance,end_normal)=cloth_shape_distance(out,motion.end);
+<a href=#159 id=159 data-nosnippet>159</a>    <span class="kw">if </span>distance&lt;radius{out+=end_normal<span class="kw-2">*</span>(radius-distance);}
+<a href=#160 id=160 data-nosnippet>160</a>    <span class="kw">if </span>out.distance_squared(p1)&lt;<span class="number">1e-18 </span>&amp;&amp; (p1-p0-displacement).dot(normal)&gt;=<span class="number">0.0</span>{<span class="kw">return </span><span class="prelude-val">None</span>;}
+<a href=#161 id=161 data-nosnippet>161</a>    <span class="prelude-val">Some</span>((out,normal,displacement))
+<a href=#162 id=162 data-nosnippet>162</a>}
+<a href=#163 id=163 data-nosnippet>163</a>
+<a href=#164 id=164 data-nosnippet>164</a><span class="doccomment">/// Swept contact of the whole segment, including its interior. The radius may
+<a href=#165 id=165 data-nosnippet>165</a>/// vary linearly along a bone chain. Convex distance along the segment is
+<a href=#166 id=166 data-nosnippet>166</a>/// minimized by its derivative; no fixed spatial samples can miss a thin body.
+<a href=#167 id=167 data-nosnippet>167</a></span><span class="kw">pub fn </span>resolve_cloth_segment(start:[Vec3;<span class="number">2</span>],end:[Vec3;<span class="number">2</span>],radii:[f32;<span class="number">2</span>],motion:ClothColliderMotion)-&gt;<span class="prelude-ty">Option</span>&lt;(f32,Vec3,Vec3,Vec3)&gt; {
+<a href=#168 id=168 data-nosnippet>168</a>    <span class="kw">if </span>start.iter().chain(<span class="kw-2">&amp;</span>end).any(|p|!p.is_finite()){<span class="kw">return </span><span class="prelude-val">None</span>;}
+<a href=#169 id=169 data-nosnippet>169</a>    <span class="kw">if let </span><span class="prelude-val">Some</span>(sdf)=motion.level_set(){<span class="kw">return </span>sdf.resolve_segment(start,end,radii);}
+<a href=#170 id=170 data-nosnippet>170</a>    <span class="kw">let </span>radii=radii.map(|r|r.max(<span class="number">0.0</span>));
+<a href=#171 id=171 data-nosnippet>171</a>    <span class="kw">let </span>sample=|time:f32|{
+<a href=#172 id=172 data-nosnippet>172</a>        <span class="kw">let </span>a=start[<span class="number">0</span>].lerp(end[<span class="number">0</span>],time);<span class="kw">let </span>b=start[<span class="number">1</span>].lerp(end[<span class="number">1</span>],time);<span class="kw">let </span>edge=b-a;<span class="kw">let </span>dr=radii[<span class="number">1</span>]-radii[<span class="number">0</span>];<span class="kw">let </span>shape=motion.at(time);
+<a href=#173 id=173 data-nosnippet>173</a>        <span class="kw">let </span>derivative=|u:f32|edge.dot(shape_sample(a+edge<span class="kw-2">*</span>u,shape.clone()).<span class="number">1</span>)-dr;
+<a href=#174 id=174 data-nosnippet>174</a>        <span class="kw">let </span>u=<span class="kw">if </span>derivative(<span class="number">0.0</span>)&gt;=<span class="number">0.0</span>{<span class="number">0.0</span>}<span class="kw">else if </span>derivative(<span class="number">1.0</span>)&lt;=<span class="number">0.0</span>{<span class="number">1.0</span>}<span class="kw">else</span>{
+<a href=#175 id=175 data-nosnippet>175</a>            <span class="kw">let </span>(<span class="kw-2">mut </span>lo,<span class="kw-2">mut </span>hi)=(<span class="number">0.0</span>,<span class="number">1.0</span>);<span class="kw">for _ in </span><span class="number">0</span>..<span class="number">32</span>{<span class="kw">let </span>mid=(lo+hi)<span class="kw-2">*</span><span class="number">0.5</span>;<span class="kw">if </span>derivative(mid)&lt;<span class="number">0.0</span>{lo=mid}<span class="kw">else</span>{hi=mid}}
+<a href=#176 id=176 data-nosnippet>176</a>            (lo+hi)<span class="kw-2">*</span><span class="number">0.5
+<a href=#177 id=177 data-nosnippet>177</a>        </span>};
+<a href=#178 id=178 data-nosnippet>178</a>        <span class="kw">let </span>(distance,normal,<span class="kw">_</span>)=shape_sample(a+edge<span class="kw-2">*</span>u,shape.clone());
+<a href=#179 id=179 data-nosnippet>179</a>        (distance-radii[<span class="number">0</span>]-dr<span class="kw-2">*</span>u,normal,u)
+<a href=#180 id=180 data-nosnippet>180</a>    };
+<a href=#181 id=181 data-nosnippet>181</a>    <span class="kw">let </span>speed=motion.speed_bound(start[<span class="number">0</span>],end[<span class="number">0</span>]).max(motion.speed_bound(start[<span class="number">1</span>],end[<span class="number">1</span>]));
+<a href=#182 id=182 data-nosnippet>182</a>    <span class="kw">let </span>(time,conservative)=advance(|t|sample(t).<span class="number">0</span>,speed,<span class="number">0.0</span>)<span class="question-mark">?</span>;
+<a href=#183 id=183 data-nosnippet>183</a>    <span class="kw">let </span>(<span class="kw">_</span>,normal,u)=sample(time);<span class="kw">let </span>p0=start[<span class="number">0</span>].lerp(start[<span class="number">1</span>],u);<span class="kw">let </span>p1=end[<span class="number">0</span>].lerp(end[<span class="number">1</span>],u);<span class="kw">let </span>radius=radii[<span class="number">0</span>]+(radii[<span class="number">1</span>]-radii[<span class="number">0</span>])<span class="kw-2">*</span>u;
+<a href=#184 id=184 data-nosnippet>184</a>    <span class="kw">let </span>(out,normal,carried)=respond_to_collider(p0,p1,radius,motion,ClothSweep{time,normal,conservative})<span class="question-mark">?</span>;
+<a href=#185 id=185 data-nosnippet>185</a>    <span class="prelude-val">Some</span>((u,out-p1,normal,carried))
+<a href=#186 id=186 data-nosnippet>186</a>}
+<a href=#187 id=187 data-nosnippet>187</a>
+<a href=#188 id=188 data-nosnippet>188</a><span class="doccomment">/// Closest triangle point, including edges and degenerate triangles.
+<a href=#189 id=189 data-nosnippet>189</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>closest_triangle(p:Vec3,t:[Vec3;<span class="number">3</span>])-&gt;(Vec3,[f32;<span class="number">3</span>]) {
+<a href=#190 id=190 data-nosnippet>190</a>    <span class="kw">let </span>[a,b,c]=t;<span class="kw">let </span>ab=b-a;<span class="kw">let </span>ac=c-a;
+<a href=#191 id=191 data-nosnippet>191</a>    <span class="kw">let </span>denom=ab.length_squared()<span class="kw-2">*</span>ac.length_squared()-ab.dot(ac).powi(<span class="number">2</span>);
+<a href=#192 id=192 data-nosnippet>192</a>    <span class="kw">if </span>denom&gt;<span class="number">1e-20 </span>{
+<a href=#193 id=193 data-nosnippet>193</a>        <span class="kw">let </span>ap=p-a;<span class="kw">let </span>u=(ap.dot(ab)<span class="kw-2">*</span>ac.length_squared()-ap.dot(ac)<span class="kw-2">*</span>ab.dot(ac))/denom;
+<a href=#194 id=194 data-nosnippet>194</a>        <span class="kw">let </span>v=(ap.dot(ac)<span class="kw-2">*</span>ab.length_squared()-ap.dot(ab)<span class="kw-2">*</span>ab.dot(ac))/denom;
+<a href=#195 id=195 data-nosnippet>195</a>        <span class="kw">if </span>u&gt;=<span class="number">0.0</span>&amp;&amp;v&gt;=<span class="number">0.0</span>&amp;&amp;u+v&lt;=<span class="number">1.0</span>{<span class="kw">return</span>(a+ab<span class="kw-2">*</span>u+ac<span class="kw-2">*</span>v,[<span class="number">1.0</span>-u-v,u,v]);}
+<a href=#196 id=196 data-nosnippet>196</a>    }
+<a href=#197 id=197 data-nosnippet>197</a>    <span class="kw">let </span><span class="kw-2">mut </span>best=(a,[<span class="number">1.0</span>,<span class="number">0.0</span>,<span class="number">0.0</span>]);<span class="kw">let </span><span class="kw-2">mut </span>distance=p.distance_squared(a);
+<a href=#198 id=198 data-nosnippet>198</a>    <span class="kw">for </span>(i,j) <span class="kw">in </span>[(<span class="number">0</span>,<span class="number">1</span>),(<span class="number">1</span>,<span class="number">2</span>),(<span class="number">2</span>,<span class="number">0</span>)]{<span class="kw">let </span>e=t[j]-t[i];<span class="kw">let </span>u=<span class="kw">if </span>e.length_squared()&gt;<span class="number">1e-20</span>{((p-t[i]).dot(e)/e.length_squared()).clamp(<span class="number">0.0</span>,<span class="number">1.0</span>)}<span class="kw">else</span>{<span class="number">0.0</span>};<span class="kw">let </span>q=t[i]+e<span class="kw-2">*</span>u;<span class="kw">let </span>d=p.distance_squared(q);
+<a href=#199 id=199 data-nosnippet>199</a>        <span class="kw">if </span>d&lt;distance{distance=d;<span class="kw">let </span><span class="kw-2">mut </span>w=[<span class="number">0.0</span>;<span class="number">3</span>];w[i]=<span class="number">1.0</span>-u;w[j]=u;best=(q,w);}
+<a href=#200 id=200 data-nosnippet>200</a>    }best
+<a href=#201 id=201 data-nosnippet>201</a>}
+<a href=#202 id=202 data-nosnippet>202</a><span class="kw">fn </span>closest_edges(a:[Vec3;<span class="number">2</span>],b:[Vec3;<span class="number">2</span>])-&gt;(Vec3,Vec3,f32,f32){
+<a href=#203 id=203 data-nosnippet>203</a>    <span class="kw">let </span>u=a[<span class="number">1</span>]-a[<span class="number">0</span>];<span class="kw">let </span>v=b[<span class="number">1</span>]-b[<span class="number">0</span>];<span class="kw">let </span>r=a[<span class="number">0</span>]-b[<span class="number">0</span>];<span class="kw">let </span>aa=u.dot(u);<span class="kw">let </span>bb=v.dot(v);<span class="kw">let </span>uv=u.dot(v);<span class="kw">let </span>ur=u.dot(r);<span class="kw">let </span>vr=v.dot(r);
+<a href=#204 id=204 data-nosnippet>204</a>    <span class="kw">let </span><span class="kw-2">mut </span>s;<span class="kw">let </span><span class="kw-2">mut </span>t;
+<a href=#205 id=205 data-nosnippet>205</a>    <span class="kw">if </span>aa&lt;<span class="number">1e-20</span>{s=<span class="number">0.0</span>;t=<span class="kw">if </span>bb&lt;<span class="number">1e-20</span>{<span class="number">0.0</span>}<span class="kw">else</span>{(vr/bb).clamp(<span class="number">0.0</span>,<span class="number">1.0</span>)};}
+<a href=#206 id=206 data-nosnippet>206</a>    <span class="kw">else if </span>bb&lt;<span class="number">1e-20</span>{s=(-ur/aa).clamp(<span class="number">0.0</span>,<span class="number">1.0</span>);t=<span class="number">0.0</span>;}
+<a href=#207 id=207 data-nosnippet>207</a>    <span class="kw">else</span>{<span class="kw">let </span>d=aa<span class="kw-2">*</span>bb-uv<span class="kw-2">*</span>uv;s=<span class="kw">if </span>d&gt;<span class="number">1e-20</span>{((uv<span class="kw-2">*</span>vr-ur<span class="kw-2">*</span>bb)/d).clamp(<span class="number">0.0</span>,<span class="number">1.0</span>)}<span class="kw">else</span>{<span class="number">0.0</span>};t=(uv<span class="kw-2">*</span>s+vr)/bb;
+<a href=#208 id=208 data-nosnippet>208</a>        <span class="kw">if </span>t&lt;<span class="number">0.0</span>{t=<span class="number">0.0</span>;s=(-ur/aa).clamp(<span class="number">0.0</span>,<span class="number">1.0</span>);}<span class="kw">else if </span>t&gt;<span class="number">1.0</span>{t=<span class="number">1.0</span>;s=((uv-ur)/aa).clamp(<span class="number">0.0</span>,<span class="number">1.0</span>);}}
+<a href=#209 id=209 data-nosnippet>209</a>    (a[<span class="number">0</span>]+u<span class="kw-2">*</span>s,b[<span class="number">0</span>]+v<span class="kw-2">*</span>t,s,t)
+<a href=#210 id=210 data-nosnippet>210</a>}
+<a href=#211 id=211 data-nosnippet>211</a>
+<a href=#212 id=212 data-nosnippet>212</a><span class="kw">pub fn </span>sweep_cloth_vertex_face(start:[Vec3;<span class="number">4</span>],end:[Vec3;<span class="number">4</span>],thickness:f32)-&gt;<span class="prelude-ty">Option</span>&lt;ClothFeatureContact&gt;{
+<a href=#213 id=213 data-nosnippet>213</a>    <span class="kw">let </span>velocity: [Vec3;<span class="number">4</span>]=std::array::from_fn(|i|end[i]-start[i]);
+<a href=#214 id=214 data-nosnippet>214</a>    <span class="kw">let </span>speed=(<span class="number">1</span>..<span class="number">4</span>).map(|i|(velocity[i]-velocity[<span class="number">0</span>]).length()).fold(<span class="number">0.0</span>,f32::max);
+<a href=#215 id=215 data-nosnippet>215</a>    <span class="kw">let </span>sample=|time|{<span class="kw">let </span>p: [Vec3;<span class="number">4</span>]=std::array::from_fn(|i|start[i].lerp(end[i],time));<span class="kw">let</span>(q,w)=closest_triangle(p[<span class="number">0</span>],[p[<span class="number">1</span>],p[<span class="number">2</span>],p[<span class="number">3</span>]]);(p,p[<span class="number">0</span>]-q,w)};
+<a href=#216 id=216 data-nosnippet>216</a>    <span class="kw">let </span>(time,conservative)=advance(|t|sample(t).<span class="number">1</span>.length(),speed,thickness.max(<span class="number">1e-7</span>))<span class="question-mark">?</span>;
+<a href=#217 id=217 data-nosnippet>217</a>    <span class="kw">let </span>(p,d,w)=sample(time);<span class="kw">let </span>normal=d.try_normalize().unwrap_or_else(||{
+<a href=#218 id=218 data-nosnippet>218</a>        <span class="kw">let </span>n=(p[<span class="number">2</span>]-p[<span class="number">1</span>]).cross(p[<span class="number">3</span>]-p[<span class="number">1</span>]).normalize_or(Vec3::Y);
+<a href=#219 id=219 data-nosnippet>219</a>        <span class="kw">if </span>(start[<span class="number">0</span>]-start[<span class="number">1</span>]).dot(n)&lt;<span class="number">0.0</span>{-n}<span class="kw">else</span>{n}
+<a href=#220 id=220 data-nosnippet>220</a>    });
+<a href=#221 id=221 data-nosnippet>221</a>    <span class="prelude-val">Some</span>(ClothFeatureContact{sweep:ClothSweep{time,normal,conservative},coefficients:[<span class="number">1.0</span>,-w[<span class="number">0</span>],-w[<span class="number">1</span>],-w[<span class="number">2</span>]]})
+<a href=#222 id=222 data-nosnippet>222</a>}
+<a href=#223 id=223 data-nosnippet>223</a><span class="kw">pub fn </span>sweep_cloth_edges(start:[Vec3;<span class="number">4</span>],end:[Vec3;<span class="number">4</span>],thickness:f32)-&gt;<span class="prelude-ty">Option</span>&lt;ClothFeatureContact&gt;{
+<a href=#224 id=224 data-nosnippet>224</a>    <span class="kw">let </span>velocity: [Vec3;<span class="number">4</span>]=std::array::from_fn(|i|end[i]-start[i]);
+<a href=#225 id=225 data-nosnippet>225</a>    <span class="kw">let </span>speed=(<span class="number">0</span>..<span class="number">2</span>).flat_map(|i|(<span class="number">2</span>..<span class="number">4</span>).map(<span class="kw">move </span>|j|(velocity[i]-velocity[j]).length())).fold(<span class="number">0.0</span>,f32::max);
+<a href=#226 id=226 data-nosnippet>226</a>    <span class="kw">let </span>sample=|time|{<span class="kw">let </span>p: [Vec3;<span class="number">4</span>]=std::array::from_fn(|i|start[i].lerp(end[i],time));<span class="kw">let</span>(a,b,s,t)=closest_edges([p[<span class="number">0</span>],p[<span class="number">1</span>]],[p[<span class="number">2</span>],p[<span class="number">3</span>]]);(p,a-b,s,t)};
+<a href=#227 id=227 data-nosnippet>227</a>    <span class="kw">let</span>(time,conservative)=advance(|t|sample(t).<span class="number">1</span>.length(),speed,thickness.max(<span class="number">1e-7</span>))<span class="question-mark">?</span>;
+<a href=#228 id=228 data-nosnippet>228</a>    <span class="kw">let</span>(p,d,s,t)=sample(time);<span class="kw">let </span>normal=d.try_normalize().unwrap_or_else(||{
+<a href=#229 id=229 data-nosnippet>229</a>        <span class="kw">let </span>n=(p[<span class="number">1</span>]-p[<span class="number">0</span>]).cross(p[<span class="number">3</span>]-p[<span class="number">2</span>]).normalize_or((p[<span class="number">1</span>]-p[<span class="number">0</span>]).normalize_or(Vec3::X).any_orthonormal_vector());
+<a href=#230 id=230 data-nosnippet>230</a>        <span class="kw">if </span>(start[<span class="number">0</span>].lerp(start[<span class="number">1</span>],s)-start[<span class="number">2</span>].lerp(start[<span class="number">3</span>],t)).dot(n)&lt;<span class="number">0.0</span>{-n}<span class="kw">else</span>{n}
+<a href=#231 id=231 data-nosnippet>231</a>    });
+<a href=#232 id=232 data-nosnippet>232</a>    <span class="prelude-val">Some</span>(ClothFeatureContact{sweep:ClothSweep{time,normal,conservative},coefficients:[<span class="number">1.0</span>-s,s,-(<span class="number">1.0</span>-t),-t]})
+<a href=#233 id=233 data-nosnippet>233</a>}
+<a href=#234 id=234 data-nosnippet>234</a>
+<a href=#235 id=235 data-nosnippet>235</a><span class="doccomment">/// Mass-weighted contact projection. Fixed particles never move. The contact
+<a href=#236 id=236 data-nosnippet>236</a>/// normal is retained from impact so an end-of-step crossing cannot flip sides.
+<a href=#237 id=237 data-nosnippet>237</a></span><span class="kw">pub fn </span>project_cloth_contact(positions:<span class="kw-2">&amp;mut</span>[Vec3],inverse_mass:<span class="kw-2">&amp;</span>[f32],ids:[usize;<span class="number">4</span>],contact:ClothFeatureContact,thickness:f32)-&gt;f32 {
+<a href=#238 id=238 data-nosnippet>238</a>    <span class="kw">let </span>c=contact.coefficients;<span class="kw">let </span>n=contact.sweep.normal;
+<a href=#239 id=239 data-nosnippet>239</a>    <span class="kw">let </span>gap=(<span class="number">0</span>..<span class="number">4</span>).map(|k|positions[ids[k]]<span class="kw-2">*</span>c[k]).sum::&lt;Vec3&gt;().dot(n);
+<a href=#240 id=240 data-nosnippet>240</a>    <span class="kw">let </span>denom=(<span class="number">0</span>..<span class="number">4</span>).map(|k|inverse_mass[ids[k]].max(<span class="number">0.0</span>)<span class="kw-2">*</span>c[k]<span class="kw-2">*</span>c[k]).sum::&lt;f32&gt;();
+<a href=#241 id=241 data-nosnippet>241</a>    <span class="kw">if </span>denom&lt;<span class="number">1e-20</span>||gap&gt;=thickness{<span class="kw">return </span><span class="number">0.0</span>;}
+<a href=#242 id=242 data-nosnippet>242</a>    <span class="kw">let </span>correction=(thickness-gap)/denom;
+<a href=#243 id=243 data-nosnippet>243</a>    <span class="kw">for </span>k <span class="kw">in </span><span class="number">0</span>..<span class="number">4 </span>{positions[ids[k]]+=n<span class="kw-2">*</span>(correction<span class="kw-2">*</span>inverse_mass[ids[k]].max(<span class="number">0.0</span>)<span class="kw-2">*</span>c[k]);}
+<a href=#244 id=244 data-nosnippet>244</a>    thickness-gap
+<a href=#245 id=245 data-nosnippet>245</a>}
+<a href=#246 id=246 data-nosnippet>246</a>
+<a href=#247 id=247 data-nosnippet>247</a><span class="attr">#[derive(Clone, Copy, Debug, Default)]
+<a href=#248 id=248 data-nosnippet>248</a></span><span class="kw">pub struct </span>ClothContactReport {<span class="kw">pub </span>vertex_face:usize,<span class="kw">pub </span>edge_edge:usize,<span class="kw">pub </span>untangled:usize,<span class="kw">pub </span>conservative:usize}
+<a href=#249 id=249 data-nosnippet>249</a>
+<a href=#250 id=250 data-nosnippet>250</a><span class="attr">#[derive(Clone, Debug, Default)]
+<a href=#251 id=251 data-nosnippet>251</a></span><span class="kw">pub struct </span>ClothContactTopology {
+<a href=#252 id=252 data-nosnippet>252</a>    <span class="kw">pub </span>triangles:Vec&lt;[usize;<span class="number">3</span>]&gt;,
+<a href=#253 id=253 data-nosnippet>253</a>    <span class="kw">pub </span>edges:Vec&lt;[usize;<span class="number">2</span>]&gt;,
+<a href=#254 id=254 data-nosnippet>254</a>    adjacent:std::collections::HashSet&lt;(usize,usize)&gt;,
+<a href=#255 id=255 data-nosnippet>255</a>    excluded:std::collections::HashSet&lt;(usize,usize)&gt;,
+<a href=#256 id=256 data-nosnippet>256</a>}
+<a href=#257 id=257 data-nosnippet>257</a><span class="kw">impl </span>ClothContactTopology {
+<a href=#258 id=258 data-nosnippet>258</a>    <span class="kw">pub fn </span>new(triangles:Vec&lt;[usize;<span class="number">3</span>]&gt;)-&gt;<span class="self">Self </span>{
+<a href=#259 id=259 data-nosnippet>259</a>        <span class="kw">let </span><span class="kw-2">mut </span>edges=std::collections::BTreeSet::new();
+<a href=#260 id=260 data-nosnippet>260</a>        <span class="kw">for </span>t <span class="kw">in </span><span class="kw-2">&amp;</span>triangles {<span class="kw">for </span>k <span class="kw">in </span><span class="number">0</span>..<span class="number">3 </span>{<span class="kw">let</span>(a,b)=(t[k],t[(k+<span class="number">1</span>)%<span class="number">3</span>]);<span class="kw">if </span>a!=b{edges.insert([a.min(b),a.max(b)]);}}}
+<a href=#261 id=261 data-nosnippet>261</a>        <span class="kw">let </span>adjacent=edges.iter().map(|e|(e[<span class="number">0</span>],e[<span class="number">1</span>])).collect();
+<a href=#262 id=262 data-nosnippet>262</a>        <span class="self">Self</span>{triangles,edges:edges.into_iter().collect(),adjacent,excluded:Default::default()}
+<a href=#263 id=263 data-nosnippet>263</a>    }
+<a href=#264 id=264 data-nosnippet>264</a>    <span class="kw">pub fn </span>exclude_pair(<span class="kw-2">&amp;mut </span><span class="self">self</span>,a:usize,b:usize){<span class="kw">let </span>pair=(a.min(b),a.max(b));<span class="self">self</span>.adjacent.insert(pair);<span class="self">self</span>.excluded.insert(pair);}
+<a href=#265 id=265 data-nosnippet>265</a>    <span class="kw">fn </span>neighbours(<span class="kw-2">&amp;</span><span class="self">self</span>,a:usize,b:usize)-&gt;bool{a==b||<span class="self">self</span>.adjacent.contains(<span class="kw-2">&amp;</span>(a.min(b),a.max(b)))}
+<a href=#266 id=266 data-nosnippet>266</a>    <span class="doccomment">/// Swept broad phase covers the complete interval. The same routine handles
+<a href=#267 id=267 data-nosnippet>267</a>    /// a combined mesh of several garments: no adjacency crosses their islands.
+<a href=#268 id=268 data-nosnippet>268</a>    </span><span class="kw">pub fn </span>solve(<span class="kw-2">&amp;</span><span class="self">self</span>,positions:<span class="kw-2">&amp;mut</span>[Vec3],previous:<span class="kw-2">&amp;</span>[Vec3],inverse_mass:<span class="kw-2">&amp;</span>[f32],thickness:f32,continuous:bool,untangle:bool)-&gt;ClothContactReport {
+<a href=#269 id=269 data-nosnippet>269</a>        <span class="self">self</span>.solve_filtered(positions,previous,inverse_mass,thickness,continuous,untangle,<span class="prelude-val">None</span>,<span class="prelude-val">None</span>,<span class="prelude-val">None</span>)
+<a href=#270 id=270 data-nosnippet>270</a>    }
+<a href=#271 id=271 data-nosnippet>271</a>    <span class="doccomment">/// Self-contact on a visible mesh whose vertices share simulation drivers.
+<a href=#272 id=272 data-nosnippet>272</a>    /// Topological neighbours still use the original surface connectivity.
+<a href=#273 id=273 data-nosnippet>273</a>    </span><span class="kw">pub fn </span>solve_mapped(<span class="kw-2">&amp;</span><span class="self">self</span>,positions:<span class="kw-2">&amp;mut</span>[Vec3],previous:<span class="kw-2">&amp;</span>[Vec3],inverse_mass:<span class="kw-2">&amp;</span>[f32],thickness:f32,drivers:<span class="kw-2">&amp;</span>ClothContactMapping,continuous:bool,untangle:bool)-&gt;ClothContactReport{
+<a href=#274 id=274 data-nosnippet>274</a>        <span class="kw">if </span>!drivers.valid_weights(inverse_mass){<span class="kw">return </span>ClothContactReport::default();}
+<a href=#275 id=275 data-nosnippet>275</a>        <span class="kw">if </span>drivers.trivial(){<span class="kw">return </span><span class="self">self</span>.solve(positions,previous,inverse_mass,thickness,continuous,untangle);}
+<a href=#276 id=276 data-nosnippet>276</a>        <span class="self">self</span>.solve_filtered(positions,previous,inverse_mass,thickness,continuous,untangle,<span class="prelude-val">None</span>,<span class="prelude-val">None</span>,<span class="prelude-val">Some</span>(drivers))
+<a href=#277 id=277 data-nosnippet>277</a>    }
+<a href=#278 id=278 data-nosnippet>278</a>    <span class="doccomment">/// Solve only between distinct garments. Radii are half the desired cloth
+<a href=#279 id=279 data-nosnippet>279</a>    /// thickness; pair gaps add the two garments' radii rather than inflating
+<a href=#280 id=280 data-nosnippet>280</a>    /// every garment to the thickest member of the group.
+<a href=#281 id=281 data-nosnippet>281</a>    </span><span class="kw">pub fn </span>solve_between(<span class="kw-2">&amp;</span><span class="self">self</span>,positions:<span class="kw-2">&amp;mut</span>[Vec3],previous:<span class="kw-2">&amp;</span>[Vec3],inverse_mass:<span class="kw-2">&amp;</span>[f32],owners:<span class="kw-2">&amp;</span>[usize],radii:<span class="kw-2">&amp;</span>[f32],continuous:bool,untangle:bool)-&gt;ClothContactReport {
+<a href=#282 id=282 data-nosnippet>282</a>        <span class="kw">if </span>owners.len()!=positions.len()||radii.len()!=positions.len(){<span class="kw">return </span>ClothContactReport::default();}
+<a href=#283 id=283 data-nosnippet>283</a>        <span class="kw">let </span>thickness=radii.iter().copied().fold(<span class="number">0.0</span>,f32::max)<span class="kw-2">*</span><span class="number">2.0</span>;
+<a href=#284 id=284 data-nosnippet>284</a>        <span class="self">self</span>.solve_filtered(positions,previous,inverse_mass,thickness,continuous,untangle,<span class="prelude-val">Some</span>(owners),<span class="prelude-val">Some</span>(radii),<span class="prelude-val">None</span>)
+<a href=#285 id=285 data-nosnippet>285</a>    }
+<a href=#286 id=286 data-nosnippet>286</a>    <span class="doccomment">/// Contact the visible surface while maintaining its simulation drivers.
+<a href=#287 id=287 data-nosnippet>287</a>    /// Each vertex carries its driver's inverse mass, not a separate mass.
+<a href=#288 id=288 data-nosnippet>288</a>    </span><span class="kw">pub fn </span>solve_between_mapped(<span class="kw-2">&amp;</span><span class="self">self</span>,positions:<span class="kw-2">&amp;mut</span>[Vec3],previous:<span class="kw-2">&amp;</span>[Vec3],inverse_mass:<span class="kw-2">&amp;</span>[f32],owners:<span class="kw-2">&amp;</span>[usize],radii:<span class="kw-2">&amp;</span>[f32],drivers:<span class="kw-2">&amp;</span>ClothContactMapping,continuous:bool,untangle:bool)-&gt;ClothContactReport{
+<a href=#289 id=289 data-nosnippet>289</a>        <span class="kw">if </span>!drivers.valid(inverse_mass,owners)||radii.len()!=positions.len(){<span class="kw">return </span>ClothContactReport::default();}
+<a href=#290 id=290 data-nosnippet>290</a>        <span class="kw">if </span>drivers.trivial(){<span class="kw">return </span><span class="self">self</span>.solve_between(positions,previous,inverse_mass,owners,radii,continuous,untangle);}
+<a href=#291 id=291 data-nosnippet>291</a>        <span class="kw">let </span>thickness=radii.iter().copied().fold(<span class="number">0.0</span>,f32::max)<span class="kw-2">*</span><span class="number">2.0</span>;
+<a href=#292 id=292 data-nosnippet>292</a>        <span class="self">self</span>.solve_filtered(positions,previous,inverse_mass,thickness,continuous,untangle,<span class="prelude-val">Some</span>(owners),<span class="prelude-val">Some</span>(radii),<span class="prelude-val">Some</span>(drivers))
+<a href=#293 id=293 data-nosnippet>293</a>    }
+<a href=#294 id=294 data-nosnippet>294</a>    <span class="attr">#[allow(clippy::too_many_arguments)]
+<a href=#295 id=295 data-nosnippet>295</a>    </span><span class="kw">fn </span>solve_filtered(<span class="kw-2">&amp;</span><span class="self">self</span>,positions:<span class="kw-2">&amp;mut</span>[Vec3],previous:<span class="kw-2">&amp;</span>[Vec3],inverse_mass:<span class="kw-2">&amp;</span>[f32],thickness:f32,continuous:bool,untangle:bool,owners:<span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>[usize]&gt;,radii:<span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>[f32]&gt;,mapping:<span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>ClothContactMapping&gt;)-&gt;ClothContactReport {
+<a href=#296 id=296 data-nosnippet>296</a>        <span class="kw">let </span><span class="kw-2">mut </span>report=ClothContactReport::default();
+<a href=#297 id=297 data-nosnippet>297</a>        <span class="kw">if </span>thickness&lt;=<span class="number">0.0</span>||!thickness.is_finite()||positions.len()!=previous.len()||positions.len()!=inverse_mass.len()
+<a href=#298 id=298 data-nosnippet>298</a>            || <span class="self">self</span>.triangles.iter().flatten().chain(<span class="self">self</span>.edges.iter().flatten()).any(|<span class="kw-2">&amp;</span>i|i&gt;=positions.len())
+<a href=#299 id=299 data-nosnippet>299</a>            || positions.iter().chain(previous).any(|p|!p.is_finite())||inverse_mass.iter().any(|w|!w.is_finite())
+<a href=#300 id=300 data-nosnippet>300</a>            || radii.is_some_and(|r|r.iter().any(|r|!r.is_finite()||<span class="kw-2">*</span>r&lt;<span class="number">0.0</span>)){<span class="kw">return </span>report;}
+<a href=#301 id=301 data-nosnippet>301</a>        <span class="kw">let </span>start=<span class="kw">if </span>continuous{previous.to_vec()}<span class="kw">else</span>{positions.to_vec()};
+<a href=#302 id=302 data-nosnippet>302</a>        <span class="kw">let </span>end=positions.to_vec();
+<a href=#303 id=303 data-nosnippet>303</a>        <span class="kw">let </span>point_bounds:Vec&lt;<span class="kw">_</span>&gt;=start.iter().zip(<span class="kw-2">&amp;</span>end).map(|(a,b)|Bounds::points(<span class="kw-2">&amp;</span>[<span class="kw-2">*</span>a,<span class="kw-2">*</span>b]).expanded(thickness)).collect();
+<a href=#304 id=304 data-nosnippet>304</a>        <span class="kw">let </span>face_bounds:Vec&lt;<span class="kw">_</span>&gt;=<span class="self">self</span>.triangles.iter().map(|t|t.iter().map(|<span class="kw-2">&amp;</span>i|point_bounds[i]).reduce(Bounds::union).unwrap()).collect();
+<a href=#305 id=305 data-nosnippet>305</a>        <span class="kw">let </span>face_tree=Tree::new(<span class="kw-2">&amp;</span>face_bounds);
+<a href=#306 id=306 data-nosnippet>306</a>        <span class="kw">let </span><span class="kw-2">mut </span>candidates=Vec::new();
+<a href=#307 id=307 data-nosnippet>307</a>        <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..positions.len(){candidates.clear();face_tree.query(point_bounds[i],<span class="kw-2">&amp;mut </span>candidates);
+<a href=#308 id=308 data-nosnippet>308</a>            <span class="kw">for </span><span class="kw-2">&amp;</span>ti <span class="kw">in </span><span class="kw-2">&amp;</span>candidates {<span class="kw">let </span>t=<span class="self">self</span>.triangles[ti];<span class="kw">if </span>owners.is_some_and(|o|o[i]==o[t[<span class="number">0</span>]])||t.iter().any(|<span class="kw-2">&amp;</span>j|<span class="self">self</span>.neighbours(i,j)){<span class="kw">continue</span>;}
+<a href=#309 id=309 data-nosnippet>309</a>                <span class="kw">let </span>ids=[i,t[<span class="number">0</span>],t[<span class="number">1</span>],t[<span class="number">2</span>]];<span class="kw">if </span>ids.iter().all(|<span class="kw-2">&amp;</span>j|inverse_mass[j]&lt;=<span class="number">0.0</span>){<span class="kw">continue</span>;}
+<a href=#310 id=310 data-nosnippet>310</a>                <span class="kw">let </span>gap=radii.map_or(thickness,|r|r[i]+t.iter().map(|<span class="kw-2">&amp;</span>j|r[j]).fold(<span class="number">0.0</span>,f32::max));
+<a href=#311 id=311 data-nosnippet>311</a>                <span class="kw">if let </span><span class="prelude-val">Some</span>(contact)=sweep_cloth_vertex_face(ids.map(|i|start[i]),ids.map(|i|end[i]),gap){
+<a href=#312 id=312 data-nosnippet>312</a>                    <span class="kw">if match </span>mapping{<span class="prelude-val">Some</span>(m)=&gt;m.project(positions,inverse_mass,ids,contact,gap),<span class="prelude-val">None</span>=&gt;project_cloth_contact(positions,inverse_mass,ids,contact,gap)}&gt;<span class="number">0.0</span>{report.vertex_face+=<span class="number">1</span>;report.conservative+=usize::from(contact.sweep.conservative);}
+<a href=#313 id=313 data-nosnippet>313</a>                }
+<a href=#314 id=314 data-nosnippet>314</a>            }
+<a href=#315 id=315 data-nosnippet>315</a>        }
+<a href=#316 id=316 data-nosnippet>316</a>        <span class="kw">let </span>edge_bounds:Vec&lt;<span class="kw">_</span>&gt;=<span class="self">self</span>.edges.iter().map(|e|point_bounds[e[<span class="number">0</span>]].union(point_bounds[e[<span class="number">1</span>]])).collect();
+<a href=#317 id=317 data-nosnippet>317</a>        <span class="kw">let </span>edge_tree=Tree::new(<span class="kw-2">&amp;</span>edge_bounds);
+<a href=#318 id=318 data-nosnippet>318</a>        <span class="kw">for </span>(ei,<span class="kw-2">&amp;</span>a) <span class="kw">in </span><span class="self">self</span>.edges.iter().enumerate(){candidates.clear();edge_tree.query(edge_bounds[ei],<span class="kw-2">&amp;mut </span>candidates);
+<a href=#319 id=319 data-nosnippet>319</a>            <span class="kw">for </span><span class="kw-2">&amp;</span>ej <span class="kw">in </span><span class="kw-2">&amp;</span>candidates{<span class="kw">if </span>ej&lt;=ei{<span class="kw">continue</span>;}<span class="kw">let </span>b=<span class="self">self</span>.edges[ej];<span class="kw">if </span>owners.is_some_and(|o|o[a[<span class="number">0</span>]]==o[b[<span class="number">0</span>]])||a.iter().any(|<span class="kw-2">&amp;</span>i|b.iter().any(|<span class="kw-2">&amp;</span>j|<span class="self">self</span>.neighbours(i,j))){<span class="kw">continue</span>;}
+<a href=#320 id=320 data-nosnippet>320</a>                <span class="kw">let </span>ids=[a[<span class="number">0</span>],a[<span class="number">1</span>],b[<span class="number">0</span>],b[<span class="number">1</span>]];<span class="kw">if </span>ids.iter().all(|<span class="kw-2">&amp;</span>j|inverse_mass[j]&lt;=<span class="number">0.0</span>){<span class="kw">continue</span>;}
+<a href=#321 id=321 data-nosnippet>321</a>                <span class="kw">let </span>gap=radii.map_or(thickness,|r|r[a[<span class="number">0</span>]].max(r[a[<span class="number">1</span>]])+r[b[<span class="number">0</span>]].max(r[b[<span class="number">1</span>]]));
+<a href=#322 id=322 data-nosnippet>322</a>                <span class="kw">if let </span><span class="prelude-val">Some</span>(contact)=sweep_cloth_edges(ids.map(|i|start[i]),ids.map(|i|end[i]),gap){
+<a href=#323 id=323 data-nosnippet>323</a>                    <span class="kw">if match </span>mapping{<span class="prelude-val">Some</span>(m)=&gt;m.project(positions,inverse_mass,ids,contact,gap),<span class="prelude-val">None</span>=&gt;project_cloth_contact(positions,inverse_mass,ids,contact,gap)}&gt;<span class="number">0.0</span>{report.edge_edge+=<span class="number">1</span>;report.conservative+=usize::from(contact.sweep.conservative);}
+<a href=#324 id=324 data-nosnippet>324</a>                }
+<a href=#325 id=325 data-nosnippet>325</a>            }
+<a href=#326 id=326 data-nosnippet>326</a>        }
+<a href=#327 id=327 data-nosnippet>327</a>        <span class="kw">let </span>before=mapping.map(|<span class="kw">_</span>|positions.to_vec());
+<a href=#328 id=328 data-nosnippet>328</a>        <span class="kw">if </span>untangle {report.untangled=<span class="self">self</span>.untangle_filtered(positions,inverse_mass,thickness,owners,radii);}
+<a href=#329 id=329 data-nosnippet>329</a>        untangling::project_fixed(<span class="self">self</span>,positions,inverse_mass,thickness,owners,radii);
+<a href=#330 id=330 data-nosnippet>330</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(m)=mapping{m.cohere(before.as_ref().unwrap(),positions);}
+<a href=#331 id=331 data-nosnippet>331</a>        <span class="kw">let </span>coherent_previous=mapping.map(|m|{<span class="kw">let </span><span class="kw-2">mut </span>origin=previous.to_vec();m.cohere(positions,<span class="kw-2">&amp;mut </span>origin);origin});
+<a href=#332 id=332 data-nosnippet>332</a>        <span class="kw">if </span>continuous&amp;&amp;untangling::preserve_valid_pose(<span class="self">self</span>,positions,coherent_previous.as_deref().unwrap_or(previous),inverse_mass,owners){report.conservative+=<span class="number">1</span>;}
+<a href=#333 id=333 data-nosnippet>333</a>        report
+<a href=#334 id=334 data-nosnippet>334</a>    }
+<a href=#335 id=335 data-nosnippet>335</a>    <span class="doccomment">/// Resolve intersections already present at the start (for example an
+<a href=#336 id=336 data-nosnippet>336</a>    /// imported garment intersecting itself). Partition along intersected edges
+<a href=#337 id=337 data-nosnippet>337</a>    /// and choose a coherent movable side; fixed particles retain zero weight.
+<a href=#338 id=338 data-nosnippet>338</a>    </span><span class="kw">pub fn </span>untangle(<span class="kw-2">&amp;</span><span class="self">self</span>,p:<span class="kw-2">&amp;mut</span>[Vec3],weights:<span class="kw-2">&amp;</span>[f32],thickness:f32)-&gt;usize {
+<a href=#339 id=339 data-nosnippet>339</a>        <span class="self">self</span>.untangle_filtered(p,weights,thickness,<span class="prelude-val">None</span>,<span class="prelude-val">None</span>)
+<a href=#340 id=340 data-nosnippet>340</a>    }
+<a href=#341 id=341 data-nosnippet>341</a>    <span class="kw">fn </span>untangle_filtered(<span class="kw-2">&amp;</span><span class="self">self</span>,p:<span class="kw-2">&amp;mut</span>[Vec3],weights:<span class="kw-2">&amp;</span>[f32],thickness:f32,owners:<span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>[usize]&gt;,radii:<span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>[f32]&gt;)-&gt;usize {
+<a href=#342 id=342 data-nosnippet>342</a>        untangling::recover(<span class="self">self</span>,p,weights,thickness,owners,radii)
+<a href=#343 id=343 data-nosnippet>343</a>    }
+<a href=#344 id=344 data-nosnippet>344</a>}
+<a href=#345 id=345 data-nosnippet>345</a>
+<a href=#346 id=346 data-nosnippet>346</a><span class="attr">#[derive(Clone, Copy, Debug)]
+<a href=#347 id=347 data-nosnippet>347</a></span><span class="kw">struct </span>Bounds{lo:Vec3,hi:Vec3}
+<a href=#348 id=348 data-nosnippet>348</a><span class="kw">impl </span>Bounds {
+<a href=#349 id=349 data-nosnippet>349</a>    <span class="kw">fn </span>points(p:<span class="kw-2">&amp;</span>[Vec3])-&gt;<span class="self">Self</span>{<span class="self">Self</span>{lo:p.iter().copied().fold(Vec3::splat(f32::INFINITY),Vec3::min),hi:p.iter().copied().fold(Vec3::splat(f32::NEG_INFINITY),Vec3::max)}}
+<a href=#350 id=350 data-nosnippet>350</a>    <span class="kw">fn </span>union(<span class="self">self</span>,b:<span class="self">Self</span>)-&gt;<span class="self">Self</span>{<span class="self">Self</span>{lo:<span class="self">self</span>.lo.min(b.lo),hi:<span class="self">self</span>.hi.max(b.hi)}}
+<a href=#351 id=351 data-nosnippet>351</a>    <span class="kw">fn </span>expanded(<span class="self">self</span>,r:f32)-&gt;<span class="self">Self</span>{<span class="self">Self</span>{lo:<span class="self">self</span>.lo-Vec3::splat(r),hi:<span class="self">self</span>.hi+Vec3::splat(r)}}
+<a href=#352 id=352 data-nosnippet>352</a>    <span class="kw">fn </span>overlaps(<span class="self">self</span>,b:<span class="self">Self</span>)-&gt;bool{<span class="self">self</span>.lo.cmple(b.hi).all()&amp;&amp;b.lo.cmple(<span class="self">self</span>.hi).all()}
+<a href=#353 id=353 data-nosnippet>353</a>}
+<a href=#354 id=354 data-nosnippet>354</a><span class="kw">struct </span>Node{bounds:Bounds,children:<span class="prelude-ty">Option</span>&lt;[usize;<span class="number">2</span>]&gt;,items:Vec&lt;usize&gt;}
+<a href=#355 id=355 data-nosnippet>355</a><span class="kw">struct </span>Tree{nodes:Vec&lt;Node&gt;,items:Vec&lt;Bounds&gt;}
+<a href=#356 id=356 data-nosnippet>356</a><span class="kw">impl </span>Tree {
+<a href=#357 id=357 data-nosnippet>357</a>    <span class="kw">fn </span>new(bounds:<span class="kw-2">&amp;</span>[Bounds])-&gt;<span class="self">Self </span>{<span class="kw">let </span><span class="kw-2">mut </span>tree=<span class="self">Self</span>{nodes:Vec::new(),items:bounds.to_vec()};<span class="kw">if </span>!bounds.is_empty(){tree.build(bounds,(<span class="number">0</span>..bounds.len()).collect());}tree}
+<a href=#358 id=358 data-nosnippet>358</a>    <span class="kw">fn </span>build(<span class="kw-2">&amp;mut </span><span class="self">self</span>,bounds:<span class="kw-2">&amp;</span>[Bounds],<span class="kw-2">mut </span>items:Vec&lt;usize&gt;)-&gt;usize{
+<a href=#359 id=359 data-nosnippet>359</a>        <span class="kw">let </span>b=items.iter().map(|<span class="kw-2">&amp;</span>i|bounds[i]).reduce(Bounds::union).unwrap();<span class="kw">let </span>index=<span class="self">self</span>.nodes.len();
+<a href=#360 id=360 data-nosnippet>360</a>        <span class="self">self</span>.nodes.push(Node{bounds:b,children:<span class="prelude-val">None</span>,items:Vec::new()});
+<a href=#361 id=361 data-nosnippet>361</a>        <span class="kw">if </span>items.len()&lt;=<span class="number">8</span>{<span class="self">self</span>.nodes[index].items=items;}<span class="kw">else</span>{
+<a href=#362 id=362 data-nosnippet>362</a>            <span class="kw">let </span>extent=b.hi-b.lo;<span class="kw">let </span>axis=<span class="kw">if </span>extent.x&gt;=extent.y&amp;&amp;extent.x&gt;=extent.z{<span class="number">0</span>}<span class="kw">else if </span>extent.y&gt;=extent.z{<span class="number">1</span>}<span class="kw">else</span>{<span class="number">2</span>};
+<a href=#363 id=363 data-nosnippet>363</a>            items.sort_unstable_by(|<span class="kw-2">&amp;</span>i,<span class="kw-2">&amp;</span>j|(bounds[i].lo[axis]+bounds[i].hi[axis]).total_cmp(<span class="kw-2">&amp;</span>(bounds[j].lo[axis]+bounds[j].hi[axis])).then(i.cmp(<span class="kw-2">&amp;</span>j)));
+<a href=#364 id=364 data-nosnippet>364</a>            <span class="kw">let </span>right=items.split_off(items.len()/<span class="number">2</span>);<span class="kw">let </span>a=<span class="self">self</span>.build(bounds,items);<span class="kw">let </span>b=<span class="self">self</span>.build(bounds,right);<span class="self">self</span>.nodes[index].children=<span class="prelude-val">Some</span>([a,b]);
+<a href=#365 id=365 data-nosnippet>365</a>        }index
+<a href=#366 id=366 data-nosnippet>366</a>    }
+<a href=#367 id=367 data-nosnippet>367</a>    <span class="kw">fn </span>query(<span class="kw-2">&amp;</span><span class="self">self</span>,bounds:Bounds,out:<span class="kw-2">&amp;mut </span>Vec&lt;usize&gt;){<span class="kw">if </span>!<span class="self">self</span>.nodes.is_empty(){<span class="self">self</span>.query_node(<span class="number">0</span>,bounds,out);}}
+<a href=#368 id=368 data-nosnippet>368</a>    <span class="kw">fn </span>query_node(<span class="kw-2">&amp;</span><span class="self">self</span>,index:usize,bounds:Bounds,out:<span class="kw-2">&amp;mut </span>Vec&lt;usize&gt;){
+<a href=#369 id=369 data-nosnippet>369</a>        <span class="kw">let </span>node=<span class="kw-2">&amp;</span><span class="self">self</span>.nodes[index];<span class="kw">if </span>!node.bounds.overlaps(bounds){<span class="kw">return</span>;}
+<a href=#370 id=370 data-nosnippet>370</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>([a,b])=node.children{<span class="self">self</span>.query_node(a,bounds,out);<span class="self">self</span>.query_node(b,bounds,out);}
+<a href=#371 id=371 data-nosnippet>371</a>        <span class="kw">else</span>{out.extend(node.items.iter().copied().filter(|<span class="kw-2">&amp;</span>i|<span class="self">self</span>.items[i].overlaps(bounds)));}
+<a href=#372 id=372 data-nosnippet>372</a>    }
+<a href=#373 id=373 data-nosnippet>373</a>}
+<a href=#374 id=374 data-nosnippet>374</a>
+<a href=#375 id=375 data-nosnippet>375</a><span class="attr">#[cfg(test)]
+<a href=#376 id=376 data-nosnippet>376</a>#[path=<span class="string">"cloth_contact_tests.rs"</span>]
+<a href=#377 id=377 data-nosnippet>377</a></span><span class="kw">mod </span>tests;
+</code></pre></div></section></main></body></html>

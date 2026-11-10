@@ -1,0 +1,568 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Deploying a dedicated server - ZestEngine</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Documentation for the ZestEngine game engine: the ECS, the engine API and WASM scripting.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="shortcut icon" href="favicon-8e6b73bd.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-e96d0476.css">
+        <link rel="stylesheet" href="css/chrome-d279d366.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="theme/zestengine-9866fa4a.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-49b9e9f7.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-ffb240a5.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">ZestEngine</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/lemonxah/zestengine" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <!-- Copied from docs/deployment/dedicated-server.md in the engine repository by sync.py. Edit it there, then run ./sync.py. -->
+<h1 id="deploying-a-dedicated-server-net-7"><a class="header" href="#deploying-a-dedicated-server-net-7">Deploying a dedicated server (NET-7)</a></h1>
+<p>Step by step, from a project to a server players can join and an operator can watch. Reference for the
+settings and admin commands is <code>docs/dedicated-server.md</code>; the networking model is <code>docs/networking.md</code>.</p>
+<p><strong>Status of this guide.</strong> The files it uses are generated and unit-tested as text (the generated config
+parses and validates, the unit contains the hardening lines, the heartbeat / probe / metrics run in a real
+loopback server). <strong>Nothing here was run under systemd or Docker</strong> by the people who wrote it: treat the
+first deployment as a test, with <code>systemd-analyze verify</code> and <code>docker compose config</code> as the first checks.</p>
+<h2 id="1-what-you-deploy"><a class="header" href="#1-what-you-deploy">1. What you deploy</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Item</th><th>Notes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>zestengine-server</code></td><td>One static-ish binary (the project's own when it has components). No GPU, window or audio device.</td></tr>
+<tr><td><code>assets/</code></td><td>The stripped cook. Read-only at run time.</td></tr>
+<tr><td><code>server.ron</code></td><td>Settings. The one in <code>deploy/</code> is the production template.</td></tr>
+<tr><td><strong><code>state_dir</code></strong></td><td><strong>The one folder that must persist</strong>: <code>identity.key</code>, <code>bans.ron</code>, <code>world.state*</code>, <code>players.state*</code> (plus the <code>health.status</code> / <code>metrics.prom</code> heartbeat). Back it up.</td></tr>
+</tbody>
+</table>
+</div>
+<p>Ports (all UDP):</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Port</th><th>Purpose</th><th>Firewall</th></tr>
+</thead>
+<tbody>
+<tr><td>9000 (<code>port</code>)</td><td>Game traffic</td><td>open to players</td></tr>
+<tr><td><code>admin_port</code> (convention: game + 1)</td><td>Signed remote admin</td><td><strong>operators only</strong></td></tr>
+<tr><td>47777</td><td>LAN discovery</td><td>closed on a public host (<code>lan_discovery: false</code>)</td></tr>
+<tr><td>47800</td><td><code>zestengine-relay</code>, only if you run one</td><td>open only on the relay host</td></tr>
+</tbody>
+</table>
+</div>
+<p>There is <strong>no HTTP health endpoint by default.</strong> The ways to see that a server is alive are the heartbeat
+file (<code>--healthcheck</code>, section 8), the signed <code>status</code> command over the admin port, and the optional
+loopback listener (<code>metrics_addr</code>).</p>
+<p>One <code>state_dir</code>, one game port and one admin port <strong>per instance</strong>; never share them.</p>
+<h2 id="2-build"><a class="header" href="#2-build">2. Build</a></h2>
+<pre><code class="language-sh">just build-server ~/games/arena          # -&gt; ~/games/arena/build-server/
+</code></pre>
+<p><code>build-server/</code> now holds the binary, <code>assets/</code>, <code>server.ron</code> (a development config), <code>run.sh</code>,
+<code>build-report.txt</code> and <code>deploy/</code>:</p>
+<pre><code>deploy/arena.service            hardened systemd unit
+deploy/arena@.service           template unit for several instances
+deploy/server.ron               production settings (state_dir /var/lib/arena)
+deploy/instance.ron.example     settings of one instance
+deploy/arena.env.example        secrets (password, relay token)
+deploy/Dockerfile, docker-compose.yml, kubernetes.yaml
+deploy/nftables.nft, ufw.sh, logrotate.conf, install.sh, README.txt
+</code></pre>
+<p>The names come from the project name (<code>Arena X</code> becomes <code>arena-x</code>). The game port in the templates is the one the
+boot scene's Network Manager names (<code>port</code>; 9000 when the scene has no Network Manager), and the admin port is that
+plus one; the examples below show 9000/9001. Change <code>port</code> in <code>deploy/server.ron</code> (and the firewall files) only if you
+want something else. <strong>The build wipes <code>build-server/</code> on every run</strong>, which is why the production <code>state_dir</code>
+points at <code>/var/lib/&lt;game&gt;</code> and never at <code>build-server/assets/.server</code> (the development default,
+<code>&lt;project&gt;/.server</code>, would be inside the folder a rebuild deletes).</p>
+<p>Check what the server will actually use before starting it:</p>
+<pre><code class="language-sh">./zestengine-server --print-config --config deploy/server.ron
+</code></pre>
+<p>prints the effective settings (file, environment and flags merged; the password and relay token show as
+<code>"&lt;set&gt;"</code>), validated, and exits.</p>
+<h2 id="3-install-on-a-systemd-host"><a class="header" href="#3-install-on-a-systemd-host">3. Install on a systemd host</a></h2>
+<p>Copy the whole <code>build-server/</code> folder to the host, then:</p>
+<pre><code class="language-sh">sudo deploy/install.sh
+</code></pre>
+<p>The script creates a system user <code>arena</code>, installs the binary and assets to <code>/opt/arena/</code> (the old assets
+move to <code>assets.old</code>), puts <code>server.ron</code> and <code>arena.env</code> in <code>/etc/arena/</code> <strong>only if they do not exist</strong> (an
+edited config is never overwritten), and installs the two unit files. It does not enable or start anything and
+does not touch the firewall. Then:</p>
+<ol>
+<li>Edit <code>/etc/arena/server.ron</code>: <code>server_name</code>, <code>max_players</code>, admin keys (section 6).</li>
+<li>Edit <code>/etc/arena/arena.env</code> (mode 0600): <code>ZESTENGINE_SERVER_PASSWORD</code>, <code>ZESTENGINE_RELAY_TOKEN</code>.</li>
+<li><code>sudo systemd-analyze verify /etc/systemd/system/arena.service</code></li>
+<li><code>sudo systemctl enable --now arena</code></li>
+<li><code>journalctl -u arena -f</code> and <code>/var/log/arena/server.log</code>.</li>
+</ol>
+<p>What the unit does (<code>deploy/arena.service</code>):</p>
+<ul>
+<li>Runs as <code>User=arena</code> (comment in the file shows <code>DynamicUser=yes</code> as the alternative), <code>--no-console</code>
+(no stdin under a service manager), <code>WorkingDirectory=/opt/arena</code>.</li>
+<li><code>StateDirectory=arena</code> creates <code>/var/lib/arena</code> (mode 0700) and makes it the only writable place besides
+<code>LogsDirectory=arena</code> (<code>/var/log/arena</code>). <code>ProtectSystem=strict</code>, <code>ProtectHome</code>, <code>PrivateTmp</code>,
+<code>PrivateDevices</code>, <code>NoNewPrivileges</code>, empty capability set, <code>RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX</code>,
+<code>SystemCallFilter=@system-service</code>, <code>UMask=0077</code>. <code>MemoryDenyWriteExecute</code> is left off because a WASM
+sandbox with a JIT needs writable and executable pages.</li>
+<li><code>Restart=on-failure</code>, <code>RestartForceExitStatus=75</code>, <code>SuccessExitStatus=0</code>: a crash restarts it, the <code>restart</code>
+admin command (exit code 75) restarts it, a clean <code>shutdown</code> / SIGTERM does not. Five failed starts in a
+minute stop the loop (<code>StartLimit*</code>).</li>
+<li><code>KillSignal=SIGTERM</code>, <code>TimeoutStopSec=10</code>: SIGTERM is graceful (players are told, state is saved); after
+10 s systemd sends SIGKILL. A save finishes in far less than that for normal worlds.</li>
+<li><code>LimitNOFILE=65536</code>. Optional, commented: <code>CPUAffinity=2 3</code>, <code>Nice=-5</code>, <code>MemoryMax=2G</code>.</li>
+</ul>
+<p><code>state_dir</code> in <code>server.ron</code> and <code>StateDirectory=</code> in the unit must name the same folder
+(<code>/var/lib/arena</code>). If you change one, change the other.</p>
+<h2 id="4-docker"><a class="header" href="#4-docker">4. Docker</a></h2>
+<pre><code class="language-sh">cd build-server
+cp deploy/arena.env.example deploy/arena.env      # then edit
+docker compose -f deploy/docker-compose.yml up -d --build
+docker compose -f deploy/docker-compose.yml ps    # "healthy" once the heartbeat is fresh
+</code></pre>
+<p>The image is built from the prebuilt binary (no Rust toolchain in the image): <code>debian:stable-slim</code> (the
+<code>BASE</code> build argument), a non-root user (uid 10001), <code>VOLUME /var/lib/arena</code>, <code>EXPOSE 9000/udp 9001/udp</code>,
+<code>HEALTHCHECK</code> = <code>zestengine-server --healthcheck</code>, <code>STOPSIGNAL SIGTERM</code>. The compose file adds a named
+volume for the state folder, <code>restart: unless-stopped</code> (which also honours the exit code 75 of <code>restart</code>),
+<code>stop_grace_period: 10s</code>, a read-only root file system, <code>cap_drop: [ALL]</code>, <code>no-new-privileges</code>, and
+publishes the game port; the admin port line is commented and bound to <code>127.0.0.1</code>: expose it only to
+operators.</p>
+<p>The binary is dynamically linked against glibc, so the base image needs a glibc at least as new as your
+build machine's. For a fully static image use the musl target (section 12) with
+<code>BASE=gcr.io/distroless/static-debian12:nonroot</code> (remove the <code>useradd</code> line, use uid 65532).</p>
+<p><code>docker compose</code> publishes UDP through the host's NAT; for more than a few hundred packets per second per
+player consider <code>network_mode: host</code> on a dedicated host instead.</p>
+<h3 id="kubernetes"><a class="header" href="#kubernetes">Kubernetes</a></h3>
+<p><code>deploy/kubernetes.yaml</code> is a PersistentVolumeClaim (1 Gi, <code>ReadWriteOnce</code>) for the state folder, a Deployment and a
+Service. Build and push the image first (section 4's Dockerfile), set <code>image:</code> to your registry path, create the secret
+with the password and relay token (<code>kubectl create secret generic &lt;game&gt;-env --from-literal=ZESTENGINE_SERVER_PASSWORD=...</code>,
+the secret is optional in the manifest), then <code>kubectl apply -f deploy/kubernetes.yaml</code>. What the manifest decides:
+<strong>one replica with <code>strategy: Recreate</code></strong> (the saved world, bans and the pinned server identity live in one volume, so two
+servers must never share it, and an update stops the old pod first); <code>terminationGracePeriodSeconds: 15</code> so SIGTERM can
+save and send the shutdown redirect; a non-root user (10001) with a read-only root file system and no capabilities
+(<code>/tmp</code> and the log folder are <code>emptyDir</code>s); startup and liveness probes that run <code>zestengine-server --healthcheck</code> (the
+heartbeat file, no network); the Service is <code>type: LoadBalancer</code> for <strong>UDP</strong> with <code>externalTrafficPolicy: Local</code> so
+players' real addresses reach the server (bans and rate limits are per address). Your provider's load balancer must
+support UDP; otherwise switch the Service to <code>NodePort</code> and open that port. The signed admin port is deliberately not
+in the Service: reach it with <code>kubectl port-forward</code> (UDP needs a tunnel) or a separate internal Service. Not run on a
+cluster; it is generated text with unit tests.</p>
+<h2 id="5-firewall"><a class="header" href="#5-firewall">5. Firewall</a></h2>
+<p><code>deploy/nftables.nft</code> and <code>deploy/ufw.sh</code> are examples, not scripts to run blindly: they open the game port,
+restrict the admin port to an operators' address range, and keep LAN discovery (47777) closed. Check with
+<code>nft -c -f deploy/nftables.nft</code> before loading anything. The admin port is also protected by Ed25519
+signatures, timestamps and a per-address rate limit, but replies are signed, not encrypted: put it behind a
+VPN or an allow-list, do not leave it open to the internet.</p>
+<h2 id="6-admin-keys"><a class="header" href="#6-admin-keys">6. Admin keys</a></h2>
+<p>On <strong>your own machine</strong>:</p>
+<pre><code class="language-sh">zestengine-admin keygen --out ~/.config/arena-admin.key     # prints the public key
+</code></pre>
+<p>Paste the public key into <code>admin_keys</code> (uncomment the block and <code>admin_port</code> in <code>server.ron</code>; the shipped
+placeholder <code>PUT_THE_64_HEX_DIGIT_PUBLIC_KEY_HERE</code> is refused at start, on purpose), roles <code>Observer</code>,
+<code>Moderator</code>, <code>Admin</code>. The secret key never goes on the server. Operate:</p>
+<pre><code class="language-sh">zestengine-admin --server host:9001 --server-key &lt;server public key&gt; --key ~/.config/arena-admin.key status
+</code></pre>
+<p>The server's public key is in its log at start (<code>server key ...</code>) and is the pinned identity (section 7).</p>
+<p><strong>Rotating a key</strong>, with no downtime: add the new key beside the old one, <code>reload</code> (an <code>Admin</code> key can send
+it), check the new key works (<code>status</code>), remove the old one, <code>reload</code> again. A key that is removed stops
+working at the <code>reload</code>. Rotating all keys because of a leak: do the same with the leaked key removed first.</p>
+<h2 id="7-state-directory-backup-restore-upgrade"><a class="header" href="#7-state-directory-backup-restore-upgrade">7. State directory: backup, restore, upgrade</a></h2>
+<p><code>state_dir</code> holds everything that cannot be rebuilt:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>File</th><th>What</th></tr>
+</thead>
+<tbody>
+<tr><td><code>identity.key</code></td><td>The server's signing identity. Players pin it on first join and refuse a changed one. <strong>Losing it makes returning players' games refuse the server (changed identity)</strong>, and invalidates every <code>--server-key</code> your operators hold.</td></tr>
+<tr><td><code>bans.ron</code></td><td>Bans by player id.</td></tr>
+<tr><td><code>world.state*</code>, <code>players.state*</code></td><td>Persistent scene objects and per-player data, with <code>persist_keep</code> (default 3) older generations next to each.</td></tr>
+</tbody>
+</table>
+</div>
+<p><strong>Backup</strong>: copy the folder while the server runs (files are replaced atomically and each generation is
+checksummed) or, safer, after <code>systemctl stop</code>:</p>
+<pre><code class="language-sh">sudo tar -C /var/lib -czf arena-state-$(date +%F).tgz arena
+</code></pre>
+<p>(For Docker: <code>docker run --rm -v arena_state:/s -v $PWD:/b debian:stable-slim tar -C /s -czf /b/state.tgz .</code>.)
+Keep <code>identity.key</code> somewhere extra safe (it is 32 secret bytes) and out of shared backups.</p>
+<p><strong>Restore</strong>: stop the server, replace the folder content with the backup keeping owner <code>arena</code> and mode
+0700, start. A damaged current file falls back to the previous generation and the bad one is kept as
+<code>.corrupt-&lt;unix&gt;</code>.</p>
+<p><strong>Move to another machine</strong>: copy <code>state_dir</code> (above all <code>identity.key</code>), keep the same address or announce
+the new one; players are not asked anything because the identity is the same.</p>
+<p><strong>Upgrade</strong> (new build, same identity): the state folder is outside the build folder, so just replace the
+binary and assets.</p>
+<pre><code class="language-sh">sudo systemctl stop arena                  # or the graceful redirect below
+sudo deploy/install.sh                     # copies the binary and assets, keeps /etc/arena and /var/lib/arena
+sudo systemctl start arena
+</code></pre>
+<p>A state file written by a newer version is not silently overwritten by an older server (it is reported), so
+keep the backup from before a version jump and do not run an older build on a newer state folder.</p>
+<p><strong>Graceful upgrade with a redirect.</strong> Bring up the new version on a second port (or another host), then:</p>
+<pre><code class="language-sh">zestengine-admin ... shutdown 203.0.113.9:9010     # players get a notice and their game follows the address
+</code></pre>
+<p><code>shutdown &lt;addr&gt;</code> and <code>restart &lt;addr&gt;</code> offer the address (<code>host:port</code> or a relay room code) to every player
+as they are disconnected; <code>shutdown_redirect</code> in <code>server.ron</code> sets a default. The follow itself is
+implemented in the player and loopback-tested only; verify it with a real client before relying on it.</p>
+<h2 id="8-monitoring"><a class="header" href="#8-monitoring">8. Monitoring</a></h2>
+<p><strong>Heartbeat and probe.</strong> Every <code>health_interval</code> seconds (5 by default, 0 = off) the server rewrites
+<code>&lt;state_dir&gt;/health.status</code> (plain <code>key=value</code>: <code>state</code>, <code>updated_unix</code>, <code>pid</code>, <code>ticks</code>, <code>players</code>,
+<code>tick_mean_ms</code>, <code>bytes_out_per_s</code>, <code>bans</code> ...) and <code>&lt;state_dir&gt;/metrics.prom</code> (Prometheus text format). On a
+clean stop <code>state=stopped</code> is written.</p>
+<pre><code class="language-sh">zestengine-server --healthcheck --config /etc/arena/server.ron      # exit 0 alive, 1 not, 2 bad arguments
+</code></pre>
+<p>needs no network and no keys; it reads only <code>state_dir</code> from the config (so it runs in a container without the
+project), and fails when the file is missing, stale (default: older than three intervals, at least 30 s) or
+says anything but <code>running</code>. A hung tick loop stops the heartbeat, so a frozen server is caught too. Use it as
+a Docker <code>HEALTHCHECK</code> (already in the Dockerfile), a cron job, or a systemd watchdog sidecar. Run as a user
+that can read <code>state_dir</code> (<code>sudo -u arena</code>).</p>
+<p><strong>Metrics.</strong></p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Series (<code>zestengine_</code> prefix)</th><th>Meaning</th></tr>
+</thead>
+<tbody>
+<tr><td><code>up</code>, <code>uptime_seconds</code>, <code>ticks_total</code>, <code>tick_rate_hz</code></td><td>Liveness and tick counter. A flat <code>ticks_total</code> is a stuck server.</td></tr>
+<tr><td><code>tick_ms_mean</code>, <code>tick_ms_max</code></td><td>Tick cost since the last reading. Alert when the mean passes about 60 percent of <code>1000 / tick_rate</code> ms (20 ms at 30 Hz) or the max passes the full period.</td></tr>
+<tr><td><code>players</code>, <code>max_players</code></td><td>Load.</td></tr>
+<tr><td><code>net_bytes_in_total</code>, <code>net_bytes_out_total</code>, <code>net_bytes_in_per_second</code>, <code>net_bytes_out_per_second</code></td><td>Traffic.</td></tr>
+<tr><td><code>violations_total</code>, <code>muted_total</code></td><td>Validation hits; a spike is a misbehaving client or an attack.</td></tr>
+<tr><td><code>interest_enabled</code>, <code>interest_objects</code>, <code>interest_relevant_avg</code>, <code>interest_held_by_budget</code>, <code>interest_merged_total</code></td><td>Interest management (NET-5).</td></tr>
+<tr><td><code>bans</code></td><td>Active bans.</td></tr>
+</tbody>
+</table>
+</div>
+<p>For Prometheus either read <code>metrics.prom</code> with the node exporter's textfile collector
+(<code>--collector.textfile.directory=/var/lib/arena</code>, only <code>*.prom</code> files are read), or enable the optional
+listener:</p>
+<pre><code class="language-ron">metrics_addr: "127.0.0.1:9100",     // loopback only; any other address is refused at start
+</code></pre>
+<p>serving <code>GET /health</code> (200 or 503) and <code>GET /metrics</code>. It is <strong>off by default</strong>, has no authentication
+(hence loopback), answers one request at a time with a 1 s timeout, and its numbers are those of the last
+heartbeat. Put a reverse proxy or an agent in front of it if a remote scraper needs it. Several instances:
+<code>9100 + N</code>.</p>
+<p>The signed <code>status</code> and <code>stats</code> commands over the admin port are the authoritative view (they run on the
+server thread); the stats line in the log repeats every <code>stats_interval</code> seconds.</p>
+<p><strong>Logs.</strong> <code>log_path</code> (the template uses <code>/var/log/arena/server.log</code>) is size-rotated by the server
+(<code>log_max_mb</code> x <code>log_keep</code>); the same lines go to the journal / <code>docker logs</code>. <code>deploy/logrotate.conf</code> adds
+daily rotation with compression (<code>copytruncate</code>; raise <code>log_max_mb</code> so the two do not both rotate).</p>
+<h2 id="9-several-instances-on-one-host"><a class="header" href="#9-several-instances-on-one-host">9. Several instances on one host</a></h2>
+<p><code>deploy/arena@.service</code> is a template unit: <code>%i</code> is the instance name and selects <code>/etc/arena/%i.ron</code>, with
+<code>StateDirectory=arena/%i</code> (so <code>state_dir: "/var/lib/arena/%i"</code> written out in that file).</p>
+<pre><code class="language-sh">sudo cp /opt/arena/deploy/instance.ron.example /etc/arena/eu1.ron      # edit port, admin_port, state_dir, server_name
+sudo systemctl enable --now arena@eu1
+</code></pre>
+<p><strong>Port allocation rule.</strong> Instance number N (0, 1, 2, ...) takes game UDP <code>9000 + 10*N</code>, admin UDP
+<code>game + 1</code>, metrics (loopback TCP) <code>9100 + N</code>. The state folder is <code>/var/lib/arena/&lt;instance&gt;</code>, the log is
+<code>/var/log/arena/&lt;instance&gt;.log</code>. The gaps leave room to grow without renumbering. Only one instance may
+answer LAN discovery (47777): write <code>lan_discovery: false</code> in all of them on a public host. Give each
+instance its own cores with <code>systemctl edit arena@eu1</code> (<code>CPUAffinity=</code>), and size them as in section 10.
+Instances share the binary and <code>assets/</code>, so an upgrade restarts them one by one:
+<code>systemctl restart arena@eu1</code>, wait for <code>--healthcheck</code>, next.</p>
+<h2 id="10-sizing-a-vps"><a class="header" href="#10-sizing-a-vps">10. Sizing a VPS</a></h2>
+<p>Numbers come from the NET-5 scale test (<code>docs/networking.md</code>, "Interest management"): 200 simulated clients
+walking at 4 m/s and reporting at 15 Hz plus 100 server-simulated NPCs, tick 30 Hz, <strong>server part of a tick
+only</strong>, in-memory transport (no kernel packet I/O), optimised dev profile, one machine. Real numbers will be
+higher; measure your own game with <code>--print-config</code>'s settings and the <code>tick_ms_mean</code> series.</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Case (200 players)</th><th>Server CPU per tick (mean, p99)</th><th>Out per client</th><th>Total out</th></tr>
+</thead>
+<tbody>
+<tr><td>1200 m world, interest on (100 m)</td><td>2.3 ms, 4.8 ms</td><td>5.1 kB/s</td><td>1.0 MB/s (8 Mbit/s)</td></tr>
+<tr><td>300 m dense, interest on</td><td>6.6 ms, 19.0 ms</td><td>38.9 kB/s</td><td>8.0 MB/s (64 Mbit/s)</td></tr>
+<tr><td>300 m dense, interest + 12 kB/s budget</td><td>5.6 ms, 8.3 ms</td><td>11.6 kB/s</td><td>2.4 MB/s (19 Mbit/s)</td></tr>
+<tr><td>interest <strong>off</strong></td><td>31.6 to 32.7 ms, 69 to 93 ms</td><td>293 kB/s</td><td>60 MB/s: not viable</td></tr>
+</tbody>
+</table>
+</div>
+<p>Rules of thumb that follow:</p>
+<ul>
+<li><strong>CPU</strong>: the simulation is one thread. One fast core runs one instance of up to about 100 to 200 players
+with interest management on (the tick budget at 30 Hz is 33 ms). More players means more instances, not
+more cores per instance. Reserve one extra core per host for the kernel's UDP handling.</li>
+<li><strong>Interest management is not optional</strong> above a few dozen players in a big world: switch it on in
+<code>server.ron</code> (<code>interest: (enabled: true, radius: 100.0, budget: 12000)</code>).</li>
+<li><strong>Bandwidth</strong>: size by the "Total out" column, with 50 percent headroom, and by your provider's monthly
+transfer: 2.4 MB/s is about 6 TB per month at full load. A 50-player VR session targets about 3.6 MB/s
+(see the NET-5 leftovers: not measured against real avatar traffic).</li>
+<li><strong>Memory</strong>: not measured. A scene plus replication state for a few hundred objects is small; plan 512 MB to
+1 GB per instance until you measure <code>ps -o rss</code> on your game (this is a guess, not a result).</li>
+<li><strong>Disk</strong>: the cooked assets (<code>build-report.txt</code>) plus a few MB of state.</li>
+</ul>
+<p>A practical starting point: a 2 vCPU / 2 GB VPS with 100 to 250 Mbit/s runs one instance for 50 to 100 players
+comfortably; check <code>tick_ms_mean</code> with real players before adding more.</p>
+<h2 id="11-client-connect-checklist-pc-and-quest"><a class="header" href="#11-client-connect-checklist-pc-and-quest">11. Client connect checklist (PC and Quest)</a></h2>
+<p>Before announcing the server:</p>
+<ol>
+<li>Server log says <code>hosting "..." on UDP 9000</code>, <code>--healthcheck</code> is 0, the firewall allows UDP 9000 from the
+internet (test from outside: <code>nc -u -z host 9000</code> only proves the port is not rejected).</li>
+<li>Client and server are built from the same engine version and the same project content (the game's scenes
+and components must match what the server cooked).</li>
+<li>PC: connect with <code>host:9000</code> (direct) or pick the server from the directory, if <code>directory:</code> is set.
+If the server has a password, the player enters it (it keys the session encryption).</li>
+<li>A second join on another day is not refused for a changed identity (if it is, <code>identity.key</code> changed:
+section 7).</li>
+<li>Quest: same address or the directory; the headset must be on a network that allows outbound UDP to the
+port (guest and hotel Wi-Fi often do not); mobile hotspots work. Check the headset's clock is right.</li>
+<li>A player joins, moves, and appears for a second client; <code>players</code> / <code>status</code> over the admin port shows
+both; the player count in <code>zestengine_players</code> follows.</li>
+<li><code>restart</code>/<code>shutdown</code> with an address: the players get the notice and (once verified with real clients)
+follow it.</li>
+<li>Behind NAT without a port forward: set <code>relay</code> to a <code>zestengine-relay</code> and give players the room code
+instead of an address.</li>
+</ol>
+<h2 id="12-cross-compiling"><a class="header" href="#12-cross-compiling">12. Cross-compiling</a></h2>
+<p><code>ZESTENGINE_SERVER_TARGET=&lt;triple&gt; just build-server &lt;project&gt;</code> builds the server for another target
+(<code>cargo build --release --target &lt;triple&gt;</code>; the binary is taken from <code>target/&lt;triple&gt;/release/</code>).
+<code>scripts/check-server-cross.sh [triples...]</code> (or <code>just check-server-cross</code>) runs <code>cargo check -p zestengine-server --target &lt;triple&gt;</code> for each triple that <code>rustup target list --installed</code> lists, and says
+<code>SKIP</code> for the others. It is <strong>not run in CI</strong>. What was found on the machine that wrote this:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Target</th><th>Result</th></tr>
+</thead>
+<tbody>
+<tr><td><code>x86_64-unknown-linux-gnu</code> (host)</td><td><code>cargo check -p zestengine-server --locked</code> passes.</td></tr>
+<tr><td><code>x86_64-unknown-linux-musl</code>, <code>aarch64-unknown-linux-gnu</code></td><td><strong>Not installed there, not tried</strong> (<code>rustup target add ...</code>). Unknown whether they build.</td></tr>
+<tr><td><code>i686-unknown-linux-gnu</code> (installed)</td><td><strong>Fails</strong>: <code>glam 0.15.2</code> (a transitive dependency of the asset and physics stack) asserts alignments that do not hold on 32-bit x86 (<code>E0080</code>). 32-bit hosts are not a target.</td></tr>
+</tbody>
+</table>
+</div>
+<p>What to expect, unverified: <code>cargo check</code> does not link, so passing it does not prove a build. A real
+build for <code>aarch64-unknown-linux-gnu</code> needs a cross linker (<code>aarch64-linux-gnu-gcc</code>, configured as
+<code>[target.aarch64-unknown-linux-gnu] linker = ...</code> in <code>.cargo/config.toml</code>) and, for crates with C code, a
+cross C compiler; <code>x86_64-unknown-linux-musl</code> needs <code>musl-gcc</code> for the same reason. <code>cargo zigbuild</code> or
+the <code>cross</code> tool replace both when installed. The project's own server crate (projects with components) is
+built from the project's <code>target/</code> folder with the same <code>--target</code>, so a project's component crate must
+cross-compile too. Please report the first real result of each target in <code>IMPLEMENTATION_PLAN.md</code>.</p>
+<h2 id="13-checklist"><a class="header" href="#13-checklist">13. Checklist</a></h2>
+<ul>
+<li><input disabled="" type="checkbox"> <code>state_dir</code> is outside the build folder and backed up (identity first).</li>
+<li><input disabled="" type="checkbox"> Secrets in <code>arena.env</code>, not in <code>server.ron</code> (mode 0600).</li>
+<li><input disabled="" type="checkbox"> Admin port firewalled to operators; key pair made on an operator machine.</li>
+<li><input disabled="" type="checkbox"> <code>lan_discovery: false</code> on public hosts.</li>
+<li><input disabled="" type="checkbox"> <code>systemd-analyze verify</code> clean; <code>systemctl restart</code> and <code>kill -TERM</code> tested once (players told, state saved).</li>
+<li><input disabled="" type="checkbox"> <code>--healthcheck</code> returns 0; an alert on <code>zestengine_ticks_total</code> not increasing.</li>
+<li><input disabled="" type="checkbox"> One test client per platform joined from outside the network.</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="dedicated-server.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="api.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="dedicated-server.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="api.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-09f2665d.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-609e4cb8.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

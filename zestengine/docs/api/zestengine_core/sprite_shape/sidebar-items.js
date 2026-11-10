@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["SPRITE_SHAPE_EXTENSION"],"enum":["EdgeFit","ShapeTangentMode","Tessellation"],"fn":["load_spriteshape","save_spriteshape","select_range"],"mod":["edit","generate","presets","spline"],"struct":["AngleRange","ShapeHole","ShapePoint","SpriteShapeProfile","SpriteShapeRenderer"]};
