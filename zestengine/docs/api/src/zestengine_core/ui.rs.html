@@ -9,11 +9,11 @@
 <a href=#9 id=9 data-nosnippet>9</a>//! parent. Children draw on top of parents, in hierarchy order.
 <a href=#10 id=10 data-nosnippet>10</a>
 <a href=#11 id=11 data-nosnippet>11</a></span><span class="kw">use </span>serde::{Deserialize, Serialize};
-<a href=#12 id=12 data-nosnippet>12</a><span class="kw">use </span><span class="kw">crate</span>::ecs::{EcsMoveHost, Stage, run_ordered};
+<a href=#12 id=12 data-nosnippet>12</a><span class="kw">use </span><span class="kw">crate</span>::ecs::{ObjectContext, Stage, run_ordered};
 <a href=#13 id=13 data-nosnippet>13</a>
 <a href=#14 id=14 data-nosnippet>14</a><span class="kw">use crate</span>::{
 <a href=#15 id=15 data-nosnippet>15</a>    ActionCtx, ActionDesc, ActionType, ArgValue, EventActions, FireSource, ParamDesc, PropertyDesc,
-<a href=#16 id=16 data-nosnippet>16</a>    TypedComponent, queue_actions, MoveHost,
+<a href=#16 id=16 data-nosnippet>16</a>    TypedComponent, queue_actions, MotionContext,
 <a href=#17 id=17 data-nosnippet>17</a>};
 <a href=#18 id=18 data-nosnippet>18</a>
 <a href=#19 id=19 data-nosnippet>19</a><span class="doccomment">/// How UI sizes respond to the screen resolution.
@@ -500,7 +500,7 @@
 <a href=#500 id=500 data-nosnippet>500</a>}
 <a href=#501 id=501 data-nosnippet>501</a>
 <a href=#502 id=502 data-nosnippet>502</a><span class="kw">impl </span>UiButton {
-<a href=#503 id=503 data-nosnippet>503</a>    <span class="kw">fn </span>update_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
+<a href=#503 id=503 data-nosnippet>503</a>    <span class="kw">fn </span>update_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
 <a href=#504 id=504 data-nosnippet>504</a>        <span class="kw">if </span>(!<span class="self">self</span>.on_click.is_empty() || !<span class="self">self</span>.on_click_actions.is_empty()) &amp;&amp; ctx.ui_clicked(ctx.self_id()) {
 <a href=#505 id=505 data-nosnippet>505</a>            <span class="kw">for </span>action <span class="kw">in </span><span class="kw-2">&amp;</span><span class="self">self</span>.on_click {
 <a href=#506 id=506 data-nosnippet>506</a>                action.run(ctx);
@@ -568,7 +568,7 @@
 <a href=#568 id=568 data-nosnippet>568</a>    }
 <a href=#569 id=569 data-nosnippet>569</a>
 <a href=#570 id=570 data-nosnippet>570</a>    <span class="doccomment">/// Queue the action using native scene metadata.
-<a href=#571 id=571 data-nosnippet>571</a>    </span><span class="kw">pub fn </span>run(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
+<a href=#571 id=571 data-nosnippet>571</a>    </span><span class="kw">pub fn </span>run(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
 <a href=#572 id=572 data-nosnippet>572</a>        <span class="kw">match </span><span class="self">self </span>{
 <a href=#573 id=573 data-nosnippet>573</a>            UiAction::LoadScene(path) <span class="kw">if </span>!path.is_empty() =&gt; ctx.load_scene(path.clone()),
 <a href=#574 id=574 data-nosnippet>574</a>            UiAction::LoadScene(<span class="kw">_</span>) =&gt; {}
@@ -628,7 +628,7 @@
 <a href=#628 id=628 data-nosnippet>628</a>}
 <a href=#629 id=629 data-nosnippet>629</a>
 <a href=#630 id=630 data-nosnippet>630</a><span class="kw">impl </span>UiToggle {
-<a href=#631 id=631 data-nosnippet>631</a>    <span class="kw">fn </span>update_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
+<a href=#631 id=631 data-nosnippet>631</a>    <span class="kw">fn </span>update_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
 <a href=#632 id=632 data-nosnippet>632</a>        <span class="kw">let </span>action = <span class="self">self</span>.invert_y_action.as_str();
 <a href=#633 id=633 data-nosnippet>633</a>        <span class="kw">if </span>action.is_empty() || <span class="self">self</span>.applied == <span class="prelude-val">Some</span>(<span class="self">self</span>.on) {
 <a href=#634 id=634 data-nosnippet>634</a>            <span class="kw">return</span>;
@@ -721,7 +721,7 @@
 <a href=#721 id=721 data-nosnippet>721</a>}
 <a href=#722 id=722 data-nosnippet>722</a>
 <a href=#723 id=723 data-nosnippet>723</a><span class="kw">impl </span>UiSlider {
-<a href=#724 id=724 data-nosnippet>724</a>    <span class="kw">fn </span>update_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
+<a href=#724 id=724 data-nosnippet>724</a>    <span class="kw">fn </span>update_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
 <a href=#725 id=725 data-nosnippet>725</a>        <span class="kw">if </span>!<span class="self">self</span>.audio_bus.is_empty() &amp;&amp; <span class="self">self</span>.applied != <span class="prelude-val">Some</span>(<span class="self">self</span>.value) {
 <a href=#726 id=726 data-nosnippet>726</a>            ctx.set_bus_volume(<span class="self">self</span>.audio_bus.clone(), <span class="self">self</span>.fraction());
 <a href=#727 id=727 data-nosnippet>727</a>            <span class="self">self</span>.applied = <span class="prelude-val">Some</span>(<span class="self">self</span>.value);
@@ -829,7 +829,7 @@
 <a href=#829 id=829 data-nosnippet>829</a>}
 <a href=#830 id=830 data-nosnippet>830</a>
 <a href=#831 id=831 data-nosnippet>831</a><span class="kw">impl </span>UiPauseMenu {
-<a href=#832 id=832 data-nosnippet>832</a>    <span class="kw">fn </span>update_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
+<a href=#832 id=832 data-nosnippet>832</a>    <span class="kw">fn </span>update_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
 <a href=#833 id=833 data-nosnippet>833</a>        <span class="kw">let </span><span class="prelude-val">Some</span>(id) = ctx.find_object(<span class="kw-2">&amp;</span><span class="self">self</span>.panel) <span class="kw">else </span>{
 <a href=#834 id=834 data-nosnippet>834</a>            <span class="kw">return</span>;
 <a href=#835 id=835 data-nosnippet>835</a>        };

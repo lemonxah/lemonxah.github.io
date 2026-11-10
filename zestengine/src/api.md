@@ -5,12 +5,12 @@ the engine you are building against.
 
 | Crate | What it holds | Reference |
 |---|---|---|
-| `zestengine-core` | Components, systems, the ECS (`SceneWorld`, `SystemWorld`, `Stage`, `EcsMoveHost`), commands, input, physics queries, networking types | [zestengine_core](api/zestengine_core/index.html) |
+| `zestengine-core` | Components, systems, the ECS (`SceneWorld`, `SystemWorld`, `Stage`, `ObjectContext`), commands, input, physics queries, networking types | [zestengine_core](api/zestengine_core/index.html) |
 
 Good places to start in the reference:
 
 - [`ecs`](api/zestengine_core/ecs/index.html): the ECS model, systems, stages, `run_ordered`, entity templates.
-- [`EcsMoveHost`](api/zestengine_core/ecs/struct.EcsMoveHost.html): everything a system can do to the
+- [`ObjectContext`](api/zestengine_core/ecs/struct.ObjectContext.html): everything a system can do to the
   world: move, read and edit other objects, spawn, raycast, play sounds, save, network.
 - [`TypedComponent`](api/zestengine_core/trait.TypedComponent.html): the trait every component implements.
 - [`ComponentRegistry`](api/zestengine_core/struct.ComponentRegistry.html): where components, systems and

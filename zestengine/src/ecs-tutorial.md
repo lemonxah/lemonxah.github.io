@@ -34,8 +34,8 @@ Default`.
 
 ```rust
 use serde::{Deserialize, Serialize};
-use zestengine_core::ecs::{ContactPhase, EcsMoveHost, SceneEvent, Stage, run_ordered};
-use zestengine_core::{ComponentRegistry, MoveHost, ObjectId, TypedComponent, UiText};
+use zestengine_core::ecs::{ContactPhase, ObjectContext, SceneEvent, Stage, run_ordered};
+use zestengine_core::{ComponentRegistry, MotionContext, ObjectId, TypedComponent, UiText};
 
 /// Marker: objects that can pick coins up. It has no data; its presence is the data.
 #[derive(Default, Serialize, Deserialize)]
@@ -81,8 +81,8 @@ Three things to notice:
 - **`Collector` is empty on purpose.** A "tag" component is the ECS way to say *this object is a kind of
   thing*. Systems then ask "does the other object carry a `Collector`?".
 
-> **Imports.** `MoveHost` looks unused, but it is the trait that provides `self_id()` and the transform
-> helpers on `host`. If the compiler says "no method named `self_id`", this import is missing.
+> **Imports.** `MotionContext` looks unused, but it is the trait that provides `self_id()` and the transform
+> helpers on `obj`. If the compiler says "no method named `self_id`", this import is missing.
 
 ## Step 2: the event
 
@@ -107,15 +107,15 @@ system looks for contacts where *this coin* was entered by something that is a `
 ```rust
 registry.register_system_for::<Coin>("game::coin_pickup", Stage::Events, |world, ctx| {
     let contacts = ctx.services.scene_events;
-    run_ordered(world, ctx, |coin: &mut Coin, host| {
-        let me = host.self_id();
+    run_ordered(world, ctx, |coin: &mut Coin, obj| {
+        let me = obj.self_id();
         for contact in contacts {
             if let SceneEvent::Contact { object, other, trigger: true, phase: ContactPhase::Enter, .. } = contact
                 && *object == me
-                && host.get::<Collector>(*other).is_some()
+                && obj.get::<Collector>(*other).is_some()
             {
-                host.emit(Collected { by: *other, value: coin.value });
-                host.destroy_self();
+                obj.emit(Collected { by: *other, value: coin.value });
+                obj.destroy_self();
             }
         }
     })
@@ -127,12 +127,12 @@ Reading it line by line:
 - `register_system_for::<Coin>` runs the system only while at least one enabled `Coin` exists, so a level
   without coins pays nothing.
 - `run_ordered` calls the closure once per active `Coin`, in scene order, with the component and an
-  `EcsMoveHost` (`host`) bound to that coin's object. Disabled objects are skipped for you.
+  `ObjectContext` (`obj`) bound to that coin's object. Disabled objects are skipped for you.
 - `ctx.services.scene_events` is this frame's list of contacts. The pattern keeps only trigger overlaps
   (`trigger: true`) that just started (`ContactPhase::Enter`), where the receiver (`object`) is this coin.
-- `host.get::<Collector>(*other)` reads a component from the *other* object. It returns `None` if the
+- `obj.get::<Collector>(*other)` reads a component from the *other* object. It returns `None` if the
   object has none, so a crate or a wall touching the coin is ignored.
-- `host.emit(..)` broadcasts the event. `host.destroy_self()` queues the coin for removal; it disappears
+- `obj.emit(..)` broadcasts the event. `obj.destroy_self()` queues the coin for removal; it disappears
   when the stage ends.
 
 ## Step 4: the score system
@@ -142,13 +142,13 @@ components like any other, so updating them is an ordinary edit:
 
 ```rust
 impl ScoreBoard {
-    fn update(&mut self, host: &mut EcsMoveHost<'_, '_>) {
-        for collected in host.events::<Collected>() {
+    fn update(&mut self, obj: &mut ObjectContext<'_, '_>) {
+        for collected in obj.events::<Collected>() {
             self.score += collected.value;
         }
-        let id = host.self_id();
+        let id = obj.self_id();
         let text = format!("Score {}", self.score);
-        host.edit::<UiText>(id, move |ui| ui.text = text);
+        obj.edit::<UiText>(id, move |ui| ui.text = text);
     }
 }
 
@@ -158,7 +158,7 @@ registry.register_system_for::<ScoreBoard>("game::score_board", Stage::LateUpdat
 ```
 
 `LateUpdate` is the right stage for anything that mirrors the frame's final state onto the screen.
-`host.edit::<UiText>(id, ..)` changes the `UiText` on the same object as the `ScoreBoard`, so put both
+`obj.edit::<UiText>(id, ..)` changes the `UiText` on the same object as the `ScoreBoard`, so put both
 components on one object.
 
 ## Step 5: register everything
@@ -303,15 +303,15 @@ Each of these is a few lines, and each uses a call documented in the [Engine API
 **Play a sound where the coin was.** Inside the pickup closure, before `destroy_self`:
 
 ```rust
-let here = host.world_position();
-host.play_sound_at("audio/pop.ogg", here, 1.0);
+let here = obj.world_position();
+obj.play_sound_at("audio/pop.ogg", here, 1.0);
 ```
 
 **Keep the score between sessions.** Saves are queued like every other side effect:
 
 ```rust
-host.save_value("best_score", self.score as i64);
-host.write_save("slot1");
+obj.save_value("best_score", self.score as i64);
+obj.write_save("slot1");
 ```
 
 **Make coins worth more than one point.** Nothing to write: select a coin and change *Value* in the

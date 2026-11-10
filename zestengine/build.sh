@@ -37,10 +37,12 @@ find docs -maxdepth 1 -name '*~' -delete
 [ -n "$keep" ] && mv "$keep/api" docs/api && rmdir "$keep"
 
 if [ "$api" = 1 ]; then
+  # rustdoc merges into an existing doc dir and keeps entries for types that were renamed or removed.
+  rm -rf "${CARGO_TARGET_DIR:-$ENGINE/target}/doc"
   (cd "$ENGINE" && cargo doc -p zestengine-core --no-deps)
   rm -rf docs/api
   mkdir -p docs/api
-  cp -r "$ENGINE/target/doc/." docs/api/
+  cp -r "${CARGO_TARGET_DIR:-$ENGINE/target}/doc/." docs/api/
   rm -f docs/api/.lock
 fi
 

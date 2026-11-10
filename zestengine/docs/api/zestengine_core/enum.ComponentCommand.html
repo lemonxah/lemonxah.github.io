@@ -172,7 +172,7 @@
 sound, load a scene, save, talk over the network.</p>
 <p>Systems edit component data directly; anything that reaches beyond it is queued
 here by pushing onto <a href="ecs/struct.SystemContext.html#structfield.commands" title="field zestengine_core::ecs::SystemContext::commands"><code>ecs::SystemContext::commands</code></a> (or through the helpers on
-<a href="ecs/struct.EcsMoveHost.html" title="struct zestengine_core::ecs::EcsMoveHost"><code>ecs::EcsMoveHost</code></a>, which are usually nicer). The engine applies the queue, in
+<a href="ecs/struct.ObjectContext.html" title="struct zestengine_core::ecs::ObjectContext"><code>ecs::ObjectContext</code></a>, which are usually nicer). The engine applies the queue, in
 order, when the stage that queued it finishes, after all checked ECS borrows have
 been released. A command that names an object that no longer exists is ignored.
 The play session applies most commands itself; session, window and content
@@ -192,7 +192,7 @@ project-relative, e.g. “scenes/level2.scene”. Replaces the current scene.</p
 </div><section id="variant.SetLocalTransform" class="variant"><a href="#variant.SetLocalTransform" class="anchor">§</a><h3 class="code-header">SetLocalTransform</h3></section><div class="docblock"><p>Write another object’s LOCAL transform (each field optional). The play
 session still applies it, but native systems do not need it: they edit the
 <code>Transform</code> in place, immediately, with
-<a href="ecs/struct.EcsMoveHost.html#method.set_local_transform" title="method zestengine_core::ecs::EcsMoveHost::set_local_transform"><code>ecs::EcsMoveHost::set_local_transform</code></a>, which is visible to later systems
+<a href="ecs/struct.ObjectContext.html#method.set_local_transform" title="method zestengine_core::ecs::ObjectContext::set_local_transform"><code>ecs::ObjectContext::set_local_transform</code></a>, which is visible to later systems
 in the same stage. Use this command only when you cannot reach the world
 (external tools).</p>
 </div><div class="sub-variant" id="variant.SetLocalTransform.fields"><h4>Fields</h4><div class="sub-variant-field"><span id="variant.SetLocalTransform.field.id" class="section-header"><a href="#variant.SetLocalTransform.field.id" class="anchor field">§</a><code>id: <a class="struct" href="struct.ObjectId.html" title="struct zestengine_core::ObjectId">ObjectId</a></code></span><div class="docblock"><p>Target object.</p>
@@ -203,7 +203,7 @@ in the same stage. Use this command only when you cannot reach the world
 optional). The engine converts to local using the object’s parent, so
 this is correct whether the target is a root or nested. Local-space
 writes use <code>SetLocalTransform</code>. As with that command, native systems
-should call <a href="ecs/struct.EcsMoveHost.html#method.set_world_transform_of" title="method zestengine_core::ecs::EcsMoveHost::set_world_transform_of"><code>ecs::EcsMoveHost::set_world_transform_of</code></a> instead, which
+should call <a href="ecs/struct.ObjectContext.html#method.set_world_transform_of" title="method zestengine_core::ecs::ObjectContext::set_world_transform_of"><code>ecs::ObjectContext::set_world_transform_of</code></a> instead, which
 edits the transform in place and takes effect immediately.</p>
 </div><div class="sub-variant" id="variant.SetWorldTransform.fields"><h4>Fields</h4><div class="sub-variant-field"><span id="variant.SetWorldTransform.field.id" class="section-header"><a href="#variant.SetWorldTransform.field.id" class="anchor field">§</a><code>id: <a class="struct" href="struct.ObjectId.html" title="struct zestengine_core::ObjectId">ObjectId</a></code></span><div class="docblock"><p>Target object.</p>
 </div></div><div class="sub-variant-field"><span id="variant.SetWorldTransform.field.translation" class="section-header"><a href="#variant.SetWorldTransform.field.translation" class="anchor field">§</a><code>translation: <a class="enum" href="https://doc.rust-lang.org/1.99.1/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="struct" href="https://docs.rs/glam/0.30.10/glam/f32/vec3/struct.Vec3.html" title="struct glam::f32::vec3::Vec3">Vec3</a>&gt;</code></span><div class="docblock"><p>New world position in meters (<code>None</code> = keep).</p>

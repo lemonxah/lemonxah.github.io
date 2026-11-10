@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-49b9e9f7.js";
+            window.path_to_searchindex_js = "searchindex-4e99785a.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-ffb240a5.js"></script>
@@ -428,7 +428,7 @@ Decal Projector, Per Instance, Vehicle, Perception / Behaviour Tree); cargo-buil
 hot-reloadable <strong>Rust plugins</strong> (runtime behaviour in <code>zestengine-core</code>, editor
 inspector/gizmo behind an <code>editor</code> feature); stable <strong>object identity</strong>
 (<code>ObjectId</code> UUID) with <code>ObjectRef</code> cross-object references set by dragging from
-the Scene tree; a native system API (<code>ecs::EcsMoveHost</code>) for transforms (incl.
+the Scene tree; a native system API (<code>ecs::ObjectContext</code>) for transforms (incl.
 parent-aware world writes), object lookups, and runtime scene switching; runtime
 custom <strong>GLSL shaders</strong>; a sandboxed <strong><code>Wasm Script</code></strong> component (wasmtime, no
 host I/O, fuel + memory caps; see the <a href="#wasm-scripting">WASM Guide</a>) for user-generated content and mods; humanoid animation
@@ -496,7 +496,7 @@ emitted events remain deferred to the next frame.
 instance state survives disabling and reenabling; replacement instances initialize
 on already-running objects. Initialization systems track completion in their ECS
 data; the stage can repeat when startup commands spawn more objects.
-Native controllers use <code>EcsMoveHost</code> to read/write
+Native controllers use <code>ObjectContext</code> to read/write
 actual ECS transforms and sibling data while sharing the same movement step as
 prediction replay. Parented camera poses use world-to-local conversion, and
 constraints capture their rest pose during initialization before motion starts.
@@ -640,8 +640,8 @@ the score board listens. Either side can change or be removed without touching t
 <h2 id="step-1-the-data"><a class="header" href="#step-1-the-data">Step 1: the data</a></h2>
 <p>Components are plain structs that implement <code>TypedComponent</code>. They must be <code>Serialize + Deserialize + Default</code>.</p>
 <pre><code class="language-rust">use serde::{Deserialize, Serialize};
-use zestengine_core::ecs::{ContactPhase, EcsMoveHost, SceneEvent, Stage, run_ordered};
-use zestengine_core::{ComponentRegistry, MoveHost, ObjectId, TypedComponent, UiText};
+use zestengine_core::ecs::{ContactPhase, ObjectContext, SceneEvent, Stage, run_ordered};
+use zestengine_core::{ComponentRegistry, MotionContext, ObjectId, TypedComponent, UiText};
 
 /// Marker: objects that can pick coins up. It has no data; its presence is the data.
 #[derive(Default, Serialize, Deserialize)]
@@ -686,8 +686,8 @@ exists while playing, so it is <code>#[serde(skip)]</code>.</li>
 thing</em>. Systems then ask "does the other object carry a <code>Collector</code>?".</li>
 </ul>
 <blockquote>
-<p><strong>Imports.</strong> <code>MoveHost</code> looks unused, but it is the trait that provides <code>self_id()</code> and the transform
-helpers on <code>host</code>. If the compiler says "no method named <code>self_id</code>", this import is missing.</p>
+<p><strong>Imports.</strong> <code>MotionContext</code> looks unused, but it is the trait that provides <code>self_id()</code> and the transform
+helpers on <code>obj</code>. If the compiler says "no method named <code>self_id</code>", this import is missing.</p>
 </blockquote>
 <h2 id="step-2-the-event"><a class="header" href="#step-2-the-event">Step 2: the event</a></h2>
 <p>An event is any <code>'static</code> type. Declare it next to the code that emits it:</p>
@@ -703,15 +703,15 @@ runtime handle.</p>
 system looks for contacts where <em>this coin</em> was entered by something that is a <code>Collector</code>:</p>
 <pre><code class="language-rust">registry.register_system_for::&lt;Coin&gt;("game::coin_pickup", Stage::Events, |world, ctx| {
     let contacts = ctx.services.scene_events;
-    run_ordered(world, ctx, |coin: &amp;mut Coin, host| {
-        let me = host.self_id();
+    run_ordered(world, ctx, |coin: &amp;mut Coin, obj| {
+        let me = obj.self_id();
         for contact in contacts {
             if let SceneEvent::Contact { object, other, trigger: true, phase: ContactPhase::Enter, .. } = contact
                 &amp;&amp; *object == me
-                &amp;&amp; host.get::&lt;Collector&gt;(*other).is_some()
+                &amp;&amp; obj.get::&lt;Collector&gt;(*other).is_some()
             {
-                host.emit(Collected { by: *other, value: coin.value });
-                host.destroy_self();
+                obj.emit(Collected { by: *other, value: coin.value });
+                obj.destroy_self();
             }
         }
     })
@@ -721,25 +721,25 @@ system looks for contacts where <em>this coin</em> was entered by something that
 <li><code>register_system_for::&lt;Coin&gt;</code> runs the system only while at least one enabled <code>Coin</code> exists, so a level
 without coins pays nothing.</li>
 <li><code>run_ordered</code> calls the closure once per active <code>Coin</code>, in scene order, with the component and an
-<code>EcsMoveHost</code> (<code>host</code>) bound to that coin's object. Disabled objects are skipped for you.</li>
+<code>ObjectContext</code> (<code>obj</code>) bound to that coin's object. Disabled objects are skipped for you.</li>
 <li><code>ctx.services.scene_events</code> is this frame's list of contacts. The pattern keeps only trigger overlaps
 (<code>trigger: true</code>) that just started (<code>ContactPhase::Enter</code>), where the receiver (<code>object</code>) is this coin.</li>
-<li><code>host.get::&lt;Collector&gt;(*other)</code> reads a component from the <em>other</em> object. It returns <code>None</code> if the
+<li><code>obj.get::&lt;Collector&gt;(*other)</code> reads a component from the <em>other</em> object. It returns <code>None</code> if the
 object has none, so a crate or a wall touching the coin is ignored.</li>
-<li><code>host.emit(..)</code> broadcasts the event. <code>host.destroy_self()</code> queues the coin for removal; it disappears
+<li><code>obj.emit(..)</code> broadcasts the event. <code>obj.destroy_self()</code> queues the coin for removal; it disappears
 when the stage ends.</li>
 </ul>
 <h2 id="step-4-the-score-system"><a class="header" href="#step-4-the-score-system">Step 4: the score system</a></h2>
 <p>The score board reads <code>Collected</code> events and writes the total into a <code>UiText</code>. UI elements are
 components like any other, so updating them is an ordinary edit:</p>
 <pre><code class="language-rust">impl ScoreBoard {
-    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
-        for collected in host.events::&lt;Collected&gt;() {
+    fn update(&amp;mut self, obj: &amp;mut ObjectContext&lt;'_, '_&gt;) {
+        for collected in obj.events::&lt;Collected&gt;() {
             self.score += collected.value;
         }
-        let id = host.self_id();
+        let id = obj.self_id();
         let text = format!("Score {}", self.score);
-        host.edit::&lt;UiText&gt;(id, move |ui| ui.text = text);
+        obj.edit::&lt;UiText&gt;(id, move |ui| ui.text = text);
     }
 }
 
@@ -747,7 +747,7 @@ registry.register_system_for::&lt;ScoreBoard&gt;("game::score_board", Stage::Lat
     run_ordered(world, ctx, ScoreBoard::update)
 });</code></pre>
 <p><code>LateUpdate</code> is the right stage for anything that mirrors the frame's final state onto the screen.
-<code>host.edit::&lt;UiText&gt;(id, ..)</code> changes the <code>UiText</code> on the same object as the <code>ScoreBoard</code>, so put both
+<code>obj.edit::&lt;UiText&gt;(id, ..)</code> changes the <code>UiText</code> on the same object as the <code>ScoreBoard</code>, so put both
 components on one object.</p>
 <h2 id="step-5-register-everything"><a class="header" href="#step-5-register-everything">Step 5: register everything</a></h2>
 <p>Both systems and all three components are handed to the engine from one function:</p>
@@ -870,11 +870,11 @@ and feed events back in by hand. That keeps each test about one system and one f
 <h2 id="variations-to-try"><a class="header" href="#variations-to-try">Variations to try</a></h2>
 <p>Each of these is a few lines, and each uses a call documented in the <a href="#zestengine-engine-api-guide">Engine API Guide</a>.</p>
 <p><strong>Play a sound where the coin was.</strong> Inside the pickup closure, before <code>destroy_self</code>:</p>
-<pre><code class="language-rust">let here = host.world_position();
-host.play_sound_at("audio/pop.ogg", here, 1.0);</code></pre>
+<pre><code class="language-rust">let here = obj.world_position();
+obj.play_sound_at("audio/pop.ogg", here, 1.0);</code></pre>
 <p><strong>Keep the score between sessions.</strong> Saves are queued like every other side effect:</p>
-<pre><code class="language-rust">host.save_value("best_score", self.score as i64);
-host.write_save("slot1");</code></pre>
+<pre><code class="language-rust">obj.save_value("best_score", self.score as i64);
+obj.write_save("slot1");</code></pre>
 <p><strong>Make coins worth more than one point.</strong> Nothing to write: select a coin and change <em>Value</em> in the
 inspector.</p>
 <p><strong>Coins that spin, expire or rain from the sky.</strong> The <a href="#zestengine-ecs-guide">ECS Guide</a> has the pieces ready: a
@@ -953,8 +953,8 @@ you author a scene, nothing ticks.</li>
 </table>
 </div>
 <p>Two details matter in practice.</p>
-<p><strong>Local versus world.</strong> <code>Transform</code> is local. When you need a true world position, ask the host
-(<code>host.world_position()</code>, <code>host.position_of(target)</code>) or <code>world.world_transform(entity)</code>, which folds in
+<p><strong>Local versus world.</strong> <code>Transform</code> is local. When you need a true world position, ask the object context
+(<code>obj.world_position()</code>, <code>obj.position_of(target)</code>) or <code>world.world_transform(entity)</code>, which folds in
 every parent <em>including writes made earlier in the same stage</em>. <code>GlobalTransform</code> is only a snapshot.</p>
 <p><strong>Duplicate components.</strong> An object can carry two components of the same type. The first lives on the
 object's own hecs entity; later ones live on small auxiliary entities that point back with <code>Owner</code>.
@@ -997,7 +997,7 @@ shown in the inspector. Mark scratch state (timers, "have I started", cached pos
 (<code>[f32; 3]</code>) and runtime-only fields use <code>Vec3</code>/<code>Quat</code> with <code>#[serde(skip)]</code>.</li>
 <li><strong>References to other objects</strong> are <a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/struct.ObjectRef.html"><code>ObjectRef</code></a>
 fields (<code>ObjectRef::NONE</code> when unset). The inspector renders a drop target; at runtime you resolve it
-with <code>host.get::&lt;T&gt;(self.target)</code>, <code>host.position_of(self.target)</code>, and so on. They return <code>None</code> when
+with <code>obj.get::&lt;T&gt;(self.target)</code>, <code>obj.position_of(self.target)</code>, and so on. They return <code>None</code> when
 the target is unset or was deleted, so always handle that case.</li>
 <li><strong>Add <code>#[serde(default)]</code></strong> to a component's struct when you expect to add fields later: old scenes
 keep loading.</li>
@@ -1130,15 +1130,15 @@ cannot capture variables: keep state in components, not in closures. (A non-capt
 </tbody>
 </table>
 </div>
-<h3 id="the-comfortable-way-run_ordered-and-ecsmovehost"><a class="header" href="#the-comfortable-way-run_ordered-and-ecsmovehost">The comfortable way: <code>run_ordered</code> and <code>EcsMoveHost</code></a></h3>
+<h3 id="the-comfortable-way-run_ordered-and-objectcontext"><a class="header" href="#the-comfortable-way-run_ordered-and-objectcontext">The comfortable way: <code>run_ordered</code> and <code>ObjectContext</code></a></h3>
 <p>Most gameplay code wants "for each active instance of my component, in scene order, with helpers for
 this object". That is <code>run_ordered</code>, which gives your closure the component and an
-<a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.EcsMoveHost.html"><code>EcsMoveHost</code></a>:
+<a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.ObjectContext.html"><code>ObjectContext</code></a>:
 the per-object toolbox for moving, reading other objects, spawning, physics queries, sounds and more.
-It also dereferences to the <code>SystemContext</code>, so <code>host.dt</code>, <code>host.input</code> and <code>host.emit(..)</code> all work.</p>
+It also dereferences to the <code>SystemContext</code>, so <code>obj.dt</code>, <code>obj.input</code> and <code>obj.emit(..)</code> all work.</p>
 <pre><code class="language-rust">use glam::Vec3;
-use zestengine_core::MoveHost;                       // translation(), set_translation(), world_position(), …
-use zestengine_core::ecs::{EcsMoveHost, run_ordered};
+use zestengine_core::MotionContext;                       // translation(), set_translation(), world_position(), …
+use zestengine_core::ecs::{ObjectContext, run_ordered};
 
 #[derive(Serialize, Deserialize)]
 pub struct PlayerMover {
@@ -1146,11 +1146,11 @@ pub struct PlayerMover {
 }
 
 impl PlayerMover {
-    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
-        let direction = host.input.axis2("Move"); // x = right, y = forward
-        let step = Vec3::new(direction.x, 0.0, -direction.y) * self.speed * host.dt;
-        let position = host.translation() + step;
-        host.set_translation(position);
+    fn update(&amp;mut self, obj: &amp;mut ObjectContext&lt;'_, '_&gt;) {
+        let direction = obj.input.axis2("Move"); // x = right, y = forward
+        let step = Vec3::new(direction.x, 0.0, -direction.y) * self.speed * obj.dt;
+        let position = obj.translation() + step;
+        obj.set_translation(position);
     }
 }
 
@@ -1163,10 +1163,10 @@ registry.register_system_for::&lt;PlayerMover&gt;("game::player_mover", Stage::U
 <li>iterates in <strong>scene order</strong>, so behaviour is deterministic. That matters for networking, prediction
 replay and anything where two objects interact within one frame. A bare <code>world.query</code> iterates in
 archetype order, which is an implementation detail;</li>
-<li>hands you an <code>EcsMoveHost</code> bound to the object.</li>
+<li>hands you an <code>ObjectContext</code> bound to the object.</li>
 </ul>
 <p>Use a bare query when order is irrelevant and you have thousands of instances (it avoids collecting and
-sorting); use <code>run_ordered</code> otherwise. The full method list of <code>EcsMoveHost</code> is in
+sorting); use <code>run_ordered</code> otherwise. The full method list of <code>ObjectContext</code> is in
 <a href="#zestengine-engine-api-guide">ENGINE_API.md</a>.</p>
 <h3 id="borrowing-rules"><a class="header" href="#borrowing-rules">Borrowing rules</a></h3>
 <p>hecs checks borrows at run time, per component column, and the engine adds a lock for structural
@@ -1221,17 +1221,17 @@ cannot teleport everything.</p>
 pushed onto <code>ctx.commands</code>. The engine applies them, in order, right after the stage that queued them:</p>
 <pre><code class="language-rust">ctx.commands.push(ComponentCommand::Destroy(object_id));
 ctx.commands.push(ComponentCommand::PlaySound { clip: "audio/pop.ogg".into(), position: None, volume: 1.0 });</code></pre>
-<p><code>EcsMoveHost</code> wraps the common ones in readable methods (<code>host.destroy(target)</code>,
-<code>host.play_sound_at(..)</code>, <code>host.add_impulse(..)</code>), which is usually what you want. Two properties to
+<p><code>ObjectContext</code> wraps the common ones in readable methods (<code>obj.destroy(target)</code>,
+<code>obj.play_sound_at(..)</code>, <code>obj.add_impulse(..)</code>), which is usually what you want. Two properties to
 remember:</p>
 <ul>
-<li><strong>Queued means "after this stage".</strong> <code>host.destroy_self()</code> does not remove the object while your system
+<li><strong>Queued means "after this stage".</strong> <code>obj.destroy_self()</code> does not remove the object while your system
 is still iterating; it disappears when the stage ends. Systems later in the <em>same</em> stage still see it.</li>
 <li><strong>Bad targets are ignored.</strong> A command that names an object that no longer exists does nothing.</li>
 </ul>
-<p>Direct writes to component data (<code>host.edit::&lt;T&gt;(target, |t| ..)</code>, <code>host.set_translation(..)</code>) are
+<p>Direct writes to component data (<code>obj.edit::&lt;T&gt;(target, |t| ..)</code>, <code>obj.set_translation(..)</code>) are
 immediate and visible to systems that run later in the same stage. The full list of commands and which
-host methods queue them is in <a href="#zestengine-engine-api-guide">ENGINE_API.md</a>.</p>
+<code>ObjectContext</code> methods queue them is in <a href="#zestengine-engine-api-guide">ENGINE_API.md</a>.</p>
 <h2 id="events"><a class="header" href="#events">Events</a></h2>
 <p>There are three ways for systems to react to something that happened.</p>
 <h3 id="broadcast-events"><a class="header" href="#broadcast-events">Broadcast events</a></h3>
@@ -1290,15 +1290,15 @@ pub struct Collected { pub by: ObjectId, pub value: u32 }
 
 registry.register_system_for::&lt;Coin&gt;("game::coin_pickup", Stage::Events, |world, ctx| {
     let contacts = ctx.services.scene_events;
-    run_ordered(world, ctx, |coin: &amp;mut Coin, host| {
-        let me = host.self_id();
+    run_ordered(world, ctx, |coin: &amp;mut Coin, obj| {
+        let me = obj.self_id();
         for contact in contacts {
             if let SceneEvent::Contact { object, other, trigger: true, phase: ContactPhase::Enter, .. } = contact
                 &amp;&amp; *object == me
-                &amp;&amp; host.get::&lt;Collector&gt;(*other).is_some()
+                &amp;&amp; obj.get::&lt;Collector&gt;(*other).is_some()
             {
-                host.emit(Collected { by: *other, value: coin.value });
-                host.destroy_self();
+                obj.emit(Collected { by: *other, value: coin.value });
+                obj.destroy_self();
             }
         }
     })
@@ -1316,22 +1316,22 @@ engine resolves and runs them. You get that for free for any component that decl
 <h2 id="spawning-and-destroying"><a class="header" href="#spawning-and-destroying">Spawning and destroying</a></h2>
 <p>Spawning is a command; the call returns the new <code>ObjectId</code> immediately so you can wire it up, but the
 object exists from the next stage on.</p>
-<pre><code class="language-rust">let id = host.spawn_prefab("prefabs/enemy.prefab", position, rotation); // a .prefab asset
-let id = host.instantiate(self.bullet_template, position, rotation);    // clone a scene object
-let id = host.spawn_entity("Crate", position, rotation);                // a registered entity
-host.net_spawn("prefabs/bullet.prefab", position, rotation);            // on every peer
-host.destroy(target);                                                    // object and children
-host.destroy_self();
-host.set_active(door, false);                                            // disable without deleting</code></pre>
+<pre><code class="language-rust">let id = obj.spawn_prefab("prefabs/enemy.prefab", position, rotation); // a .prefab asset
+let id = obj.instantiate(self.bullet_template, position, rotation);    // clone a scene object
+let id = obj.spawn_entity("Crate", position, rotation);                // a registered entity
+obj.net_spawn("prefabs/bullet.prefab", position, rotation);            // on every peer
+obj.destroy(target);                                                    // object and children
+obj.destroy_self();
+obj.set_active(door, false);                                            // disable without deleting</code></pre>
 <p>A timed self-destruct is the smallest useful spawn companion:</p>
 <pre><code class="language-rust">#[derive(Serialize, Deserialize)]
 pub struct Lifetime { pub seconds_left: f32 }   // Default: 3.0
 
 impl Lifetime {
-    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
-        self.seconds_left -= host.dt;
+    fn update(&amp;mut self, obj: &amp;mut ObjectContext&lt;'_, '_&gt;) {
+        self.seconds_left -= obj.dt;
         if self.seconds_left &lt;= 0.0 {
-            host.destroy_self();
+            obj.destroy_self();
         }
     }
 }</code></pre>
@@ -1371,18 +1371,18 @@ pub struct CrateSpawner {
 }
 
 impl CrateSpawner {
-    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
-        self.timer -= host.dt;
+    fn update(&amp;mut self, obj: &amp;mut ObjectContext&lt;'_, '_&gt;) {
+        self.timer -= obj.dt;
         if self.timer &lt;= 0.0 {
             self.timer = self.every;
-            let above = host.world_position() + Vec3::Y;
-            host.spawn_entity("Crate", above, Quat::IDENTITY);
+            let above = obj.world_position() + Vec3::Y;
+            obj.spawn_entity("Crate", above, Quat::IDENTITY);
         }
     }
 }</code></pre>
 <h2 id="talking-to-other-objects"><a class="header" href="#talking-to-other-objects">Talking to other objects</a></h2>
 <p>Systems often need another object's data: a follower needs its target's position, a turret needs its
-target's health. Reference the other object with an <code>ObjectRef</code> field and ask the host.</p>
+target's health. Reference the other object with an <code>ObjectRef</code> field and ask the <code>ObjectContext</code>.</p>
 <pre><code class="language-rust">#[derive(Serialize, Deserialize)]
 pub struct Follower {
     pub target: ObjectRef,
@@ -1390,15 +1390,15 @@ pub struct Follower {
 }
 
 impl Follower {
-    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
-        let Some(goal) = host.position_of(self.target) else { return }; // world position
-        let here = host.world_position();
+    fn update(&amp;mut self, obj: &amp;mut ObjectContext&lt;'_, '_&gt;) {
+        let Some(goal) = obj.position_of(self.target) else { return }; // world position
+        let here = obj.world_position();
         let to_goal = goal - here;
-        let step = self.speed * host.dt;
+        let step = self.speed * obj.dt;
         if to_goal.length() &lt;= step {
-            host.set_world_position(goal);
+            obj.set_world_position(goal);
         } else {
-            host.set_world_position(here + to_goal.normalize() * step);
+            obj.set_world_position(here + to_goal.normalize() * step);
         }
     }
 }</code></pre>
@@ -1408,12 +1408,12 @@ impl Follower {
 <tr><th>Want to …</th><th>Call</th><th>Timing</th></tr>
 </thead>
 <tbody>
-<tr><td>Read another object's component</td><td><code>host.get::&lt;T&gt;(target)</code></td><td>immediate</td></tr>
-<tr><td>Change it in place</td><td><code>host.edit::&lt;T&gt;(target, |t| …)</code></td><td>immediate (visible to later systems this stage)</td></tr>
-<tr><td>Read its world position</td><td><code>host.position_of(target)</code></td><td>immediate</td></tr>
-<tr><td>Find an object by name</td><td><code>host.find_object("Player")</code></td><td>immediate (names are cosmetic: prefer <code>ObjectRef</code>)</td></tr>
-<tr><td>List objects carrying a component</td><td><code>host.objects_with::&lt;T&gt;()</code></td><td>immediate, in scene order</td></tr>
-<tr><td>Ask the world to do something to it</td><td><code>host.destroy(target)</code>, <code>host.set_active(..)</code>, <code>host.add_impulse(..)</code></td><td>after the stage</td></tr>
+<tr><td>Read another object's component</td><td><code>obj.get::&lt;T&gt;(target)</code></td><td>immediate</td></tr>
+<tr><td>Change it in place</td><td><code>obj.edit::&lt;T&gt;(target, |t| …)</code></td><td>immediate (visible to later systems this stage)</td></tr>
+<tr><td>Read its world position</td><td><code>obj.position_of(target)</code></td><td>immediate</td></tr>
+<tr><td>Find an object by name</td><td><code>obj.find_object("Player")</code></td><td>immediate (names are cosmetic: prefer <code>ObjectRef</code>)</td></tr>
+<tr><td>List objects carrying a component</td><td><code>obj.objects_with::&lt;T&gt;()</code></td><td>immediate, in scene order</td></tr>
+<tr><td>Ask the world to do something to it</td><td><code>obj.destroy(target)</code>, <code>obj.set_active(..)</code>, <code>obj.add_impulse(..)</code></td><td>after the stage</td></tr>
 </tbody>
 </table>
 </div>
@@ -1453,27 +1453,27 @@ different components:</p>
 <code>Fire</code>, <code>Interact</code>, <code>Grab</code> and <code>Voice</code>; the gamepad scheme uses the same names on its sticks and
 buttons, so code written against action names works on every device. Players can rebind them, and a
 game can define its own actions in its control scheme. An action that does not exist reads as "not
-pressed". When the player is typing into a UI text field, <code>host.ui_text_editing()</code> is true: skip
+pressed". When the player is typing into a UI text field, <code>obj.ui_text_editing()</code> is true: skip
 gameplay input then.</p>
-<p>For networked objects another peer may be driving, check <code>host.driven_remotely()</code> before applying
-local input, and <code>host.has_authority(id)</code> before changing shared state.</p>
+<p>For networked objects another peer may be driving, check <code>obj.driven_remotely()</code> before applying
+local input, and <code>obj.has_authority(id)</code> before changing shared state.</p>
 <h2 id="physics-and-contacts"><a class="header" href="#physics-and-contacts">Physics and contacts</a></h2>
 <p>Physics queries are immediate; pushes are commands. A ray gun:</p>
 <pre><code class="language-rust">#[derive(Serialize, Deserialize)]
 pub struct Laser { pub damage: f32, pub range: f32 }   // Default: 25 / 100
 
 impl Laser {
-    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
-        if !host.input.pressed("Fire") { return; }
-        let aim = host.self_transform(); // world position and orientation
-        let Some(hit) = host.raycast(aim.translation, aim.forward(), self.range) else { return };
+    fn update(&amp;mut self, obj: &amp;mut ObjectContext&lt;'_, '_&gt;) {
+        if !obj.input.pressed("Fire") { return; }
+        let aim = obj.self_transform(); // world position and orientation
+        let Some(hit) = obj.raycast(aim.translation, aim.forward(), self.range) else { return };
         let damage = self.damage;
-        host.edit::&lt;Hitpoints&gt;(hit.object, move |hp| hp.current = (hp.current - damage).max(0.0));
-        host.add_impulse(hit.object, aim.forward() * 5.0);
-        host.play_sound_at("audio/zap.ogg", hit.point, 1.0);
+        obj.edit::&lt;Hitpoints&gt;(hit.object, move |hp| hp.current = (hp.current - damage).max(0.0));
+        obj.add_impulse(hit.object, aim.forward() * 5.0);
+        obj.play_sound_at("audio/zap.ogg", hit.point, 1.0);
     }
 }</code></pre>
-<p><code>host.raycast</code> ignores triggers and the caller's own colliders; use <code>raycast_filtered</code> with a
+<p><code>obj.raycast</code> ignores triggers and the caller's own colliders; use <code>raycast_filtered</code> with a
 <code>RayFilter</code> for layer masks. Rigid bodies move through commands (<code>add_force</code>, <code>add_impulse</code>,
 <code>set_velocity</code>); characters through <code>move_character</code>. Contacts arrive as <a href="#scene-events-contacts-and-animation-markers">scene events</a>.
 The ENGINE_API guide covers <a href="#physics">physics</a> in full.</p>
@@ -1497,19 +1497,19 @@ pub struct Door {
 
 impl Door {
     /// Runs once for each new instance (Stage::Start): remember where "closed" is.
-    fn start(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
+    fn start(&amp;mut self, obj: &amp;mut ObjectContext&lt;'_, '_&gt;) {
         if self.closed_y.is_none() {
-            self.closed_y = Some(host.translation().y);
+            self.closed_y = Some(obj.translation().y);
         }
     }
 
-    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
+    fn update(&amp;mut self, obj: &amp;mut ObjectContext&lt;'_, '_&gt;) {
         let Some(closed) = self.closed_y else { return };
         let goal = if self.wants_open { closed + self.lift } else { closed };
-        let mut position = host.translation();
-        let step = self.speed * host.dt;
+        let mut position = obj.translation();
+        let step = self.speed * obj.dt;
         position.y += (goal - position.y).clamp(-step, step);
-        host.set_translation(position);
+        obj.set_translation(position);
     }
 }
 
@@ -1534,13 +1534,13 @@ pub struct ScoreBoard {
 }
 
 impl ScoreBoard {
-    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
-        for collected in host.events::&lt;Collected&gt;() {
+    fn update(&amp;mut self, obj: &amp;mut ObjectContext&lt;'_, '_&gt;) {
+        for collected in obj.events::&lt;Collected&gt;() {
             self.score += collected.value;
         }
-        let id = host.self_id();
+        let id = obj.self_id();
         let text = format!("Score {}", self.score);
-        host.edit::&lt;UiText&gt;(id, move |ui| ui.text = text);
+        obj.edit::&lt;UiText&gt;(id, move |ui| ui.text = text);
     }
 }
 
@@ -1703,7 +1703,7 @@ are not applied by the harness, so assert on them instead.</li>
 <tr><td><code>ComponentRegistry</code> (<code>register_ecs</code>, <code>register_system*</code>, <code>register_entity</code>)</td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/struct.ComponentRegistry.html">struct.ComponentRegistry</a></td></tr>
 <tr><td><code>SystemWorld</code>, <code>SystemContext</code>, <code>SystemServices</code></td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.SystemWorld.html">ecs/struct.SystemWorld</a>, <a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.SystemContext.html">ecs/struct.SystemContext</a>, <a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.SystemServices.html">ecs/struct.SystemServices</a></td></tr>
 <tr><td><code>Stage</code>, <code>SceneEvent</code>, <code>ContactPhase</code></td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/enum.Stage.html">ecs/enum.Stage</a>, <a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/enum.SceneEvent.html">ecs/enum.SceneEvent</a></td></tr>
-<tr><td><code>run_ordered</code>, <code>EcsMoveHost</code></td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/fn.run_ordered.html">ecs/fn.run_ordered</a>, <a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.EcsMoveHost.html">ecs/struct.EcsMoveHost</a></td></tr>
+<tr><td><code>run_ordered</code>, <code>ObjectContext</code></td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/fn.run_ordered.html">ecs/fn.run_ordered</a>, <a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.ObjectContext.html">ecs/struct.ObjectContext</a></td></tr>
 <tr><td><code>SceneWorld</code></td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.SceneWorld.html">ecs/struct.SceneWorld</a></td></tr>
 <tr><td><code>EntityTemplate</code>, <code>EntityShape</code></td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.EntityTemplate.html">ecs/struct.EntityTemplate</a>, <a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/enum.EntityShape.html">ecs/enum.EntityShape</a></td></tr>
 <tr><td><code>ComponentCommand</code></td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/enum.ComponentCommand.html">enum.ComponentCommand</a></td></tr>
@@ -1737,8 +1737,8 @@ with the <a href="#ecs-tutorial-a-coin-collector">tutorial</a>.</p>
 </div>
 <h2 id="skeleton-component-system-registration"><a class="header" href="#skeleton-component-system-registration">Skeleton: component, system, registration</a></h2>
 <pre><code class="language-rust">use serde::{Deserialize, Serialize};
-use zestengine_core::ecs::{EcsMoveHost, Stage, run_ordered};
-use zestengine_core::{ComponentRegistry, MoveHost, TypedComponent};
+use zestengine_core::ecs::{ObjectContext, Stage, run_ordered};
+use zestengine_core::{ComponentRegistry, MotionContext, TypedComponent};
 
 #[derive(Serialize, Deserialize)]
 pub struct Spinner {
@@ -1756,9 +1756,9 @@ impl TypedComponent for Spinner {
 }
 
 impl Spinner {
-    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
-        self.elapsed += host.dt;
-        // host.translation(), host.set_translation(..), host.input, host.emit(..), host.destroy_self() ...
+    fn update(&amp;mut self, obj: &amp;mut ObjectContext&lt;'_, '_&gt;) {
+        self.elapsed += obj.dt;
+        // obj.translation(), obj.set_translation(..), obj.input, obj.emit(..), obj.destroy_self() ...
     }
 }
 
@@ -1794,10 +1794,10 @@ Use <code>register_system_for::&lt;T&gt;</code> by default: it costs nothing whi
 <tr><th>Immediate (visible to later systems this stage)</th><th>Queued (applied when the stage ends)</th></tr>
 </thead>
 <tbody>
-<tr><td>Reads: <code>host.get::&lt;T&gt;(t)</code>, <code>host.position_of(t)</code>, <code>host.raycast(..)</code></td><td><code>host.spawn_entity(..)</code>, <code>spawn_prefab</code>, <code>instantiate</code> (the id returns at once, the object exists next stage)</td></tr>
-<tr><td><code>host.edit::&lt;T&gt;(t, |c| ..)</code></td><td><code>host.destroy(t)</code>, <code>host.destroy_self()</code>, <code>host.set_active(t, ..)</code></td></tr>
-<tr><td><code>host.set_translation(..)</code>, <code>set_world_position(..)</code></td><td><code>host.add_impulse(..)</code>, <code>set_velocity(..)</code>, <code>move_character(..)</code></td></tr>
-<tr><td></td><td><code>host.play_sound_at(..)</code>, <code>load_scene(..)</code>, <code>save_value(..)</code>, <code>net_spawn(..)</code></td></tr>
+<tr><td>Reads: <code>obj.get::&lt;T&gt;(t)</code>, <code>obj.position_of(t)</code>, <code>obj.raycast(..)</code></td><td><code>obj.spawn_entity(..)</code>, <code>spawn_prefab</code>, <code>instantiate</code> (the id returns at once, the object exists next stage)</td></tr>
+<tr><td><code>obj.edit::&lt;T&gt;(t, |c| ..)</code></td><td><code>obj.destroy(t)</code>, <code>obj.destroy_self()</code>, <code>obj.set_active(t, ..)</code></td></tr>
+<tr><td><code>obj.set_translation(..)</code>, <code>set_world_position(..)</code></td><td><code>obj.add_impulse(..)</code>, <code>set_velocity(..)</code>, <code>move_character(..)</code></td></tr>
+<tr><td></td><td><code>obj.play_sound_at(..)</code>, <code>load_scene(..)</code>, <code>save_value(..)</code>, <code>net_spawn(..)</code></td></tr>
 </tbody>
 </table>
 </div>
@@ -1810,24 +1810,24 @@ Use <code>register_system_for::&lt;T&gt;</code> by default: it costs nothing whi
 <tr><th>I want to …</th><th>Write</th><th>Where</th></tr>
 </thead>
 <tbody>
-<tr><td>Move the object I am on</td><td><code>host.set_translation(host.translation() + step * host.dt)</code></td><td><a href="#moving-things">Moving things</a></td></tr>
-<tr><td>Move it in world space</td><td><code>host.set_world_position(v)</code></td><td><a href="#moving-things">Moving things</a></td></tr>
-<tr><td>Read player input</td><td><code>host.input.pressed("Fire")</code>, <code>down</code>, <code>released</code>, <code>axis</code>, <code>axis2("Move")</code></td><td><a href="#input">Input</a></td></tr>
-<tr><td>Point at another object</td><td>an <code>ObjectRef</code> field, then <code>host.position_of(self.target)</code></td><td><a href="#talking-to-other-objects">Talking to other objects</a></td></tr>
-<tr><td>Read or change another object's component</td><td><code>host.get::&lt;T&gt;(t)</code>, <code>host.edit::&lt;T&gt;(t, |c| ..)</code></td><td><a href="#talking-to-other-objects">Talking to other objects</a></td></tr>
-<tr><td>Find objects</td><td><code>host.objects_with::&lt;T&gt;()</code>, <code>host.find_object("Player")</code></td><td><a href="#finding-and-reading-other-objects">Finding and reading</a></td></tr>
-<tr><td>Broadcast something happened</td><td><code>host.emit(MyEvent { .. })</code></td><td><a href="#broadcast-events">Broadcast events</a></td></tr>
-<tr><td>React to something that happened</td><td><code>ctx.events::&lt;MyEvent&gt;()</code> / <code>host.events::&lt;MyEvent&gt;()</code></td><td><a href="#broadcast-events">Broadcast events</a></td></tr>
+<tr><td>Move the object I am on</td><td><code>obj.set_translation(obj.translation() + step * obj.dt)</code></td><td><a href="#moving-things">Moving things</a></td></tr>
+<tr><td>Move it in world space</td><td><code>obj.set_world_position(v)</code></td><td><a href="#moving-things">Moving things</a></td></tr>
+<tr><td>Read player input</td><td><code>obj.input.pressed("Fire")</code>, <code>down</code>, <code>released</code>, <code>axis</code>, <code>axis2("Move")</code></td><td><a href="#input">Input</a></td></tr>
+<tr><td>Point at another object</td><td>an <code>ObjectRef</code> field, then <code>obj.position_of(self.target)</code></td><td><a href="#talking-to-other-objects">Talking to other objects</a></td></tr>
+<tr><td>Read or change another object's component</td><td><code>obj.get::&lt;T&gt;(t)</code>, <code>obj.edit::&lt;T&gt;(t, |c| ..)</code></td><td><a href="#talking-to-other-objects">Talking to other objects</a></td></tr>
+<tr><td>Find objects</td><td><code>obj.objects_with::&lt;T&gt;()</code>, <code>obj.find_object("Player")</code></td><td><a href="#finding-and-reading-other-objects">Finding and reading</a></td></tr>
+<tr><td>Broadcast something happened</td><td><code>obj.emit(MyEvent { .. })</code></td><td><a href="#broadcast-events">Broadcast events</a></td></tr>
+<tr><td>React to something that happened</td><td><code>ctx.events::&lt;MyEvent&gt;()</code> / <code>obj.events::&lt;MyEvent&gt;()</code></td><td><a href="#broadcast-events">Broadcast events</a></td></tr>
 <tr><td>React to a collision or trigger</td><td>match <code>SceneEvent::Contact { .. }</code> in <code>Stage::Events</code></td><td><a href="#scene-events-contacts-and-animation-markers">Scene events</a></td></tr>
-<tr><td>Spawn a registered entity</td><td><code>host.spawn_entity("Crate", pos, rot)</code></td><td><a href="#entities">Entities</a></td></tr>
-<tr><td>Spawn a prefab</td><td><code>host.spawn_prefab("prefabs/enemy.prefab", pos, rot)</code></td><td><a href="#spawning-and-destroying">Spawning and destroying</a></td></tr>
-<tr><td>Remove an object</td><td><code>host.destroy_self()</code> / <code>host.destroy(t)</code></td><td><a href="#spawning-and-destroying">Spawning and destroying</a></td></tr>
-<tr><td>Cast a ray</td><td><code>host.raycast(origin, dir, max)</code> → <code>Option&lt;RayHit&gt;</code></td><td><a href="#physics-and-contacts">Physics and contacts</a></td></tr>
-<tr><td>Push a rigid body</td><td><code>host.add_impulse(t, v)</code></td><td><a href="#physics">Physics</a></td></tr>
-<tr><td>Play a sound</td><td><code>host.play_sound_at("audio/pop.ogg", pos, 1.0)</code></td><td><a href="#audio">Audio</a></td></tr>
-<tr><td>Change UI text</td><td><code>host.edit::&lt;UiText&gt;(id, move |ui| ui.text = text)</code></td><td><a href="#showing-state-in-the-ui">Showing state in the UI</a></td></tr>
-<tr><td>Pause or slow time</td><td><code>host.set_time_scale(0.0)</code></td><td><a href="#pause-menu">Pause menu</a></td></tr>
-<tr><td>Switch scene</td><td><code>host.load_scene("scenes/level2.scene")</code></td><td><a href="#scenes-saves-and-settings">Scenes, saves and settings</a></td></tr>
+<tr><td>Spawn a registered entity</td><td><code>obj.spawn_entity("Crate", pos, rot)</code></td><td><a href="#entities">Entities</a></td></tr>
+<tr><td>Spawn a prefab</td><td><code>obj.spawn_prefab("prefabs/enemy.prefab", pos, rot)</code></td><td><a href="#spawning-and-destroying">Spawning and destroying</a></td></tr>
+<tr><td>Remove an object</td><td><code>obj.destroy_self()</code> / <code>obj.destroy(t)</code></td><td><a href="#spawning-and-destroying">Spawning and destroying</a></td></tr>
+<tr><td>Cast a ray</td><td><code>obj.raycast(origin, dir, max)</code> → <code>Option&lt;RayHit&gt;</code></td><td><a href="#physics-and-contacts">Physics and contacts</a></td></tr>
+<tr><td>Push a rigid body</td><td><code>obj.add_impulse(t, v)</code></td><td><a href="#physics">Physics</a></td></tr>
+<tr><td>Play a sound</td><td><code>obj.play_sound_at("audio/pop.ogg", pos, 1.0)</code></td><td><a href="#audio">Audio</a></td></tr>
+<tr><td>Change UI text</td><td><code>obj.edit::&lt;UiText&gt;(id, move |ui| ui.text = text)</code></td><td><a href="#showing-state-in-the-ui">Showing state in the UI</a></td></tr>
+<tr><td>Pause or slow time</td><td><code>obj.set_time_scale(0.0)</code></td><td><a href="#pause-menu">Pause menu</a></td></tr>
+<tr><td>Switch scene</td><td><code>obj.load_scene("scenes/level2.scene")</code></td><td><a href="#scenes-saves-and-settings">Scenes, saves and settings</a></td></tr>
 <tr><td>Make a function callable from the editor</td><td><code>actions()</code> / <code>invoke_action(..)</code> on the component</td><td><a href="#actions-and-properties">Actions and properties</a></td></tr>
 <tr><td>Test a system</td><td><code>SceneWorld</code> + <code>registry.run_systems(..)</code></td><td><a href="#testing-systems">Testing systems</a></td></tr>
 </tbody>
@@ -1842,7 +1842,7 @@ Use <code>register_system_for::&lt;T&gt;</code> by default: it costs nothing whi
 </thead>
 <tbody>
 <tr><td><code>Rotator</code></td><td>A component and its first system</td><td><a href="#systems">Systems</a></td></tr>
-<tr><td><code>PlayerMover</code></td><td><code>run_ordered</code>, input, <code>dt</code></td><td><a href="#the-comfortable-way-run_ordered-and-ecsmovehost">The comfortable way</a></td></tr>
+<tr><td><code>PlayerMover</code></td><td><code>run_ordered</code>, input, <code>dt</code></td><td><a href="#the-comfortable-way-run_ordered-and-objectcontext">The comfortable way</a></td></tr>
 <tr><td><code>Hitpoints</code>, <code>Hit</code>, <code>Died</code></td><td>Events between systems, death announced once</td><td><a href="#broadcast-events">Broadcast events</a></td></tr>
 <tr><td><code>Coin</code>, <code>Collector</code>, <code>Collected</code></td><td>Contacts and triggers</td><td><a href="#scene-events-contacts-and-animation-markers">Scene events</a>, and the <a href="#ecs-tutorial-a-coin-collector">tutorial</a></td></tr>
 <tr><td><code>Lifetime</code></td><td>A timed self-destruct</td><td><a href="#spawning-and-destroying">Spawning and destroying</a></td></tr>
@@ -1883,7 +1883,7 @@ RTS selection and formations) read the gameplay kit in the engine repository:
 rays, push bodies, read input, play sounds, change scenes, save progress, talk over the network.</p>
 <p>This guide is organised by task. For how components, systems, stages and events fit together, read the
 <a href="#zestengine-ecs-guide">ECS Guide</a> first. For the exact signature and full documentation of every function, use the
-<a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.EcsMoveHost.html">API reference</a>.
+<a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.ObjectContext.html">API reference</a>.
 The scripting sandbox has its own guide: <a href="#wasm-scripting">WASM.md</a>.</p>
 <p>The code in the recipes at the end of this guide is compiled and run by
 <a href="https://github.com/lemonxah/zestengine/blob/main/crates/zestengine-core/tests/ecs_guide.rs"><code>crates/zestengine-core/tests/ecs_guide.rs</code></a>.</p>
@@ -1939,15 +1939,15 @@ stage (see <a href="#stages">Stages</a>). A system receives:</p>
 <tbody>
 <tr><td><code>world: &amp;SystemWorld</code></td><td>Read access to every component through hecs queries</td><td>Find and edit component data</td></tr>
 <tr><td><code>ctx: &amp;mut SystemContext</code></td><td>The frame: <code>dt</code>, <code>time</code>, <code>input</code>, event bus, command queue, engine services</td><td>Read time and input, emit events, queue commands</td></tr>
-<tr><td><code>host: &amp;mut EcsMoveHost</code></td><td>A per-object toolbox (inside <code>run_ordered</code>)</td><td>Everything in this guide</td></tr>
+<tr><td><code>obj: &amp;mut ObjectContext</code></td><td>A per-object toolbox (inside <code>run_ordered</code>)</td><td>Everything in this guide</td></tr>
 </tbody>
 </table>
 </div>
 <h3 id="immediate-and-queued"><a class="header" href="#immediate-and-queued">Immediate and queued</a></h3>
 <p>Every operation in this guide is one of two kinds, and the tables below say which:</p>
 <ul>
-<li><strong>Immediate</strong>: reads, and writes that edit component data in place (<code>host.edit::&lt;T&gt;(..)</code>,
-<code>host.set_translation(..)</code>). The change is visible to every system that runs later in the same stage.</li>
+<li><strong>Immediate</strong>: reads, and writes that edit component data in place (<code>obj.edit::&lt;T&gt;(..)</code>,
+<code>obj.set_translation(..)</code>). The change is visible to every system that runs later in the same stage.</li>
 <li><strong>Queued</strong>: anything that pushes a <code>ComponentCommand</code> (spawn, destroy, impulses, scene loads, sounds,
 saves, network). The engine applies queued commands, in order, when the stage finishes. Spawn calls
 return the new <code>ObjectId</code> right away, but the object exists only once the stage ends.</li>
@@ -1965,40 +1965,40 @@ with no parent, local equals world. Pick the right space for the job:</p>
 <tr><th>Want to …</th><th>Call</th><th>Space</th><th>Timing</th></tr>
 </thead>
 <tbody>
-<tr><td>Read my position</td><td><code>host.translation()</code> / <code>host.world_position()</code></td><td>local / world</td><td>immediate</td></tr>
-<tr><td>Move me</td><td><code>host.set_translation(v)</code> / <code>host.set_world_position(v)</code></td><td>local / world</td><td>immediate</td></tr>
-<tr><td>Turn me</td><td><code>host.set_rotation(q)</code> / <code>host.set_world_rotation(q)</code></td><td>local / world</td><td>immediate</td></tr>
-<tr><td>Read my full world pose</td><td><code>host.self_transform()</code></td><td>world</td><td>immediate</td></tr>
-<tr><td>Read another object's pose</td><td><code>host.transform_of(target)</code>, <code>host.position_of(target)</code>, <code>host.matrix_of(target)</code></td><td>world</td><td>immediate</td></tr>
-<tr><td>Move another object</td><td><code>host.set_world_position_of(target, v)</code>, <code>host.set_world_transform_of(target, Some(pos), Some(rot))</code></td><td>world</td><td>immediate</td></tr>
-<tr><td>Change another object's local pose</td><td><code>host.set_local_transform(target, translation, rotation, scale)</code> (each <code>Option</code>)</td><td>local</td><td>immediate</td></tr>
-<tr><td>Slide a character through the world</td><td><code>host.move_character(delta)</code></td><td>world</td><td>queued</td></tr>
+<tr><td>Read my position</td><td><code>obj.translation()</code> / <code>obj.world_position()</code></td><td>local / world</td><td>immediate</td></tr>
+<tr><td>Move me</td><td><code>obj.set_translation(v)</code> / <code>obj.set_world_position(v)</code></td><td>local / world</td><td>immediate</td></tr>
+<tr><td>Turn me</td><td><code>obj.set_rotation(q)</code> / <code>obj.set_world_rotation(q)</code></td><td>local / world</td><td>immediate</td></tr>
+<tr><td>Read my full world pose</td><td><code>obj.self_transform()</code></td><td>world</td><td>immediate</td></tr>
+<tr><td>Read another object's pose</td><td><code>obj.transform_of(target)</code>, <code>obj.position_of(target)</code>, <code>obj.matrix_of(target)</code></td><td>world</td><td>immediate</td></tr>
+<tr><td>Move another object</td><td><code>obj.set_world_position_of(target, v)</code>, <code>obj.set_world_transform_of(target, Some(pos), Some(rot))</code></td><td>world</td><td>immediate</td></tr>
+<tr><td>Change another object's local pose</td><td><code>obj.set_local_transform(target, translation, rotation, scale)</code> (each <code>Option</code>)</td><td>local</td><td>immediate</td></tr>
+<tr><td>Slide a character through the world</td><td><code>obj.move_character(delta)</code></td><td>world</td><td>queued</td></tr>
 </tbody>
 </table>
 </div>
 <p>Read a position, change it, write it back. Writing a world position to a parented object's <em>local</em>
 translation is the classic mistake; <code>set_world_position</code> converts through the parent chain for you:</p>
-<pre><code class="language-rust">fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
-    let direction = host.input.axis2("Move");
-    let step = Vec3::new(direction.x, 0.0, -direction.y) * self.speed * host.dt;
-    let position = host.translation() + step;
-    host.set_translation(position);
+<pre><code class="language-rust">fn update(&amp;mut self, obj: &amp;mut ObjectContext&lt;'_, '_&gt;) {
+    let direction = obj.input.axis2("Move");
+    let step = Vec3::new(direction.x, 0.0, -direction.y) * self.speed * obj.dt;
+    let position = obj.translation() + step;
+    obj.set_translation(position);
 }</code></pre>
 <p><code>Transform</code> itself has <code>forward()</code> (local −Z in world space), <code>right()</code>, <code>up()</code> and <code>matrix()</code>.</p>
-<p><strong>Frame-rate independent motion.</strong> Multiply speeds by <code>host.dt</code>. To ease toward a target, close a share
+<p><strong>Frame-rate independent motion.</strong> Multiply speeds by <code>obj.dt</code>. To ease toward a target, close a share
 of the gap each frame with <code>1 − e^(−k·dt)</code>, which gives the same result at any frame rate (see the
 <a href="#smooth-follow-camera">smooth follow recipe</a>):</p>
-<pre><code class="language-rust">let blend = 1.0 - (-sharpness * host.dt).exp();
-host.set_world_position(here.lerp(wanted, blend));</code></pre>
+<pre><code class="language-rust">let blend = 1.0 - (-sharpness * obj.dt).exp();
+obj.set_world_position(here.lerp(wanted, blend));</code></pre>
 <p><strong>Moving physical things.</strong> A character with a <code>Character</code> component moves with <code>move_character(delta)</code>
-(it slides along walls and climbs steps; gravity is yours to apply, and <code>host.grounded()</code> says whether it
+(it slides along walls and climbs steps; gravity is yours to apply, and <code>obj.grounded()</code> says whether it
 touched the ground). Rigid bodies move through forces and impulses (see <a href="#physics">Physics</a>). Writing
 the transform of a dynamic or fixed body teleports it to that pose; a kinematic body follows its
 transform every physics step (and pushes the dynamic bodies it meets), which is how platforms and doors
 are moved from code.</p>
 <p>The <code>translation()</code>, <code>set_translation()</code>, <code>world_position()</code> and similar methods come from the
-<code>MoveHost</code> trait: <code>use zestengine_core::MoveHost;</code>.</p>
-<p><strong>The camera</strong> is an object with a <code>Camera</code> component; <code>host.set_active_camera(target)</code> makes it the one
+<code>MotionContext</code> trait: <code>use zestengine_core::MotionContext;</code>.</p>
+<p><strong>The camera</strong> is an object with a <code>Camera</code> component; <code>obj.set_active_camera(target)</code> makes it the one
 that renders.</p>
 <h2 id="finding-and-reading-other-objects"><a class="header" href="#finding-and-reading-other-objects">Finding and reading other objects</a></h2>
 <div class="table-wrapper">
@@ -2007,19 +2007,19 @@ that renders.</p>
 <tr><th>Want to …</th><th>Call</th><th>Returns</th></tr>
 </thead>
 <tbody>
-<tr><td>My own id</td><td><code>host.self_id()</code></td><td><code>ObjectId</code></td></tr>
-<tr><td>Read a component</td><td><code>host.get::&lt;T&gt;(target)</code> / <code>host.get_self::&lt;T&gt;()</code></td><td><code>Option&lt;Ref&lt;T&gt;&gt;</code></td></tr>
-<tr><td>Resolve an id to the runtime entity</td><td><code>host.entity_of(target)</code></td><td><code>Option&lt;Entity&gt;</code> (None if hidden)</td></tr>
-<tr><td>List objects that carry a component</td><td><code>host.objects_with::&lt;T&gt;()</code></td><td><code>Vec&lt;ObjectId&gt;</code> in scene order</td></tr>
-<tr><td>Find an object by name</td><td><code>host.find_object("Player")</code></td><td>first match in scene order</td></tr>
-<tr><td>Is it active?</td><td><code>host.is_active(target)</code></td><td><code>bool</code></td></tr>
-<tr><td>Pick a spawn location</td><td><code>host.spawn_point("Red Team")</code>, <code>host.spawn_point_for(tag, slot)</code></td><td><code>Option&lt;Transform&gt;</code></td></tr>
+<tr><td>My own id</td><td><code>obj.self_id()</code></td><td><code>ObjectId</code></td></tr>
+<tr><td>Read a component</td><td><code>obj.get::&lt;T&gt;(target)</code> / <code>obj.get_self::&lt;T&gt;()</code></td><td><code>Option&lt;Ref&lt;T&gt;&gt;</code></td></tr>
+<tr><td>Resolve an id to the runtime entity</td><td><code>obj.entity_of(target)</code></td><td><code>Option&lt;Entity&gt;</code> (None if hidden)</td></tr>
+<tr><td>List objects that carry a component</td><td><code>obj.objects_with::&lt;T&gt;()</code></td><td><code>Vec&lt;ObjectId&gt;</code> in scene order</td></tr>
+<tr><td>Find an object by name</td><td><code>obj.find_object("Player")</code></td><td>first match in scene order</td></tr>
+<tr><td>Is it active?</td><td><code>obj.is_active(target)</code></td><td><code>bool</code></td></tr>
+<tr><td>Pick a spawn location</td><td><code>obj.spawn_point("Red Team")</code>, <code>obj.spawn_point_for(tag, slot)</code></td><td><code>Option&lt;Transform&gt;</code></td></tr>
 </tbody>
 </table>
 </div>
 <p>Prefer <code>ObjectRef</code> fields over names: names are cosmetic, need not be unique, and cost a scan. <code>get</code>
 returns a checked borrow, so drop it before you edit the same component. Lookups find <strong>inactive</strong>
-objects too (<code>objects_with</code>, <code>find_object</code>, <code>get</code>): check <code>host.is_active(target)</code> when it matters.</p>
+objects too (<code>objects_with</code>, <code>find_object</code>, <code>get</code>): check <code>obj.is_active(target)</code> when it matters.</p>
 <h2 id="editing-other-objects"><a class="header" href="#editing-other-objects">Editing other objects</a></h2>
 <div class="table-wrapper">
 <table>
@@ -2027,13 +2027,13 @@ objects too (<code>objects_with</code>, <code>find_object</code>, <code>get</cod
 <tr><th>Want to …</th><th>Call</th><th>Timing</th></tr>
 </thead>
 <tbody>
-<tr><td>Change a component in place</td><td><code>host.edit::&lt;T&gt;(target, |c| c.hp -= 10.0)</code></td><td>immediate</td></tr>
-<tr><td>Switch an object on/off</td><td><code>host.set_active(target, false)</code></td><td>queued</td></tr>
-<tr><td>Edit a material parameter</td><td><code>host.modify_material(target, slot, |m| m.emission_intensity = 2.0)</code></td><td>queued</td></tr>
-<tr><td>Read a material</td><td><code>host.material_params(target, slot)</code></td><td>immediate</td></tr>
-<tr><td>Fire particles</td><td><code>host.emit_particles(target, 40)</code></td><td>immediate</td></tr>
-<tr><td>Steer a nav agent</td><td><code>host.set_destination(target, pos)</code>, <code>host.stop_agent(target)</code></td><td>immediate</td></tr>
-<tr><td>Write a synced variable</td><td><code>host.set_net_var(target, "key", value)</code></td><td>immediate locally, then replicated</td></tr>
+<tr><td>Change a component in place</td><td><code>obj.edit::&lt;T&gt;(target, |c| c.hp -= 10.0)</code></td><td>immediate</td></tr>
+<tr><td>Switch an object on/off</td><td><code>obj.set_active(target, false)</code></td><td>queued</td></tr>
+<tr><td>Edit a material parameter</td><td><code>obj.modify_material(target, slot, |m| m.emission_intensity = 2.0)</code></td><td>queued</td></tr>
+<tr><td>Read a material</td><td><code>obj.material_params(target, slot)</code></td><td>immediate</td></tr>
+<tr><td>Fire particles</td><td><code>obj.emit_particles(target, 40)</code></td><td>immediate</td></tr>
+<tr><td>Steer a nav agent</td><td><code>obj.set_destination(target, pos)</code>, <code>obj.stop_agent(target)</code></td><td>immediate</td></tr>
+<tr><td>Write a synced variable</td><td><code>obj.set_net_var(target, "key", value)</code></td><td>immediate locally, then replicated</td></tr>
 </tbody>
 </table>
 </div>
@@ -2048,20 +2048,20 @@ entry, so every object that uses that material changes with it; give an object i
 <tr><th>Want to …</th><th>Call</th><th>Notes</th></tr>
 </thead>
 <tbody>
-<tr><td>Spawn a <code>.prefab</code></td><td><code>host.spawn_prefab("prefabs/enemy.prefab", pos, rot)</code></td><td>path relative to the project</td></tr>
-<tr><td>Spawn a registered entity</td><td><code>host.spawn_entity("Crate", pos, rot)</code></td><td>see <a href="#entities">Entities</a></td></tr>
-<tr><td>Clone a scene object</td><td><code>host.instantiate(original, pos, rot)</code></td><td>returns <code>Option&lt;ObjectId&gt;</code>; the clone is a new root</td></tr>
-<tr><td>Spawn on every peer</td><td><code>host.net_spawn("prefabs/bullet.prefab", pos, rot)</code>, <code>net_spawn_server</code>, <code>net_clone</code></td><td>see <a href="#networking">Networking</a></td></tr>
-<tr><td>Remove an object and its children</td><td><code>host.destroy(target)</code> / <code>host.destroy_self()</code></td><td>queued</td></tr>
-<tr><td>Hide without removing</td><td><code>host.set_active(target, false)</code></td><td>queued</td></tr>
+<tr><td>Spawn a <code>.prefab</code></td><td><code>obj.spawn_prefab("prefabs/enemy.prefab", pos, rot)</code></td><td>path relative to the project</td></tr>
+<tr><td>Spawn a registered entity</td><td><code>obj.spawn_entity("Crate", pos, rot)</code></td><td>see <a href="#entities">Entities</a></td></tr>
+<tr><td>Clone a scene object</td><td><code>obj.instantiate(original, pos, rot)</code></td><td>returns <code>Option&lt;ObjectId&gt;</code>; the clone is a new root</td></tr>
+<tr><td>Spawn on every peer</td><td><code>obj.net_spawn("prefabs/bullet.prefab", pos, rot)</code>, <code>net_spawn_server</code>, <code>net_clone</code></td><td>see <a href="#networking">Networking</a></td></tr>
+<tr><td>Remove an object and its children</td><td><code>obj.destroy(target)</code> / <code>obj.destroy_self()</code></td><td>queued</td></tr>
+<tr><td>Hide without removing</td><td><code>obj.set_active(target, false)</code></td><td>queued</td></tr>
 </tbody>
 </table>
 </div>
 <p>All of these are queued. The spawn calls return the new <code>ObjectId</code> immediately so you can store it; the
 object exists, runs its <code>Start</code> systems and appears from the next stage on.</p>
 <p>A common pattern is a disabled template object in the scene that you clone and switch on:</p>
-<pre><code class="language-rust">if let Some(id) = host.instantiate(self.bullet_template, muzzle, rotation) {
-    host.set_active(id, true);
+<pre><code class="language-rust">if let Some(id) = obj.instantiate(self.bullet_template, muzzle, rotation) {
+    obj.set_active(id, true);
 }</code></pre>
 <p><code>instantiate</code> keeps the original's enabled state and scale, and returns an id even if the original no
 longer exists (that id then never resolves).</p>
@@ -2077,16 +2077,16 @@ the same stage.</p>
 <tr><th>Want to …</th><th>Call</th><th>Timing</th></tr>
 </thead>
 <tbody>
-<tr><td>Cast a ray</td><td><code>host.raycast(origin, dir, max_dist)</code> → <code>Option&lt;RayHit&gt;</code></td><td>immediate</td></tr>
-<tr><td>Cast with a filter</td><td><code>host.raycast_filtered(origin, dir, max_dist, &amp;RayFilter { layer_mask, include_triggers, exclude })</code></td><td>immediate</td></tr>
+<tr><td>Cast a ray</td><td><code>obj.raycast(origin, dir, max_dist)</code> → <code>Option&lt;RayHit&gt;</code></td><td>immediate</td></tr>
+<tr><td>Cast with a filter</td><td><code>obj.raycast_filtered(origin, dir, max_dist, &amp;RayFilter { layer_mask, include_triggers, exclude })</code></td><td>immediate</td></tr>
 <tr><td>Find objects in a sphere</td><td><code>ctx.services.physics.unwrap().overlap_sphere(center, radius, &amp;filter)</code></td><td>immediate</td></tr>
 <tr><td>Read a body's velocity</td><td><code>ctx.services.physics.unwrap().velocity(id)</code></td><td>immediate</td></tr>
-<tr><td>Ask whether a character is grounded</td><td><code>host.grounded()</code></td><td>immediate</td></tr>
-<tr><td>Push a body</td><td><code>ctx.commands.push(ComponentCommand::AddForce { id, force })</code>, <code>host.add_impulse(target, impulse)</code></td><td>queued</td></tr>
-<tr><td>Set velocity</td><td><code>host.set_velocity(target, v)</code></td><td>queued</td></tr>
+<tr><td>Ask whether a character is grounded</td><td><code>obj.grounded()</code></td><td>immediate</td></tr>
+<tr><td>Push a body</td><td><code>ctx.commands.push(ComponentCommand::AddForce { id, force })</code>, <code>obj.add_impulse(target, impulse)</code></td><td>queued</td></tr>
+<tr><td>Set velocity</td><td><code>obj.set_velocity(target, v)</code></td><td>queued</td></tr>
 <tr><td>Twist a body</td><td><code>ctx.commands.push(ComponentCommand::AddTorque { id, torque })</code></td><td>queued</td></tr>
 <tr><td>Drive a joint motor</td><td><code>ctx.commands.push(ComponentCommand::SetJointMotor { id, speed, max_force })</code></td><td>queued</td></tr>
-<tr><td>2D ray</td><td><code>host.raycast2d(origin, dir, max_dist)</code>, <code>raycast2d_filtered</code></td><td>immediate</td></tr>
+<tr><td>2D ray</td><td><code>obj.raycast2d(origin, dir, max_dist)</code>, <code>raycast2d_filtered</code></td><td>immediate</td></tr>
 </tbody>
 </table>
 </div>
@@ -2095,16 +2095,16 @@ caster's own colliders; the filter's <code>layer_mask</code> has one bit per lay
 continuous forces belong in <code>FixedUpdate</code>, one-off impulses can go anywhere. 2D physics lives in the same
 queries (<code>overlap_circle2d</code>, <code>circle_cast2d</code>, <code>box_cast2d</code>, … on <code>PhysicsQuery</code>).</p>
 <p>If a system reads <code>services.physics</code> and there is no physics world (a test, a headless tool), it is
-<code>None</code>; <code>host.raycast</code> then returns <code>None</code> too.</p>
+<code>None</code>; <code>obj.raycast</code> then returns <code>None</code> too.</p>
 <p><strong>Contacts</strong> (collisions and trigger overlaps) are not polled: they arrive as scene events in the
 <code>Events</code> stage. See <a href="#scene-events-contacts-and-animation-markers">Scene events</a>.</p>
 <h2 id="input-1"><a class="header" href="#input-1">Input</a></h2>
-<p><code>ctx.input</code> / <code>host.input</code> is a snapshot of named actions:</p>
-<pre><code class="language-rust">host.input.down("Fire")       // held
-host.input.pressed("Jump")    // went down this frame
-host.input.released("Fire")   // went up this frame
-host.input.axis("Throttle")   // -1..1
-host.input.axis2("Move")      // Vec2: x right, y forward</code></pre>
+<p><code>ctx.input</code> / <code>obj.input</code> is a snapshot of named actions:</p>
+<pre><code class="language-rust">obj.input.down("Fire")       // held
+obj.input.pressed("Jump")    // went down this frame
+obj.input.released("Fire")   // went up this frame
+obj.input.axis("Throttle")   // -1..1
+obj.input.axis2("Move")      // Vec2: x right, y forward</code></pre>
 <p>Default actions: <code>Move</code>, <code>Look</code>, <code>Jump</code>, <code>Sprint</code>, <code>Crouch</code>, <code>Fire</code>, <code>Interact</code>, <code>Grab</code>, <code>Voice</code> on
 keyboard-and-mouse and gamepad; VR adds hand actions. Players can rebind them; an action that does not
 exist reads as "not pressed", never an error. See <a href="#input">Input</a> in the ECS guide.</p>
@@ -2115,13 +2115,13 @@ exist reads as "not pressed", never an error. See <a href="#input">Input</a> in 
 <tr><th>Call</th><th>Does</th></tr>
 </thead>
 <tbody>
-<tr><td><code>host.input_bindings()</code></td><td>The live <code>Bindings</code> (all schemes), if available</td></tr>
-<tr><td><code>host.control_scheme()</code></td><td>The scheme currently in use</td></tr>
-<tr><td><code>host.rebind_with(scheme, action, slot, index, source, policy)</code></td><td>Rebind one binding</td></tr>
-<tr><td><code>host.tune_action(scheme, action, tuning)</code></td><td>Change sensitivity, invert Y, deadzone</td></tr>
-<tr><td><code>host.reset_scheme_bindings(scheme)</code></td><td>Back to defaults</td></tr>
-<tr><td><code>host.capture_next_input(kind, device)</code> / <code>captured_input()</code> / <code>is_capturing_input()</code></td><td>"Press a key to bind"</td></tr>
-<tr><td><code>host.binding_conflicts(scheme)</code></td><td>Actions that share an input</td></tr>
+<tr><td><code>obj.input_bindings()</code></td><td>The live <code>Bindings</code> (all schemes), if available</td></tr>
+<tr><td><code>obj.control_scheme()</code></td><td>The scheme currently in use</td></tr>
+<tr><td><code>obj.rebind_with(scheme, action, slot, index, source, policy)</code></td><td>Rebind one binding</td></tr>
+<tr><td><code>obj.tune_action(scheme, action, tuning)</code></td><td>Change sensitivity, invert Y, deadzone</td></tr>
+<tr><td><code>obj.reset_scheme_bindings(scheme)</code></td><td>Back to defaults</td></tr>
+<tr><td><code>obj.capture_next_input(kind, device)</code> / <code>captured_input()</code> / <code>is_capturing_input()</code></td><td>"Press a key to bind"</td></tr>
+<tr><td><code>obj.binding_conflicts(scheme)</code></td><td>Actions that share an input</td></tr>
 </tbody>
 </table>
 </div>
@@ -2133,22 +2133,22 @@ exist reads as "not pressed", never an error. See <a href="#input">Input</a> in 
 <tr><th>Want to …</th><th>Call</th></tr>
 </thead>
 <tbody>
-<tr><td>Game view size in pixels</td><td><code>host.screen_size()</code></td></tr>
-<tr><td>Pointer position (top-left origin)</td><td><code>host.pointer_position()</code> → <code>Option&lt;Vec2&gt;</code></td></tr>
-<tr><td>Ray under the pointer</td><td><code>host.pointer_ray()</code> → <code>Option&lt;(origin, direction)&gt;</code>; <code>host.screen_ray(pixel)</code> for any pixel</td></tr>
-<tr><td>Project a world point to the screen</td><td><code>host.world_to_screen(position)</code></td></tr>
-<tr><td>Is the pointer over a UI element?</td><td><code>host.pointer_over_ui()</code>: skip world clicks when true</td></tr>
-<tr><td>Was a UI button clicked?</td><td><code>host.ui_clicked(button)</code> (reported the frame after the click)</td></tr>
-<tr><td>Escape / gamepad back pressed?</td><td><code>host.ui_cancel_pressed()</code></td></tr>
-<tr><td>Is a text field being edited?</td><td><code>host.ui_text_editing()</code>: skip gameplay input when true</td></tr>
+<tr><td>Game view size in pixels</td><td><code>obj.screen_size()</code></td></tr>
+<tr><td>Pointer position (top-left origin)</td><td><code>obj.pointer_position()</code> → <code>Option&lt;Vec2&gt;</code></td></tr>
+<tr><td>Ray under the pointer</td><td><code>obj.pointer_ray()</code> → <code>Option&lt;(origin, direction)&gt;</code>; <code>obj.screen_ray(pixel)</code> for any pixel</td></tr>
+<tr><td>Project a world point to the screen</td><td><code>obj.world_to_screen(position)</code></td></tr>
+<tr><td>Is the pointer over a UI element?</td><td><code>obj.pointer_over_ui()</code>: skip world clicks when true</td></tr>
+<tr><td>Was a UI button clicked?</td><td><code>obj.ui_clicked(button)</code> (reported the frame after the click)</td></tr>
+<tr><td>Escape / gamepad back pressed?</td><td><code>obj.ui_cancel_pressed()</code></td></tr>
+<tr><td>Is a text field being edited?</td><td><code>obj.ui_text_editing()</code>: skip gameplay input when true</td></tr>
 </tbody>
 </table>
 </div>
 <p>UI is built from components (<code>UI Canvas</code>, <code>UI Rect</code>, <code>UI Panel</code>, <code>UI Image</code>, <code>UI Text</code>, <code>UI Button</code>,
 <code>UI Toggle</code>, <code>UI Slider</code>, <code>UI Text Field</code>, <code>UI Progress Bar</code>, <code>UI Pause Menu</code>), laid out in the <strong>UI
 Editor</strong> tab. Gameplay reads and writes them like any other component:</p>
-<pre><code class="language-rust">host.edit::&lt;UiText&gt;(self.score_label, move |t| t.text = format!("Score {score}"));
-if host.ui_clicked(self.play_button) { host.load_scene("scenes/level1.scene"); }</code></pre>
+<pre><code class="language-rust">obj.edit::&lt;UiText&gt;(self.score_label, move |t| t.text = format!("Score {score}"));
+if obj.ui_clicked(self.play_button) { obj.load_scene("scenes/level1.scene"); }</code></pre>
 <p>Buttons also have an <strong>On click</strong> list that needs no code (load a scene, show/hide/toggle an object,
 quit).</p>
 <h2 id="audio"><a class="header" href="#audio">Audio</a></h2>
@@ -2158,10 +2158,10 @@ quit).</p>
 <tr><th>Want to …</th><th>Call</th><th>Timing</th></tr>
 </thead>
 <tbody>
-<tr><td>One-shot sound at a position</td><td><code>host.play_sound_at("audio/boom.ogg", pos, volume)</code></td><td>queued</td></tr>
+<tr><td>One-shot sound at a position</td><td><code>obj.play_sound_at("audio/boom.ogg", pos, volume)</code></td><td>queued</td></tr>
 <tr><td>One-shot, not positional</td><td><code>ctx.commands.push(ComponentCommand::PlaySound { clip, position: None, volume })</code></td><td>queued</td></tr>
 <tr><td>Start / stop an <code>Audio Source</code></td><td><code>ctx.commands.push(ComponentCommand::PlayAudio(id))</code> / <code>StopAudio(id)</code></td><td>queued</td></tr>
-<tr><td>Set a mixer bus volume (linear gain, 0 is silent)</td><td><code>host.set_bus_volume("music", 0.5)</code></td><td>queued</td></tr>
+<tr><td>Set a mixer bus volume (linear gain, 0 is silent)</td><td><code>obj.set_bus_volume("music", 0.5)</code></td><td>queued</td></tr>
 <tr><td>Mute a bus</td><td><code>ctx.commands.push(ComponentCommand::SetBusMuted { bus, muted })</code></td><td>queued</td></tr>
 </tbody>
 </table>
@@ -2171,25 +2171,25 @@ camera or the player's head. Spatial sources (<code>Audio Source</code>) render 
 distance rolloff, directivity, occlusion and reflections.</p>
 <h2 id="animation"><a class="header" href="#animation">Animation</a></h2>
 <p>Animation state lives in the <code>Animator</code> component; edit it like any component:</p>
-<pre><code class="language-rust">host.edit::&lt;Animator&gt;(self.body, |a| {
+<pre><code class="language-rust">obj.edit::&lt;Animator&gt;(self.body, |a| {
     a.set_float("Speed", speed);          // drives blend trees and transitions
     a.set_bool("Grounded", grounded);
     a.set_trigger("Jump");                // consumed by the transition it fires
 });
-host.edit::&lt;Animator&gt;(self.body, |a| a.play("Run", 0.2));      // cross-fade a clip over 0.2 s
-host.edit::&lt;Animator&gt;(self.body, |a| a.play_state("Die", 0.1)); // force a controller state</code></pre>
-<p>Read state back with <code>host.get::&lt;Animator&gt;(target)</code>: <code>is_playing(clip)</code>, <code>finished()</code>,
+obj.edit::&lt;Animator&gt;(self.body, |a| a.play("Run", 0.2));      // cross-fade a clip over 0.2 s
+obj.edit::&lt;Animator&gt;(self.body, |a| a.play_state("Die", 0.1)); // force a controller state</code></pre>
+<p>Read state back with <code>obj.get::&lt;Animator&gt;(target)</code>: <code>is_playing(clip)</code>, <code>finished()</code>,
 <code>current_state(layer)</code>, <code>is_in_state(layer, state)</code>, <code>get_float</code> / <code>get_bool</code> / <code>get_int</code>. Clip event
 markers arrive as <code>SceneEvent::Animation</code> in the <code>Events</code> stage and as <code>AnimationEvent</code> broadcasts;
 every controller state change broadcasts <code>AnimatorStateChanged</code>. As a shortcut for movement code,
-<code>host.set_animator_bool(name, value)</code> sets a bool on the object's own Animator.</p>
+<code>obj.set_animator_bool(name, value)</code> sets a bool on the object's own Animator.</p>
 <h2 id="navigation"><a class="header" href="#navigation">Navigation</a></h2>
 <p>Add a <code>NavMesh Surface</code> (baked from colliders when play starts) and give characters a <code>Nav Agent</code>:</p>
-<pre><code class="language-rust">host.set_destination(self.enemy, player_position);   // immediate: edits the agent
-host.stop_agent(self.enemy);
-let walkable = host.nearest_walkable(point);          // Option&lt;Vec3&gt;
+<pre><code class="language-rust">obj.set_destination(self.enemy, player_position);   // immediate: edits the agent
+obj.stop_agent(self.enemy);
+let walkable = obj.nearest_walkable(point);          // Option&lt;Vec3&gt;
 let path = ctx.services.nav.and_then(|nav| nav.find_path(from, to)); // Option&lt;Vec&lt;Vec3&gt;&gt;
-host.rebake_navmesh();                                // queued: after the level changed</code></pre>
+obj.rebake_navmesh();                                // queued: after the level changed</code></pre>
 <h2 id="scenes-saves-and-settings"><a class="header" href="#scenes-saves-and-settings">Scenes saves and settings</a></h2>
 <div class="table-wrapper">
 <table>
@@ -2197,17 +2197,17 @@ host.rebake_navmesh();                                // queued: after the level
 <tr><th>Want to …</th><th>Call</th><th>Timing</th></tr>
 </thead>
 <tbody>
-<tr><td>Switch scene</td><td><code>host.load_scene("scenes/level2.scene")</code></td><td>queued; the host swaps after the stage</td></tr>
-<tr><td>Start loading in the background</td><td><code>host.preload_scene(path)</code>; a later <code>load_scene</code> is then instant</td><td>queued</td></tr>
-<tr><td>Stream a room in / out</td><td><code>host.load_scene_additive(path)</code> / <code>host.unload_scene(path)</code></td><td>queued</td></tr>
-<tr><td>Carry an object over a scene change</td><td><code>host.keep_on_scene_change(target, true)</code></td><td>queued</td></tr>
-<tr><td>Quit</td><td><code>host.quit()</code></td><td>queued</td></tr>
-<tr><td>Store a value</td><td><code>host.save_value("level", 3_i64)</code>, <code>remove_save_value(key)</code></td><td>queued</td></tr>
-<tr><td>Write / read a slot file</td><td><code>host.write_save("slot1")</code>, <code>host.load_save("slot1")</code></td><td>queued; a load takes effect next pass</td></tr>
-<tr><td>Read saved data</td><td><code>host.save_data()</code> → <code>Option&lt;&amp;SaveGame&gt;</code> with <code>int</code>, <code>float</code>, <code>bool</code>, <code>str</code>, <code>vec3</code></td><td>immediate</td></tr>
-<tr><td>Translate a string</td><td><code>host.tr("menu.play")</code>, <code>host.language()</code>, <code>host.set_language("fr")</code></td><td>tr/language immediate; set queued</td></tr>
-<tr><td>Lock the cursor</td><td><code>host.set_cursor_locked(true)</code></td><td>queued</td></tr>
-<tr><td>Pause / slow-mo</td><td><code>host.set_time_scale(0.0)</code> … <code>1.0</code></td><td>queued</td></tr>
+<tr><td>Switch scene</td><td><code>obj.load_scene("scenes/level2.scene")</code></td><td>queued; the host swaps after the stage</td></tr>
+<tr><td>Start loading in the background</td><td><code>obj.preload_scene(path)</code>; a later <code>load_scene</code> is then instant</td><td>queued</td></tr>
+<tr><td>Stream a room in / out</td><td><code>obj.load_scene_additive(path)</code> / <code>obj.unload_scene(path)</code></td><td>queued</td></tr>
+<tr><td>Carry an object over a scene change</td><td><code>obj.keep_on_scene_change(target, true)</code></td><td>queued</td></tr>
+<tr><td>Quit</td><td><code>obj.quit()</code></td><td>queued</td></tr>
+<tr><td>Store a value</td><td><code>obj.save_value("level", 3_i64)</code>, <code>remove_save_value(key)</code></td><td>queued</td></tr>
+<tr><td>Write / read a slot file</td><td><code>obj.write_save("slot1")</code>, <code>obj.load_save("slot1")</code></td><td>queued; a load takes effect next pass</td></tr>
+<tr><td>Read saved data</td><td><code>obj.save_data()</code> → <code>Option&lt;&amp;SaveGame&gt;</code> with <code>int</code>, <code>float</code>, <code>bool</code>, <code>str</code>, <code>vec3</code></td><td>immediate</td></tr>
+<tr><td>Translate a string</td><td><code>obj.tr("menu.play")</code>, <code>obj.language()</code>, <code>obj.set_language("fr")</code></td><td>tr/language immediate; set queued</td></tr>
+<tr><td>Lock the cursor</td><td><code>obj.set_cursor_locked(true)</code></td><td>queued</td></tr>
+<tr><td>Pause / slow-mo</td><td><code>obj.set_time_scale(0.0)</code> … <code>1.0</code></td><td>queued</td></tr>
 </tbody>
 </table>
 </div>
@@ -2222,21 +2222,21 @@ switches with no code at all: a trigger collider, the target scene and a mode.</
 <tr><th>Want to …</th><th>Call</th></tr>
 </thead>
 <tbody>
-<tr><td>Am I in a session / the host / a client?</td><td><code>host.connected()</code>, <code>host.is_server()</code>, <code>host.is_client()</code></td></tr>
-<tr><td>Who am I, who is here?</td><td><code>host.local_peer()</code>, <code>host.peers()</code></td></tr>
-<tr><td>Do I control this object?</td><td><code>host.has_authority(id)</code>: its owner, the host for unowned objects, always true offline</td></tr>
-<tr><td>Is another peer driving this object?</td><td><code>host.driven_remotely()</code>: skip local input when true</td></tr>
-<tr><td>Spawn on every peer</td><td><code>host.net_spawn(prefab, pos, rot)</code>; as server-owned: <code>net_spawn_server</code>; clone: <code>net_clone</code></td></tr>
-<tr><td>Despawn on every peer</td><td><code>host.net_despawn(target)</code></td></tr>
-<tr><td>Write a synced variable</td><td><code>host.set_net_var(target, "key", NetValue::Int(3))</code> / <code>set_net_var_self</code>. Returns false without permission</td></tr>
-<tr><td>Read a synced variable</td><td><code>host.net_var(target, "key")</code> / <code>net_var_self("key")</code>; <code>net_var_changes()</code> lists what changed</td></tr>
-<tr><td>Send a remote call</td><td><code>host.rpc("Explode", args, RpcTarget::All)</code> (reliable), <code>rpc_unreliable(..)</code>, or <code>rpc_self(..)</code> for the object's own RPCs; <code>send_rpc(object, name, args, target, reliable)</code> is the general form</td></tr>
-<tr><td>Receive remote calls</td><td><code>host.rpcs()</code>, <code>host.rpcs_named("Explode")</code>, <code>host.rpcs_for_self()</code> (offline, an RPC addressed to yourself is delivered locally)</td></tr>
-<tr><td>Who owns this object?</td><td><code>host.owner_of(target)</code>; <code>has_authority_of(target)</code></td></tr>
-<tr><td>Claim / give up / hand over an object</td><td><code>host.request_ownership_of(target)</code>, <code>release_ownership_of(target)</code>, <code>transfer_ownership(target, peer)</code></td></tr>
-<tr><td>Session quality</td><td><code>host.net_rtt()</code> / <code>net_rtt_ms()</code>, <code>net_quality()</code>, <code>net_events()</code>, <code>peer_name(id)</code></td></tr>
-<tr><td>Host a session, join, leave</td><td><code>host.net_host(port)</code>, <code>host.net_join("1.2.3.4:7777")</code>, <code>host.net_disconnect()</code>, <code>host.net_load_scene(path)</code> (host switches every peer)</td></tr>
-<tr><td>Remove a player</td><td><code>host.net_kick(peer, reason, ban)</code> (host only)</td></tr>
+<tr><td>Am I in a session / the host / a client?</td><td><code>obj.connected()</code>, <code>obj.is_server()</code>, <code>obj.is_client()</code></td></tr>
+<tr><td>Who am I, who is here?</td><td><code>obj.local_peer()</code>, <code>obj.peers()</code></td></tr>
+<tr><td>Do I control this object?</td><td><code>obj.has_authority(id)</code>: its owner, the host for unowned objects, always true offline</td></tr>
+<tr><td>Is another peer driving this object?</td><td><code>obj.driven_remotely()</code>: skip local input when true</td></tr>
+<tr><td>Spawn on every peer</td><td><code>obj.net_spawn(prefab, pos, rot)</code>; as server-owned: <code>net_spawn_server</code>; clone: <code>net_clone</code></td></tr>
+<tr><td>Despawn on every peer</td><td><code>obj.net_despawn(target)</code></td></tr>
+<tr><td>Write a synced variable</td><td><code>obj.set_net_var(target, "key", NetValue::Int(3))</code> / <code>set_net_var_self</code>. Returns false without permission</td></tr>
+<tr><td>Read a synced variable</td><td><code>obj.net_var(target, "key")</code> / <code>net_var_self("key")</code>; <code>net_var_changes()</code> lists what changed</td></tr>
+<tr><td>Send a remote call</td><td><code>obj.rpc("Explode", args, RpcTarget::All)</code> (reliable), <code>rpc_unreliable(..)</code>, or <code>rpc_self(..)</code> for the object's own RPCs; <code>send_rpc(object, name, args, target, reliable)</code> is the general form</td></tr>
+<tr><td>Receive remote calls</td><td><code>obj.rpcs()</code>, <code>obj.rpcs_named("Explode")</code>, <code>obj.rpcs_for_self()</code> (offline, an RPC addressed to yourself is delivered locally)</td></tr>
+<tr><td>Who owns this object?</td><td><code>obj.owner_of(target)</code>; <code>has_authority_of(target)</code></td></tr>
+<tr><td>Claim / give up / hand over an object</td><td><code>obj.request_ownership_of(target)</code>, <code>release_ownership_of(target)</code>, <code>transfer_ownership(target, peer)</code></td></tr>
+<tr><td>Session quality</td><td><code>obj.net_rtt()</code> / <code>net_rtt_ms()</code>, <code>net_quality()</code>, <code>net_events()</code>, <code>peer_name(id)</code></td></tr>
+<tr><td>Host a session, join, leave</td><td><code>obj.net_host(port)</code>, <code>obj.net_join("1.2.3.4:7777")</code>, <code>obj.net_disconnect()</code>, <code>obj.net_load_scene(path)</code> (host switches every peer)</td></tr>
+<tr><td>Remove a player</td><td><code>obj.net_kick(peer, reason, ban)</code> (host only)</td></tr>
 </tbody>
 </table>
 </div>
@@ -2259,18 +2259,18 @@ with <code>transfer_ownership</code> first, or have the owner despawn it.</li>
 <li>A self-initiated <code>net_disconnect()</code> does not deliver a <code>Disconnected</code> event to your own systems.</li>
 <li><code>NetValue</code> has no 64-bit float: send a time or large number as <code>Bytes</code> (or two ints) to keep precision.</li>
 </ul>
-<p><strong>Lag compensation.</strong> For hit checks on a server, <code>host.ray_cast_rewound(shooter, origin, dir, max_dist)</code>
+<p><strong>Lag compensation.</strong> For hit checks on a server, <code>obj.ray_cast_rewound(shooter, origin, dir, max_dist)</code>
 casts against where the targets were when the shooter fired, and <code>ray_cast_at(time, …)</code> against any
 recent moment (<code>net_time()</code> is the current simulation time). The rewind window is the session's configured maximum (default 0.25 s, hard cap 0.9 s).</p>
 <h3 id="content-packages"><a class="header" href="#content-packages">Content packages</a></h3>
 <p><code>.zestenginepak</code> packages carry worlds, avatars and props that can be loaded at run time by path, URL or
 content id. The calls are queued; progress and results come back as events:</p>
-<pre><code class="language-rust">let request = host.load_content("https://example.com/forest.zestenginepak");
-let (request, root) = host.spawn_content("chair.zestenginepak", position, rotation);
-host.spawn_avatar(self.player, "avatars/robot.zestenginepak");
-host.enter_world(world_id);
-host.unload_content(id);
-for event in host.content_events() { /* progress, loaded, spawned, world entered, failed */ }</code></pre>
+<pre><code class="language-rust">let request = obj.load_content("https://example.com/forest.zestenginepak");
+let (request, root) = obj.spawn_content("chair.zestenginepak", position, rotation);
+obj.spawn_avatar(self.player, "avatars/robot.zestenginepak");
+obj.enter_world(world_id);
+obj.unload_content(id);
+for event in obj.content_events() { /* progress, loaded, spawned, world entered, failed */ }</code></pre>
 <h2 id="time"><a class="header" href="#time">Time</a></h2>
 <div class="table-wrapper">
 <table>
@@ -2278,18 +2278,18 @@ for event in host.content_events() { /* progress, loaded, spawned, world entered
 <tr><th>Value</th><th>Meaning</th></tr>
 </thead>
 <tbody>
-<tr><td><code>host.dt</code></td><td>Seconds this frame × time scale. <code>0</code> while paused. In <code>FixedUpdate</code>, the fixed step (1/60).</td></tr>
-<tr><td><code>host.unscaled_dt</code></td><td>Real frame time; use it for UI and pause menus. A single frame is clamped to 0.25 s.</td></tr>
-<tr><td><code>host.time</code></td><td>Scaled seconds since Play started.</td></tr>
-<tr><td><code>host.water_time</code></td><td>The shared water clock (networked clients agree on it).</td></tr>
-<tr><td><code>host.time_scale()</code></td><td>The current scale (1 normal).</td></tr>
+<tr><td><code>obj.dt</code></td><td>Seconds this frame × time scale. <code>0</code> while paused. In <code>FixedUpdate</code>, the fixed step (1/60).</td></tr>
+<tr><td><code>obj.unscaled_dt</code></td><td>Real frame time; use it for UI and pause menus. A single frame is clamped to 0.25 s.</td></tr>
+<tr><td><code>obj.time</code></td><td>Scaled seconds since Play started.</td></tr>
+<tr><td><code>obj.water_time</code></td><td>The shared water clock (networked clients agree on it).</td></tr>
+<tr><td><code>obj.time_scale()</code></td><td>The current scale (1 normal).</td></tr>
 </tbody>
 </table>
 </div>
 <h2 id="events-1"><a class="header" href="#events-1">Events</a></h2>
 <p>Broadcasting between systems, contacts and animation markers, and action bindings are explained in
 <a href="#events">Events</a>. The engine's own events are ordinary types you can read from any system with
-<code>host.events::&lt;T&gt;()</code>:</p>
+<code>obj.events::&lt;T&gt;()</code>:</p>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -2308,7 +2308,7 @@ for event in host.content_events() { /* progress, loaded, spawned, world entered
 </div>
 <h2 id="command-reference"><a class="header" href="#command-reference">Command reference</a></h2>
 <p>Systems queue <a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/enum.ComponentCommand.html"><code>ComponentCommand</code></a>s;
-<code>EcsMoveHost</code> has a helper for the common ones, and any command can be pushed with
+<code>ObjectContext</code> has a helper for the common ones, and any command can be pushed with
 <code>ctx.commands.push(..)</code>. The play session applies most itself; the rest are handed to the host
 application (the window, the network session, content loading).</p>
 <div class="table-wrapper">
@@ -2351,14 +2351,14 @@ pub struct SmoothFollow {
 }
 
 impl SmoothFollow {
-    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
-        let Some(goal) = host.position_of(self.target) else { return };
+    fn update(&amp;mut self, obj: &amp;mut ObjectContext&lt;'_, '_&gt;) {
+        let Some(goal) = obj.position_of(self.target) else { return };
         let wanted = goal + Vec3::from(self.offset);
-        let here = host.world_position();
+        let here = obj.world_position();
         // 1 - e^(-k·dt) is the share of the gap to close this frame: the result is
         // the same whether the game runs at 30 or 240 frames per second.
-        let blend = 1.0 - (-self.sharpness * host.dt).exp();
-        host.set_world_position(here.lerp(wanted, blend));
+        let blend = 1.0 - (-self.sharpness * obj.dt).exp();
+        obj.set_world_position(here.lerp(wanted, blend));
     }
 }
 
@@ -2373,10 +2373,10 @@ pub struct ClickToSelect {
 }
 
 impl ClickToSelect {
-    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
-        if !host.input.pressed("Fire") || host.pointer_over_ui() { return; }
-        let Some((origin, direction)) = host.pointer_ray() else { return };
-        self.selected = host.raycast(origin, direction, 500.0).map(|hit| hit.object);
+    fn update(&amp;mut self, obj: &amp;mut ObjectContext&lt;'_, '_&gt;) {
+        if !obj.input.pressed("Fire") || obj.pointer_over_ui() { return; }
+        let Some((origin, direction)) = obj.pointer_ray() else { return };
+        self.selected = obj.raycast(origin, direction, 500.0).map(|hit| hit.object);
     }
 }</code></pre>
 <h3 id="pause-menu"><a class="header" href="#pause-menu">Pause menu</a></h3>
@@ -2389,11 +2389,11 @@ pub struct PauseToggle {
 }
 
 impl PauseToggle {
-    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
-        if host.ui_cancel_pressed() {
+    fn update(&amp;mut self, obj: &amp;mut ObjectContext&lt;'_, '_&gt;) {
+        if obj.ui_cancel_pressed() {
             self.paused = !self.paused;
-            host.set_time_scale(if self.paused { 0.0 } else { 1.0 });
-            host.set_cursor_locked(!self.paused);
+            obj.set_time_scale(if self.paused { 0.0 } else { 1.0 });
+            obj.set_cursor_locked(!self.paused);
         }
     }
 }</code></pre>
@@ -5495,14 +5495,14 @@ the engine you are building against.</p>
 <tr><th>Crate</th><th>What it holds</th><th>Reference</th></tr>
 </thead>
 <tbody>
-<tr><td><code>zestengine-core</code></td><td>Components, systems, the ECS (<code>SceneWorld</code>, <code>SystemWorld</code>, <code>Stage</code>, <code>EcsMoveHost</code>), commands, input, physics queries, networking types</td><td><a href="api/zestengine_core/index.html">zestengine_core</a></td></tr>
+<tr><td><code>zestengine-core</code></td><td>Components, systems, the ECS (<code>SceneWorld</code>, <code>SystemWorld</code>, <code>Stage</code>, <code>ObjectContext</code>), commands, input, physics queries, networking types</td><td><a href="api/zestengine_core/index.html">zestengine_core</a></td></tr>
 </tbody>
 </table>
 </div>
 <p>Good places to start in the reference:</p>
 <ul>
 <li><a href="api/zestengine_core/ecs/index.html"><code>ecs</code></a>: the ECS model, systems, stages, <code>run_ordered</code>, entity templates.</li>
-<li><a href="api/zestengine_core/ecs/struct.EcsMoveHost.html"><code>EcsMoveHost</code></a>: everything a system can do to the
+<li><a href="api/zestengine_core/ecs/struct.ObjectContext.html"><code>ObjectContext</code></a>: everything a system can do to the
 world: move, read and edit other objects, spawn, raycast, play sounds, save, network.</li>
 <li><a href="api/zestengine_core/trait.TypedComponent.html"><code>TypedComponent</code></a>: the trait every component implements.</li>
 <li><a href="api/zestengine_core/struct.ComponentRegistry.html"><code>ComponentRegistry</code></a>: where components, systems and

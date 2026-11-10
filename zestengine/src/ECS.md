@@ -61,8 +61,8 @@ An object is a hecs entity carrying a fixed set of built-in components, plus the
 
 Two details matter in practice.
 
-**Local versus world.** `Transform` is local. When you need a true world position, ask the host
-(`host.world_position()`, `host.position_of(target)`) or `world.world_transform(entity)`, which folds in
+**Local versus world.** `Transform` is local. When you need a true world position, ask the object context
+(`obj.world_position()`, `obj.position_of(target)`) or `world.world_transform(entity)`, which folds in
 every parent *including writes made earlier in the same stage*. `GlobalTransform` is only a snapshot.
 
 **Duplicate components.** An object can carry two components of the same type. The first lives on the
@@ -116,7 +116,7 @@ Rules of thumb:
   (`[f32; 3]`) and runtime-only fields use `Vec3`/`Quat` with `#[serde(skip)]`.
 - **References to other objects** are [`ObjectRef`](https://lemonxah.github.io/zestengine/docs/api/zestengine_core/struct.ObjectRef.html)
   fields (`ObjectRef::NONE` when unset). The inspector renders a drop target; at runtime you resolve it
-  with `host.get::<T>(self.target)`, `host.position_of(self.target)`, and so on. They return `None` when
+  with `obj.get::<T>(self.target)`, `obj.position_of(self.target)`, and so on. They return `None` when
   the target is unset or was deleted, so always handle that case.
 - **Add `#[serde(default)]`** to a component's struct when you expect to add fields later: old scenes
   keep loading.
@@ -254,18 +254,18 @@ cannot capture variables: keep state in components, not in closures. (A non-capt
 | `ctx.is_active(world, entity)` | `Active` and visible in the scene. Check it before touching an object. |
 | `ctx.services` | Borrowed engine services: `physics`, `nav`, `net`, `screen`, `materials`, `save`, `strings`, `events`, `scene_events`, `components`, `order`. |
 
-### The comfortable way: `run_ordered` and `EcsMoveHost`
+### The comfortable way: `run_ordered` and `ObjectContext`
 
 Most gameplay code wants "for each active instance of my component, in scene order, with helpers for
 this object". That is `run_ordered`, which gives your closure the component and an
-[`EcsMoveHost`](https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.EcsMoveHost.html):
+[`ObjectContext`](https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.ObjectContext.html):
 the per-object toolbox for moving, reading other objects, spawning, physics queries, sounds and more.
-It also dereferences to the `SystemContext`, so `host.dt`, `host.input` and `host.emit(..)` all work.
+It also dereferences to the `SystemContext`, so `obj.dt`, `obj.input` and `obj.emit(..)` all work.
 
 ```rust
 use glam::Vec3;
-use zestengine_core::MoveHost;                       // translation(), set_translation(), world_position(), …
-use zestengine_core::ecs::{EcsMoveHost, run_ordered};
+use zestengine_core::MotionContext;                       // translation(), set_translation(), world_position(), …
+use zestengine_core::ecs::{ObjectContext, run_ordered};
 
 #[derive(Serialize, Deserialize)]
 pub struct PlayerMover {
@@ -273,11 +273,11 @@ pub struct PlayerMover {
 }
 
 impl PlayerMover {
-    fn update(&mut self, host: &mut EcsMoveHost<'_, '_>) {
-        let direction = host.input.axis2("Move"); // x = right, y = forward
-        let step = Vec3::new(direction.x, 0.0, -direction.y) * self.speed * host.dt;
-        let position = host.translation() + step;
-        host.set_translation(position);
+    fn update(&mut self, obj: &mut ObjectContext<'_, '_>) {
+        let direction = obj.input.axis2("Move"); // x = right, y = forward
+        let step = Vec3::new(direction.x, 0.0, -direction.y) * self.speed * obj.dt;
+        let position = obj.translation() + step;
+        obj.set_translation(position);
     }
 }
 
@@ -292,10 +292,10 @@ registry.register_system_for::<PlayerMover>("game::player_mover", Stage::Update,
 - iterates in **scene order**, so behaviour is deterministic. That matters for networking, prediction
   replay and anything where two objects interact within one frame. A bare `world.query` iterates in
   archetype order, which is an implementation detail;
-- hands you an `EcsMoveHost` bound to the object.
+- hands you an `ObjectContext` bound to the object.
 
 Use a bare query when order is irrelevant and you have thousands of instances (it avoids collecting and
-sorting); use `run_ordered` otherwise. The full method list of `EcsMoveHost` is in
+sorting); use `run_ordered` otherwise. The full method list of `ObjectContext` is in
 [ENGINE_API.md](ENGINE_API.md).
 
 ### Borrowing rules
@@ -357,17 +357,17 @@ ctx.commands.push(ComponentCommand::Destroy(object_id));
 ctx.commands.push(ComponentCommand::PlaySound { clip: "audio/pop.ogg".into(), position: None, volume: 1.0 });
 ```
 
-`EcsMoveHost` wraps the common ones in readable methods (`host.destroy(target)`,
-`host.play_sound_at(..)`, `host.add_impulse(..)`), which is usually what you want. Two properties to
+`ObjectContext` wraps the common ones in readable methods (`obj.destroy(target)`,
+`obj.play_sound_at(..)`, `obj.add_impulse(..)`), which is usually what you want. Two properties to
 remember:
 
-- **Queued means "after this stage".** `host.destroy_self()` does not remove the object while your system
+- **Queued means "after this stage".** `obj.destroy_self()` does not remove the object while your system
   is still iterating; it disappears when the stage ends. Systems later in the *same* stage still see it.
 - **Bad targets are ignored.** A command that names an object that no longer exists does nothing.
 
-Direct writes to component data (`host.edit::<T>(target, |t| ..)`, `host.set_translation(..)`) are
+Direct writes to component data (`obj.edit::<T>(target, |t| ..)`, `obj.set_translation(..)`) are
 immediate and visible to systems that run later in the same stage. The full list of commands and which
-host methods queue them is in [ENGINE_API.md](ENGINE_API.md).
+`ObjectContext` methods queue them is in [ENGINE_API.md](ENGINE_API.md).
 
 ## Events
 
@@ -438,15 +438,15 @@ pub struct Collected { pub by: ObjectId, pub value: u32 }
 
 registry.register_system_for::<Coin>("game::coin_pickup", Stage::Events, |world, ctx| {
     let contacts = ctx.services.scene_events;
-    run_ordered(world, ctx, |coin: &mut Coin, host| {
-        let me = host.self_id();
+    run_ordered(world, ctx, |coin: &mut Coin, obj| {
+        let me = obj.self_id();
         for contact in contacts {
             if let SceneEvent::Contact { object, other, trigger: true, phase: ContactPhase::Enter, .. } = contact
                 && *object == me
-                && host.get::<Collector>(*other).is_some()
+                && obj.get::<Collector>(*other).is_some()
             {
-                host.emit(Collected { by: *other, value: coin.value });
-                host.destroy_self();
+                obj.emit(Collected { by: *other, value: coin.value });
+                obj.destroy_self();
             }
         }
     })
@@ -472,13 +472,13 @@ Spawning is a command; the call returns the new `ObjectId` immediately so you ca
 object exists from the next stage on.
 
 ```rust
-let id = host.spawn_prefab("prefabs/enemy.prefab", position, rotation); // a .prefab asset
-let id = host.instantiate(self.bullet_template, position, rotation);    // clone a scene object
-let id = host.spawn_entity("Crate", position, rotation);                // a registered entity
-host.net_spawn("prefabs/bullet.prefab", position, rotation);            // on every peer
-host.destroy(target);                                                    // object and children
-host.destroy_self();
-host.set_active(door, false);                                            // disable without deleting
+let id = obj.spawn_prefab("prefabs/enemy.prefab", position, rotation); // a .prefab asset
+let id = obj.instantiate(self.bullet_template, position, rotation);    // clone a scene object
+let id = obj.spawn_entity("Crate", position, rotation);                // a registered entity
+obj.net_spawn("prefabs/bullet.prefab", position, rotation);            // on every peer
+obj.destroy(target);                                                    // object and children
+obj.destroy_self();
+obj.set_active(door, false);                                            // disable without deleting
 ```
 
 A timed self-destruct is the smallest useful spawn companion:
@@ -488,10 +488,10 @@ A timed self-destruct is the smallest useful spawn companion:
 pub struct Lifetime { pub seconds_left: f32 }   // Default: 3.0
 
 impl Lifetime {
-    fn update(&mut self, host: &mut EcsMoveHost<'_, '_>) {
-        self.seconds_left -= host.dt;
+    fn update(&mut self, obj: &mut ObjectContext<'_, '_>) {
+        self.seconds_left -= obj.dt;
         if self.seconds_left <= 0.0 {
-            host.destroy_self();
+            obj.destroy_self();
         }
     }
 }
@@ -540,12 +540,12 @@ pub struct CrateSpawner {
 }
 
 impl CrateSpawner {
-    fn update(&mut self, host: &mut EcsMoveHost<'_, '_>) {
-        self.timer -= host.dt;
+    fn update(&mut self, obj: &mut ObjectContext<'_, '_>) {
+        self.timer -= obj.dt;
         if self.timer <= 0.0 {
             self.timer = self.every;
-            let above = host.world_position() + Vec3::Y;
-            host.spawn_entity("Crate", above, Quat::IDENTITY);
+            let above = obj.world_position() + Vec3::Y;
+            obj.spawn_entity("Crate", above, Quat::IDENTITY);
         }
     }
 }
@@ -554,7 +554,7 @@ impl CrateSpawner {
 ## Talking to other objects
 
 Systems often need another object's data: a follower needs its target's position, a turret needs its
-target's health. Reference the other object with an `ObjectRef` field and ask the host.
+target's health. Reference the other object with an `ObjectRef` field and ask the `ObjectContext`.
 
 ```rust
 #[derive(Serialize, Deserialize)]
@@ -564,15 +564,15 @@ pub struct Follower {
 }
 
 impl Follower {
-    fn update(&mut self, host: &mut EcsMoveHost<'_, '_>) {
-        let Some(goal) = host.position_of(self.target) else { return }; // world position
-        let here = host.world_position();
+    fn update(&mut self, obj: &mut ObjectContext<'_, '_>) {
+        let Some(goal) = obj.position_of(self.target) else { return }; // world position
+        let here = obj.world_position();
         let to_goal = goal - here;
-        let step = self.speed * host.dt;
+        let step = self.speed * obj.dt;
         if to_goal.length() <= step {
-            host.set_world_position(goal);
+            obj.set_world_position(goal);
         } else {
-            host.set_world_position(here + to_goal.normalize() * step);
+            obj.set_world_position(here + to_goal.normalize() * step);
         }
     }
 }
@@ -580,12 +580,12 @@ impl Follower {
 
 | Want to … | Call | Timing |
 |---|---|---|
-| Read another object's component | `host.get::<T>(target)` | immediate |
-| Change it in place | `host.edit::<T>(target, \|t\| …)` | immediate (visible to later systems this stage) |
-| Read its world position | `host.position_of(target)` | immediate |
-| Find an object by name | `host.find_object("Player")` | immediate (names are cosmetic: prefer `ObjectRef`) |
-| List objects carrying a component | `host.objects_with::<T>()` | immediate, in scene order |
-| Ask the world to do something to it | `host.destroy(target)`, `host.set_active(..)`, `host.add_impulse(..)` | after the stage |
+| Read another object's component | `obj.get::<T>(target)` | immediate |
+| Change it in place | `obj.edit::<T>(target, \|t\| …)` | immediate (visible to later systems this stage) |
+| Read its world position | `obj.position_of(target)` | immediate |
+| Find an object by name | `obj.find_object("Player")` | immediate (names are cosmetic: prefer `ObjectRef`) |
+| List objects carrying a component | `obj.objects_with::<T>()` | immediate, in scene order |
+| Ask the world to do something to it | `obj.destroy(target)`, `obj.set_active(..)`, `obj.add_impulse(..)` | after the stage |
 
 `get` and `edit` return `None` / `false` for an unset, deleted or hidden target; handle it.
 
@@ -624,11 +624,11 @@ The default keyboard-and-mouse scheme defines `Move` (WASD), `Look` (mouse), `Ju
 `Fire`, `Interact`, `Grab` and `Voice`; the gamepad scheme uses the same names on its sticks and
 buttons, so code written against action names works on every device. Players can rebind them, and a
 game can define its own actions in its control scheme. An action that does not exist reads as "not
-pressed". When the player is typing into a UI text field, `host.ui_text_editing()` is true: skip
+pressed". When the player is typing into a UI text field, `obj.ui_text_editing()` is true: skip
 gameplay input then.
 
-For networked objects another peer may be driving, check `host.driven_remotely()` before applying
-local input, and `host.has_authority(id)` before changing shared state.
+For networked objects another peer may be driving, check `obj.driven_remotely()` before applying
+local input, and `obj.has_authority(id)` before changing shared state.
 
 ## Physics and contacts
 
@@ -639,19 +639,19 @@ Physics queries are immediate; pushes are commands. A ray gun:
 pub struct Laser { pub damage: f32, pub range: f32 }   // Default: 25 / 100
 
 impl Laser {
-    fn update(&mut self, host: &mut EcsMoveHost<'_, '_>) {
-        if !host.input.pressed("Fire") { return; }
-        let aim = host.self_transform(); // world position and orientation
-        let Some(hit) = host.raycast(aim.translation, aim.forward(), self.range) else { return };
+    fn update(&mut self, obj: &mut ObjectContext<'_, '_>) {
+        if !obj.input.pressed("Fire") { return; }
+        let aim = obj.self_transform(); // world position and orientation
+        let Some(hit) = obj.raycast(aim.translation, aim.forward(), self.range) else { return };
         let damage = self.damage;
-        host.edit::<Hitpoints>(hit.object, move |hp| hp.current = (hp.current - damage).max(0.0));
-        host.add_impulse(hit.object, aim.forward() * 5.0);
-        host.play_sound_at("audio/zap.ogg", hit.point, 1.0);
+        obj.edit::<Hitpoints>(hit.object, move |hp| hp.current = (hp.current - damage).max(0.0));
+        obj.add_impulse(hit.object, aim.forward() * 5.0);
+        obj.play_sound_at("audio/zap.ogg", hit.point, 1.0);
     }
 }
 ```
 
-`host.raycast` ignores triggers and the caller's own colliders; use `raycast_filtered` with a
+`obj.raycast` ignores triggers and the caller's own colliders; use `raycast_filtered` with a
 `RayFilter` for layer masks. Rigid bodies move through commands (`add_force`, `add_impulse`,
 `set_velocity`); characters through `move_character`. Contacts arrive as [scene events](#scene-events-contacts-and-animation-markers).
 The ENGINE_API guide covers [physics](ENGINE_API.md#physics) in full.
@@ -682,19 +682,19 @@ pub struct Door {
 
 impl Door {
     /// Runs once for each new instance (Stage::Start): remember where "closed" is.
-    fn start(&mut self, host: &mut EcsMoveHost<'_, '_>) {
+    fn start(&mut self, obj: &mut ObjectContext<'_, '_>) {
         if self.closed_y.is_none() {
-            self.closed_y = Some(host.translation().y);
+            self.closed_y = Some(obj.translation().y);
         }
     }
 
-    fn update(&mut self, host: &mut EcsMoveHost<'_, '_>) {
+    fn update(&mut self, obj: &mut ObjectContext<'_, '_>) {
         let Some(closed) = self.closed_y else { return };
         let goal = if self.wants_open { closed + self.lift } else { closed };
-        let mut position = host.translation();
-        let step = self.speed * host.dt;
+        let mut position = obj.translation();
+        let step = self.speed * obj.dt;
         position.y += (goal - position.y).clamp(-step, step);
-        host.set_translation(position);
+        obj.set_translation(position);
     }
 }
 
@@ -725,13 +725,13 @@ pub struct ScoreBoard {
 }
 
 impl ScoreBoard {
-    fn update(&mut self, host: &mut EcsMoveHost<'_, '_>) {
-        for collected in host.events::<Collected>() {
+    fn update(&mut self, obj: &mut ObjectContext<'_, '_>) {
+        for collected in obj.events::<Collected>() {
             self.score += collected.value;
         }
-        let id = host.self_id();
+        let id = obj.self_id();
         let text = format!("Score {}", self.score);
-        host.edit::<UiText>(id, move |ui| ui.text = text);
+        obj.edit::<UiText>(id, move |ui| ui.text = text);
     }
 }
 
@@ -898,7 +898,7 @@ Useful pieces:
 | `ComponentRegistry` (`register_ecs`, `register_system*`, `register_entity`) | [struct.ComponentRegistry](https://lemonxah.github.io/zestengine/docs/api/zestengine_core/struct.ComponentRegistry.html) |
 | `SystemWorld`, `SystemContext`, `SystemServices` | [ecs/struct.SystemWorld](https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.SystemWorld.html), [ecs/struct.SystemContext](https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.SystemContext.html), [ecs/struct.SystemServices](https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.SystemServices.html) |
 | `Stage`, `SceneEvent`, `ContactPhase` | [ecs/enum.Stage](https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/enum.Stage.html), [ecs/enum.SceneEvent](https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/enum.SceneEvent.html) |
-| `run_ordered`, `EcsMoveHost` | [ecs/fn.run_ordered](https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/fn.run_ordered.html), [ecs/struct.EcsMoveHost](https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.EcsMoveHost.html) |
+| `run_ordered`, `ObjectContext` | [ecs/fn.run_ordered](https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/fn.run_ordered.html), [ecs/struct.ObjectContext](https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.ObjectContext.html) |
 | `SceneWorld` | [ecs/struct.SceneWorld](https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.SceneWorld.html) |
 | `EntityTemplate`, `EntityShape` | [ecs/struct.EntityTemplate](https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.EntityTemplate.html), [ecs/enum.EntityShape](https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/enum.EntityShape.html) |
 | `ComponentCommand` | [enum.ComponentCommand](https://lemonxah.github.io/zestengine/docs/api/zestengine_core/enum.ComponentCommand.html) |

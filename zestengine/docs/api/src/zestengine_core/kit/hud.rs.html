@@ -3,8 +3,8 @@
 <a href=#3 id=3 data-nosnippet>3</a>
 <a href=#4 id=4 data-nosnippet>4</a></span><span class="kw">use </span>serde::{Deserialize, Serialize};
 <a href=#5 id=5 data-nosnippet>5</a>
-<a href=#6 id=6 data-nosnippet>6</a><span class="kw">use </span><span class="kw">crate</span>::ecs::{EcsMoveHost, Owner, Stage, SystemContext, SystemWorld};
-<a href=#7 id=7 data-nosnippet>7</a><span class="kw">use </span><span class="kw">crate</span>::MoveHost;
+<a href=#6 id=6 data-nosnippet>6</a><span class="kw">use </span><span class="kw">crate</span>::ecs::{ObjectContext, Owner, Stage, SystemContext, SystemWorld};
+<a href=#7 id=7 data-nosnippet>7</a><span class="kw">use </span><span class="kw">crate</span>::MotionContext;
 <a href=#8 id=8 data-nosnippet>8</a><span class="kw">use crate</span>::{ObjectRef, TypedComponent, UiProgressBar, UiText};
 <a href=#9 id=9 data-nosnippet>9</a>
 <a href=#10 id=10 data-nosnippet>10</a><span class="kw">use super</span>::{Health, HitscanWeapon, ResourceStore, RtsSelection, ScoreEvent};
@@ -83,7 +83,7 @@
 <a href=#83 id=83 data-nosnippet>83</a>}
 <a href=#84 id=84 data-nosnippet>84</a>
 <a href=#85 id=85 data-nosnippet>85</a><span class="kw">impl </span>HudBinding {
-<a href=#86 id=86 data-nosnippet>86</a>    <span class="kw">fn </span>read(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;</span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;(f32, f32, <span class="prelude-ty">Option</span>&lt;String&gt;)&gt; {
+<a href=#86 id=86 data-nosnippet>86</a>    <span class="kw">fn </span>read(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;</span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;(f32, f32, <span class="prelude-ty">Option</span>&lt;String&gt;)&gt; {
 <a href=#87 id=87 data-nosnippet>87</a>        <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.value {
 <a href=#88 id=88 data-nosnippet>88</a>            HudValue::Health =&gt; ctx.get::&lt;Health&gt;(<span class="self">self</span>.source).map(|h| (h.current, h.max, <span class="prelude-val">None</span>)),
 <a href=#89 id=89 data-nosnippet>89</a>            HudValue::Ammo =&gt; ctx.get::&lt;HitscanWeapon&gt;(<span class="self">self</span>.source).map(|w| {
@@ -105,7 +105,7 @@
 <a href=#105 id=105 data-nosnippet>105</a>}
 <a href=#106 id=106 data-nosnippet>106</a>
 <a href=#107 id=107 data-nosnippet>107</a><span class="kw">impl </span>HudBinding {
-<a href=#108 id=108 data-nosnippet>108</a>    <span class="kw">fn </span>update_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
+<a href=#108 id=108 data-nosnippet>108</a>    <span class="kw">fn </span>update_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
 <a href=#109 id=109 data-nosnippet>109</a>        <span class="self">self</span>.score += ctx.events::&lt;ScoreEvent&gt;().map(|e| e.points).sum::&lt;u32&gt;();
 <a href=#110 id=110 data-nosnippet>110</a>        <span class="kw">let </span><span class="prelude-val">Some</span>((value, max, over)) = <span class="self">self</span>.read(ctx) <span class="kw">else </span>{
 <a href=#111 id=111 data-nosnippet>111</a>            <span class="kw">return</span>;
@@ -130,7 +130,7 @@
 <a href=#130 id=130 data-nosnippet>130</a>    <span class="kw">let </span><span class="kw-2">mut </span>query = world.query::&lt;(<span class="kw-2">&amp;</span>Owner, <span class="kw-2">&amp;mut </span>HudBinding)&gt;();
 <a href=#131 id=131 data-nosnippet>131</a>    <span class="kw">let </span><span class="kw-2">mut </span>actors: Vec&lt;<span class="kw">_</span>&gt; = query.iter().filter(|(<span class="kw">_</span>, (owner, <span class="kw">_</span>))| context.is_active(world, owner.<span class="number">0</span>)).collect();
 <a href=#132 id=132 data-nosnippet>132</a>    actors.sort_unstable_by_key(|(<span class="kw">_</span>, (owner, <span class="kw">_</span>))| context.order_key(world, owner.<span class="number">0</span>));
-<a href=#133 id=133 data-nosnippet>133</a>    <span class="kw">for </span>(<span class="kw">_</span>, (owner, value)) <span class="kw">in </span>actors { value.update_native(<span class="kw-2">&amp;mut </span>EcsMoveHost::new(world, owner.<span class="number">0</span>, context)); }
+<a href=#133 id=133 data-nosnippet>133</a>    <span class="kw">for </span>(<span class="kw">_</span>, (owner, value)) <span class="kw">in </span>actors { value.update_native(<span class="kw-2">&amp;mut </span>ObjectContext::new(world, owner.<span class="number">0</span>, context)); }
 <a href=#134 id=134 data-nosnippet>134</a>}
 <a href=#135 id=135 data-nosnippet>135</a>
 <a href=#136 id=136 data-nosnippet>136</a><span class="attr">#[cfg(test)]

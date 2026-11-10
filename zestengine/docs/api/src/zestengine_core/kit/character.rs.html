@@ -6,8 +6,8 @@
 <a href=#6 id=6 data-nosnippet>6</a>
 <a href=#7 id=7 data-nosnippet>7</a><span class="kw">use </span><span class="kw">super</span>::character_movement::{CharacterBraking, CharacterMovement, Stride, SwimInput};
 <a href=#8 id=8 data-nosnippet>8</a><span class="kw">use </span><span class="kw">crate</span>::motion::view_of;
-<a href=#9 id=9 data-nosnippet>9</a><span class="kw">use </span><span class="kw">crate</span>::ecs::{EcsMoveHost, Owner, Stage, SystemContext, SystemWorld};
-<a href=#10 id=10 data-nosnippet>10</a><span class="kw">use crate</span>::{InputState, MotionState, MoveHost, ObjectRef, Predictable, RayFilter, TypedComponent};
+<a href=#9 id=9 data-nosnippet>9</a><span class="kw">use </span><span class="kw">crate</span>::ecs::{ObjectContext, Owner, Stage, SystemContext, SystemWorld};
+<a href=#10 id=10 data-nosnippet>10</a><span class="kw">use crate</span>::{InputState, MotionState, MotionContext, ObjectRef, Predictable, RayFilter, TypedComponent};
 <a href=#11 id=11 data-nosnippet>11</a>
 <a href=#12 id=12 data-nosnippet>12</a><span class="doccomment">/// Rotation whose forward (-Z) points along `dir`, keeping +Y up.
 <a href=#13 id=13 data-nosnippet>13</a></span><span class="kw">pub fn </span>look_rotation(dir: Vec3) -&gt; Quat {
@@ -151,24 +151,24 @@
 <a href=#151 id=151 data-nosnippet>151</a>
 <a href=#152 id=152 data-nosnippet>152</a><span class="kw">impl </span>FirstPersonCharacter {
 <a href=#153 id=153 data-nosnippet>153</a>    <span class="doccomment">/// Whether something above a crouched capsule stops it from standing up.
-<a href=#154 id=154 data-nosnippet>154</a>    </span><span class="kw">fn </span>blocked_overhead(<span class="kw-2">&amp;</span><span class="self">self</span>, host: <span class="kw-2">&amp;</span><span class="kw">dyn </span>MoveHost) -&gt; bool {
-<a href=#155 id=155 data-nosnippet>155</a>        <span class="kw">let </span>(<span class="prelude-val">Some</span>((stand_h, <span class="kw">_</span>)), <span class="prelude-val">Some</span>((radius, height, <span class="kw">_</span>))) = (<span class="self">self</span>.stand_capsule, host.capsule()) <span class="kw">else </span>{
+<a href=#154 id=154 data-nosnippet>154</a>    </span><span class="kw">fn </span>blocked_overhead(<span class="kw-2">&amp;</span><span class="self">self</span>, obj: <span class="kw-2">&amp;</span><span class="kw">dyn </span>MotionContext) -&gt; bool {
+<a href=#155 id=155 data-nosnippet>155</a>        <span class="kw">let </span>(<span class="prelude-val">Some</span>((stand_h, <span class="kw">_</span>)), <span class="prelude-val">Some</span>((radius, height, <span class="kw">_</span>))) = (<span class="self">self</span>.stand_capsule, obj.capsule()) <span class="kw">else </span>{
 <a href=#156 id=156 data-nosnippet>156</a>            <span class="kw">return </span><span class="bool-val">false</span>;
 <a href=#157 id=157 data-nosnippet>157</a>        };
-<a href=#158 id=158 data-nosnippet>158</a>        <span class="kw">let </span>feet = host.world_position();
+<a href=#158 id=158 data-nosnippet>158</a>        <span class="kw">let </span>feet = obj.world_position();
 <a href=#159 id=159 data-nosnippet>159</a>        <span class="kw">let </span>rise = stand_h - <span class="self">self</span>.crouch_height.min(stand_h) + <span class="number">0.05</span>;
-<a href=#160 id=160 data-nosnippet>160</a>        <span class="kw">let </span>filter = RayFilter { exclude: <span class="prelude-val">Some</span>(host.self_id()), ..Default::default() };
+<a href=#160 id=160 data-nosnippet>160</a>        <span class="kw">let </span>filter = RayFilter { exclude: <span class="prelude-val">Some</span>(obj.self_id()), ..Default::default() };
 <a href=#161 id=161 data-nosnippet>161</a>        <span class="kw">let </span>r = radius * <span class="number">0.7</span>;
 <a href=#162 id=162 data-nosnippet>162</a>        [Vec3::ZERO, Vec3::X * r, Vec3::NEG_X * r, Vec3::Z * r, Vec3::NEG_Z * r].iter().any(|o| {
 <a href=#163 id=163 data-nosnippet>163</a>            <span class="kw">let </span>from = feet + <span class="kw-2">*</span>o + Vec3::Y * (height - <span class="number">0.05</span>).max(<span class="number">0.05</span>);
-<a href=#164 id=164 data-nosnippet>164</a>            host.raycast(from, Vec3::Y, rise, <span class="kw-2">&amp;</span>filter).is_some()
+<a href=#164 id=164 data-nosnippet>164</a>            obj.raycast(from, Vec3::Y, rise, <span class="kw-2">&amp;</span>filter).is_some()
 <a href=#165 id=165 data-nosnippet>165</a>        })
 <a href=#166 id=166 data-nosnippet>166</a>    }
 <a href=#167 id=167 data-nosnippet>167</a>
 <a href=#168 id=168 data-nosnippet>168</a>    <span class="doccomment">/// Resize the character capsule to its crouched or standing size (feet
 <a href=#169 id=169 data-nosnippet>169</a>    /// stay put).
-<a href=#170 id=170 data-nosnippet>170</a>    </span><span class="kw">fn </span>resize_capsule(<span class="kw-2">&amp;mut </span><span class="self">self</span>, host: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>MoveHost, crouched: bool) {
-<a href=#171 id=171 data-nosnippet>171</a>        <span class="kw">let </span><span class="prelude-val">Some</span>((<span class="kw">_</span>, height, center)) = host.capsule() <span class="kw">else </span>{
+<a href=#170 id=170 data-nosnippet>170</a>    </span><span class="kw">fn </span>resize_capsule(<span class="kw-2">&amp;mut </span><span class="self">self</span>, obj: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>MotionContext, crouched: bool) {
+<a href=#171 id=171 data-nosnippet>171</a>        <span class="kw">let </span><span class="prelude-val">Some</span>((<span class="kw">_</span>, height, center)) = obj.capsule() <span class="kw">else </span>{
 <a href=#172 id=172 data-nosnippet>172</a>            <span class="kw">return</span>;
 <a href=#173 id=173 data-nosnippet>173</a>        };
 <a href=#174 id=174 data-nosnippet>174</a>        <span class="kw">let </span>stand = <span class="kw-2">*</span><span class="self">self</span>.stand_capsule.get_or_insert((height, center));
@@ -178,16 +178,16 @@
 <a href=#178 id=178 data-nosnippet>178</a>        } <span class="kw">else </span>{
 <a href=#179 id=179 data-nosnippet>179</a>            stand
 <a href=#180 id=180 data-nosnippet>180</a>        };
-<a href=#181 id=181 data-nosnippet>181</a>        host.set_capsule(height, center);
+<a href=#181 id=181 data-nosnippet>181</a>        obj.set_capsule(height, center);
 <a href=#182 id=182 data-nosnippet>182</a>        <span class="self">self</span>.capsule_crouched = crouched;
 <a href=#183 id=183 data-nosnippet>183</a>    }
 <a href=#184 id=184 data-nosnippet>184</a>
 <a href=#185 id=185 data-nosnippet>185</a>    <span class="doccomment">/// Resize the character capsule to match the crouch state.
-<a href=#186 id=186 data-nosnippet>186</a>    </span><span class="kw">fn </span>apply_crouch_capsule(<span class="kw-2">&amp;mut </span><span class="self">self</span>, host: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>MoveHost) {
+<a href=#186 id=186 data-nosnippet>186</a>    </span><span class="kw">fn </span>apply_crouch_capsule(<span class="kw-2">&amp;mut </span><span class="self">self</span>, obj: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>MotionContext) {
 <a href=#187 id=187 data-nosnippet>187</a>        <span class="kw">if </span><span class="self">self</span>.crouch_height &lt;= <span class="number">0.0 </span>|| <span class="self">self</span>.crouched == <span class="self">self</span>.capsule_crouched {
 <a href=#188 id=188 data-nosnippet>188</a>            <span class="kw">return</span>;
 <a href=#189 id=189 data-nosnippet>189</a>        }
-<a href=#190 id=190 data-nosnippet>190</a>        <span class="self">self</span>.resize_capsule(host, <span class="self">self</span>.crouched);
+<a href=#190 id=190 data-nosnippet>190</a>        <span class="self">self</span>.resize_capsule(obj, <span class="self">self</span>.crouched);
 <a href=#191 id=191 data-nosnippet>191</a>    }
 <a href=#192 id=192 data-nosnippet>192</a>
 <a href=#193 id=193 data-nosnippet>193</a>    <span class="doccomment">/// Current horizontal speed limit from the sprint / crouch state.
@@ -204,7 +204,7 @@
 <a href=#204 id=204 data-nosnippet>204</a>    <span class="doccomment">/// One frame of movement: look (or the recorded `view`), crouch, then
 <a href=#205 id=205 data-nosnippet>205</a>    /// walk, swim or climb, facing the view's yaw. `update` runs exactly this
 <a href=#206 id=206 data-nosnippet>206</a>    /// through its context, and networked prediction replays it.
-<a href=#207 id=207 data-nosnippet>207</a>    </span><span class="kw">pub fn </span>step(<span class="kw-2">&amp;mut </span><span class="self">self</span>, host: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>MoveHost, input: <span class="kw-2">&amp;</span>InputState, dt: f32, typing: bool, view: <span class="prelude-ty">Option</span>&lt;(f32, f32)&gt;) {
+<a href=#207 id=207 data-nosnippet>207</a>    </span><span class="kw">pub fn </span>step(<span class="kw-2">&amp;mut </span><span class="self">self</span>, obj: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>MotionContext, input: <span class="kw-2">&amp;</span>InputState, dt: f32, typing: bool, view: <span class="prelude-ty">Option</span>&lt;(f32, f32)&gt;) {
 <a href=#208 id=208 data-nosnippet>208</a>        <span class="kw">let </span>dt = dt.min(<span class="number">0.1</span>);
 <a href=#209 id=209 data-nosnippet>209</a>        <span class="kw">if </span>dt &lt;= <span class="number">0.0 </span>{
 <a href=#210 id=210 data-nosnippet>210</a>            <span class="kw">return</span>;
@@ -230,10 +230,10 @@
 <a href=#230 id=230 data-nosnippet>230</a>        } <span class="kw">else </span>{
 <a href=#231 id=231 data-nosnippet>231</a>            <span class="self">self</span>.crouched = input.down(<span class="kw-2">&amp;</span><span class="self">self</span>.crouch_action);
 <a href=#232 id=232 data-nosnippet>232</a>        }
-<a href=#233 id=233 data-nosnippet>233</a>        <span class="kw">if </span>!<span class="self">self</span>.crouched &amp;&amp; <span class="self">self</span>.capsule_crouched &amp;&amp; <span class="self">self</span>.blocked_overhead(host) {
+<a href=#233 id=233 data-nosnippet>233</a>        <span class="kw">if </span>!<span class="self">self</span>.crouched &amp;&amp; <span class="self">self</span>.capsule_crouched &amp;&amp; <span class="self">self</span>.blocked_overhead(obj) {
 <a href=#234 id=234 data-nosnippet>234</a>            <span class="self">self</span>.crouched = <span class="bool-val">true</span>;
 <a href=#235 id=235 data-nosnippet>235</a>        }
-<a href=#236 id=236 data-nosnippet>236</a>        <span class="self">self</span>.apply_crouch_capsule(host);
+<a href=#236 id=236 data-nosnippet>236</a>        <span class="self">self</span>.apply_crouch_capsule(obj);
 <a href=#237 id=237 data-nosnippet>237</a>        <span class="self">self</span>.sprinting = !<span class="self">self</span>.crouched &amp;&amp; mv.y &gt; <span class="number">0.1 </span>&amp;&amp; input.down(<span class="kw-2">&amp;</span><span class="self">self</span>.sprint_action);
 <a href=#238 id=238 data-nosnippet>238</a>
 <a href=#239 id=239 data-nosnippet>239</a>        <span class="kw">let </span>yaw_rot = Quat::from_rotation_y(<span class="self">self</span>.yaw.to_radians());
@@ -248,12 +248,12 @@
 <a href=#248 id=248 data-nosnippet>248</a>            sprint: !typing &amp;&amp; input.down(<span class="kw-2">&amp;</span><span class="self">self</span>.sprint_action),
 <a href=#249 id=249 data-nosnippet>249</a>        };
 <a href=#250 id=250 data-nosnippet>250</a>        <span class="kw">let </span>stride = Stride { wish: dir * <span class="self">self</span>.target_speed(), accel, air_control: <span class="self">self</span>.air_control, braking: <span class="self">self</span>.braking, jump, gravity: <span class="self">self</span>.gravity, swim };
-<a href=#251 id=251 data-nosnippet>251</a>        <span class="self">self</span>.walker.step(host, stride, dt);
-<a href=#252 id=252 data-nosnippet>252</a>        host.set_rotation(yaw_rot);
+<a href=#251 id=251 data-nosnippet>251</a>        <span class="self">self</span>.walker.step(obj, stride, dt);
+<a href=#252 id=252 data-nosnippet>252</a>        obj.set_rotation(yaw_rot);
 <a href=#253 id=253 data-nosnippet>253</a>    }
 <a href=#254 id=254 data-nosnippet>254</a>
 <a href=#255 id=255 data-nosnippet>255</a>    <span class="doccomment">/// The first frame the local player drives it: take the camera and cursor.
-<a href=#256 id=256 data-nosnippet>256</a>    </span><span class="kw">fn </span>take_control(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
+<a href=#256 id=256 data-nosnippet>256</a>    </span><span class="kw">fn </span>take_control(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
 <a href=#257 id=257 data-nosnippet>257</a>        <span class="kw">if </span><span class="self">self</span>.lock_cursor {
 <a href=#258 id=258 data-nosnippet>258</a>            ctx.set_cursor_locked(<span class="bool-val">true</span>);
 <a href=#259 id=259 data-nosnippet>259</a>        }
@@ -277,13 +277,13 @@
 <a href=#277 id=277 data-nosnippet>277</a>        m
 <a href=#278 id=278 data-nosnippet>278</a>    }
 <a href=#279 id=279 data-nosnippet>279</a>
-<a href=#280 id=280 data-nosnippet>280</a>    <span class="kw">fn </span>set_motion(<span class="kw-2">&amp;mut </span><span class="self">self</span>, m: <span class="kw-2">&amp;</span>MotionState, host: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>MoveHost) {
+<a href=#280 id=280 data-nosnippet>280</a>    <span class="kw">fn </span>set_motion(<span class="kw-2">&amp;mut </span><span class="self">self</span>, m: <span class="kw-2">&amp;</span>MotionState, obj: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>MotionContext) {
 <a href=#281 id=281 data-nosnippet>281</a>        <span class="self">self</span>.walker.load(m);
 <a href=#282 id=282 data-nosnippet>282</a>        <span class="self">self</span>.yaw = m.yaw;
 <a href=#283 id=283 data-nosnippet>283</a>        <span class="self">self</span>.pitch = m.pitch;
 <a href=#284 id=284 data-nosnippet>284</a>        <span class="self">self</span>.crouched = m.crouched;
 <a href=#285 id=285 data-nosnippet>285</a>        <span class="kw">if </span><span class="self">self</span>.crouch_height &gt; <span class="number">0.0 </span>&amp;&amp; m.crouch_capsule != <span class="self">self</span>.capsule_crouched {
-<a href=#286 id=286 data-nosnippet>286</a>            <span class="self">self</span>.resize_capsule(host, m.crouch_capsule);
+<a href=#286 id=286 data-nosnippet>286</a>            <span class="self">self</span>.resize_capsule(obj, m.crouch_capsule);
 <a href=#287 id=287 data-nosnippet>287</a>        }
 <a href=#288 id=288 data-nosnippet>288</a>    }
 <a href=#289 id=289 data-nosnippet>289</a>
@@ -291,8 +291,8 @@
 <a href=#291 id=291 data-nosnippet>291</a>        <span class="macro">vec!</span>[<span class="self">self</span>.yaw, <span class="self">self</span>.pitch]
 <a href=#292 id=292 data-nosnippet>292</a>    }
 <a href=#293 id=293 data-nosnippet>293</a>
-<a href=#294 id=294 data-nosnippet>294</a>    <span class="kw">fn </span>replay(<span class="kw-2">&amp;mut </span><span class="self">self</span>, host: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>MoveHost, input: <span class="kw-2">&amp;</span>InputState, extra: <span class="kw-2">&amp;</span>[f32], dt: f32) {
-<a href=#295 id=295 data-nosnippet>295</a>        <span class="self">self</span>.step(host, input, dt, <span class="bool-val">false</span>, view_of(extra));
+<a href=#294 id=294 data-nosnippet>294</a>    <span class="kw">fn </span>replay(<span class="kw-2">&amp;mut </span><span class="self">self</span>, obj: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>MotionContext, input: <span class="kw-2">&amp;</span>InputState, extra: <span class="kw-2">&amp;</span>[f32], dt: f32) {
+<a href=#295 id=295 data-nosnippet>295</a>        <span class="self">self</span>.step(obj, input, dt, <span class="bool-val">false</span>, view_of(extra));
 <a href=#296 id=296 data-nosnippet>296</a>    }
 <a href=#297 id=297 data-nosnippet>297</a>}
 <a href=#298 id=298 data-nosnippet>298</a>
@@ -309,7 +309,7 @@
 <a href=#309 id=309 data-nosnippet>309</a>}
 <a href=#310 id=310 data-nosnippet>310</a>
 <a href=#311 id=311 data-nosnippet>311</a><span class="kw">impl </span>FirstPersonCharacter {
-<a href=#312 id=312 data-nosnippet>312</a>    <span class="kw">fn </span>start_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
+<a href=#312 id=312 data-nosnippet>312</a>    <span class="kw">fn </span>start_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
 <a href=#313 id=313 data-nosnippet>313</a>        <span class="self">self</span>.yaw = ctx.rotation().to_euler(EulerRot::YXZ).<span class="number">0</span>.to_degrees();
 <a href=#314 id=314 data-nosnippet>314</a>        <span class="self">self</span>.walker = CharacterMovement { floor_y: ctx.translation().y, grounded: <span class="bool-val">true</span>, ..Default::default() };
 <a href=#315 id=315 data-nosnippet>315</a>        <span class="self">self</span>.eye = <span class="self">self</span>.eye_height;
@@ -320,7 +320,7 @@
 <a href=#320 id=320 data-nosnippet>320</a>        <span class="self">self</span>.started = <span class="bool-val">true</span>;
 <a href=#321 id=321 data-nosnippet>321</a>    }
 <a href=#322 id=322 data-nosnippet>322</a>
-<a href=#323 id=323 data-nosnippet>323</a>    <span class="kw">fn </span>update_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
+<a href=#323 id=323 data-nosnippet>323</a>    <span class="kw">fn </span>update_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
 <a href=#324 id=324 data-nosnippet>324</a>        <span class="kw">if </span>!<span class="self">self</span>.started {
 <a href=#325 id=325 data-nosnippet>325</a>            <span class="self">self</span>.start_native(ctx);
 <a href=#326 id=326 data-nosnippet>326</a>        }
@@ -506,7 +506,7 @@
 <a href=#506 id=506 data-nosnippet>506</a>    /// recorded `view`), turn the body toward the movement (toward the view
 <a href=#507 id=507 data-nosnippet>507</a>    /// while aiming), then walk, swim or climb. `update` runs exactly this
 <a href=#508 id=508 data-nosnippet>508</a>    /// through its context, and networked prediction replays it.
-<a href=#509 id=509 data-nosnippet>509</a>    </span><span class="kw">pub fn </span>step(<span class="kw-2">&amp;mut </span><span class="self">self</span>, host: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>MoveHost, input: <span class="kw-2">&amp;</span>InputState, dt: f32, typing: bool, view: <span class="prelude-ty">Option</span>&lt;(f32, f32)&gt;) {
+<a href=#509 id=509 data-nosnippet>509</a>    </span><span class="kw">pub fn </span>step(<span class="kw-2">&amp;mut </span><span class="self">self</span>, obj: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>MotionContext, input: <span class="kw-2">&amp;</span>InputState, dt: f32, typing: bool, view: <span class="prelude-ty">Option</span>&lt;(f32, f32)&gt;) {
 <a href=#510 id=510 data-nosnippet>510</a>        <span class="kw">let </span>dt = dt.min(<span class="number">0.1</span>);
 <a href=#511 id=511 data-nosnippet>511</a>        <span class="kw">if </span>dt &lt;= <span class="number">0.0 </span>{
 <a href=#512 id=512 data-nosnippet>512</a>            <span class="kw">return</span>;
@@ -555,12 +555,12 @@
 <a href=#555 id=555 data-nosnippet>555</a>            rise: <span class="kw">if </span>typing { <span class="number">0.0 </span>} <span class="kw">else </span>{ input.down(<span class="kw-2">&amp;</span><span class="self">self</span>.jump_action) <span class="kw">as </span>u8 <span class="kw">as </span>f32 },
 <a href=#556 id=556 data-nosnippet>556</a>            sprint,
 <a href=#557 id=557 data-nosnippet>557</a>        };
-<a href=#558 id=558 data-nosnippet>558</a>        <span class="self">self</span>.walker.step(host, Stride { wish: dir * speed, accel, air_control: <span class="self">self</span>.air_control, braking: <span class="self">self</span>.braking, jump, gravity: <span class="self">self</span>.gravity, swim }, dt);
-<a href=#559 id=559 data-nosnippet>559</a>        host.set_rotation(Quat::from_rotation_y(<span class="self">self</span>.body_yaw.to_radians()));
+<a href=#558 id=558 data-nosnippet>558</a>        <span class="self">self</span>.walker.step(obj, Stride { wish: dir * speed, accel, air_control: <span class="self">self</span>.air_control, braking: <span class="self">self</span>.braking, jump, gravity: <span class="self">self</span>.gravity, swim }, dt);
+<a href=#559 id=559 data-nosnippet>559</a>        obj.set_rotation(Quat::from_rotation_y(<span class="self">self</span>.body_yaw.to_radians()));
 <a href=#560 id=560 data-nosnippet>560</a>    }
 <a href=#561 id=561 data-nosnippet>561</a>
 <a href=#562 id=562 data-nosnippet>562</a>    <span class="doccomment">/// The first frame the local player drives it: take the camera and cursor.
-<a href=#563 id=563 data-nosnippet>563</a>    </span><span class="kw">fn </span>take_control(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
+<a href=#563 id=563 data-nosnippet>563</a>    </span><span class="kw">fn </span>take_control(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
 <a href=#564 id=564 data-nosnippet>564</a>        <span class="kw">if </span><span class="self">self</span>.lock_cursor {
 <a href=#565 id=565 data-nosnippet>565</a>            ctx.set_cursor_locked(<span class="bool-val">true</span>);
 <a href=#566 id=566 data-nosnippet>566</a>        }
@@ -578,7 +578,7 @@
 <a href=#578 id=578 data-nosnippet>578</a>        m
 <a href=#579 id=579 data-nosnippet>579</a>    }
 <a href=#580 id=580 data-nosnippet>580</a>
-<a href=#581 id=581 data-nosnippet>581</a>    <span class="kw">fn </span>set_motion(<span class="kw-2">&amp;mut </span><span class="self">self</span>, m: <span class="kw-2">&amp;</span>MotionState, _host: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>MoveHost) {
+<a href=#581 id=581 data-nosnippet>581</a>    <span class="kw">fn </span>set_motion(<span class="kw-2">&amp;mut </span><span class="self">self</span>, m: <span class="kw-2">&amp;</span>MotionState, _host: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>MotionContext) {
 <a href=#582 id=582 data-nosnippet>582</a>        <span class="self">self</span>.walker.load(m);
 <a href=#583 id=583 data-nosnippet>583</a>        <span class="self">self</span>.cam_yaw = m.yaw;
 <a href=#584 id=584 data-nosnippet>584</a>        <span class="self">self</span>.cam_pitch = m.pitch;
@@ -589,8 +589,8 @@
 <a href=#589 id=589 data-nosnippet>589</a>        <span class="macro">vec!</span>[<span class="self">self</span>.cam_yaw, <span class="self">self</span>.cam_pitch]
 <a href=#590 id=590 data-nosnippet>590</a>    }
 <a href=#591 id=591 data-nosnippet>591</a>
-<a href=#592 id=592 data-nosnippet>592</a>    <span class="kw">fn </span>replay(<span class="kw-2">&amp;mut </span><span class="self">self</span>, host: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>MoveHost, input: <span class="kw-2">&amp;</span>InputState, extra: <span class="kw-2">&amp;</span>[f32], dt: f32) {
-<a href=#593 id=593 data-nosnippet>593</a>        <span class="self">self</span>.step(host, input, dt, <span class="bool-val">false</span>, view_of(extra));
+<a href=#592 id=592 data-nosnippet>592</a>    <span class="kw">fn </span>replay(<span class="kw-2">&amp;mut </span><span class="self">self</span>, obj: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>MotionContext, input: <span class="kw-2">&amp;</span>InputState, extra: <span class="kw-2">&amp;</span>[f32], dt: f32) {
+<a href=#593 id=593 data-nosnippet>593</a>        <span class="self">self</span>.step(obj, input, dt, <span class="bool-val">false</span>, view_of(extra));
 <a href=#594 id=594 data-nosnippet>594</a>    }
 <a href=#595 id=595 data-nosnippet>595</a>}
 <a href=#596 id=596 data-nosnippet>596</a>
@@ -607,7 +607,7 @@
 <a href=#607 id=607 data-nosnippet>607</a>}
 <a href=#608 id=608 data-nosnippet>608</a>
 <a href=#609 id=609 data-nosnippet>609</a><span class="kw">impl </span>ThirdPersonCharacter {
-<a href=#610 id=610 data-nosnippet>610</a>    <span class="kw">fn </span>start_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
+<a href=#610 id=610 data-nosnippet>610</a>    <span class="kw">fn </span>start_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
 <a href=#611 id=611 data-nosnippet>611</a>        <span class="self">self</span>.body_yaw = ctx.rotation().to_euler(EulerRot::YXZ).<span class="number">0</span>.to_degrees();
 <a href=#612 id=612 data-nosnippet>612</a>        <span class="self">self</span>.cam_yaw = <span class="self">self</span>.body_yaw;
 <a href=#613 id=613 data-nosnippet>613</a>        <span class="self">self</span>.cur_distance = <span class="self">self</span>.distance;
@@ -620,7 +620,7 @@
 <a href=#620 id=620 data-nosnippet>620</a>        <span class="self">self</span>.started = <span class="bool-val">true</span>;
 <a href=#621 id=621 data-nosnippet>621</a>    }
 <a href=#622 id=622 data-nosnippet>622</a>
-<a href=#623 id=623 data-nosnippet>623</a>    <span class="kw">fn </span>update_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
+<a href=#623 id=623 data-nosnippet>623</a>    <span class="kw">fn </span>update_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
 <a href=#624 id=624 data-nosnippet>624</a>        <span class="kw">if </span>!<span class="self">self</span>.started {
 <a href=#625 id=625 data-nosnippet>625</a>            <span class="self">self</span>.start_native(ctx);
 <a href=#626 id=626 data-nosnippet>626</a>        }
@@ -639,7 +639,7 @@
 <a href=#639 id=639 data-nosnippet>639</a>        <span class="self">self</span>.step(ctx, input, dt, typing, <span class="prelude-val">None</span>);
 <a href=#640 id=640 data-nosnippet>640</a>    }
 <a href=#641 id=641 data-nosnippet>641</a>
-<a href=#642 id=642 data-nosnippet>642</a>    <span class="kw">fn </span>late_update_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
+<a href=#642 id=642 data-nosnippet>642</a>    <span class="kw">fn </span>late_update_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
 <a href=#643 id=643 data-nosnippet>643</a>        <span class="kw">if </span>!<span class="self">self</span>.started || !<span class="self">self</span>.camera.is_set() || !<span class="self">self</span>.controlling {
 <a href=#644 id=644 data-nosnippet>644</a>            <span class="kw">return</span>;
 <a href=#645 id=645 data-nosnippet>645</a>        }
@@ -719,14 +719,14 @@
 <a href=#719 id=719 data-nosnippet>719</a>}
 <a href=#720 id=720 data-nosnippet>720</a>
 <a href=#721 id=721 data-nosnippet>721</a><span class="kw">impl </span>FollowCamera {
-<a href=#722 id=722 data-nosnippet>722</a>    <span class="kw">fn </span>start_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
+<a href=#722 id=722 data-nosnippet>722</a>    <span class="kw">fn </span>start_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
 <a href=#723 id=723 data-nosnippet>723</a>        <span class="self">self</span>.started = <span class="bool-val">true</span>;
 <a href=#724 id=724 data-nosnippet>724</a>        <span class="self">self</span>.zoom = <span class="number">1.0</span>;
 <a href=#725 id=725 data-nosnippet>725</a>        <span class="self">self</span>.pos = <span class="prelude-val">None</span>;
 <a href=#726 id=726 data-nosnippet>726</a>        ctx.set_active_camera(ctx.self_id().into());
 <a href=#727 id=727 data-nosnippet>727</a>    }
 <a href=#728 id=728 data-nosnippet>728</a>
-<a href=#729 id=729 data-nosnippet>729</a>    <span class="kw">fn </span>late_update_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
+<a href=#729 id=729 data-nosnippet>729</a>    <span class="kw">fn </span>late_update_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
 <a href=#730 id=730 data-nosnippet>730</a>        <span class="kw">let </span><span class="prelude-val">Some</span>(target) = ctx.position_of(<span class="self">self</span>.target) <span class="kw">else </span>{
 <a href=#731 id=731 data-nosnippet>731</a>            <span class="kw">return</span>;
 <a href=#732 id=732 data-nosnippet>732</a>        };
@@ -764,7 +764,7 @@
 <a href=#764 id=764 data-nosnippet>764</a>        <span class="kw">let </span><span class="kw-2">mut </span>query = world.query::&lt;(<span class="kw-2">&amp;</span>Owner, <span class="kw-2">&amp;mut </span><span class="macro-nonterminal">$t</span>)&gt;();
 <a href=#765 id=765 data-nosnippet>765</a>        <span class="kw">let </span><span class="kw-2">mut </span>actors: Vec&lt;<span class="kw">_</span>&gt; = query.iter().filter(|(<span class="kw">_</span>, (owner, value))| !value.started &amp;&amp; context.is_active(world, owner.<span class="number">0</span>)).collect();
 <a href=#766 id=766 data-nosnippet>766</a>        actors.sort_unstable_by_key(|(<span class="kw">_</span>, (owner, <span class="kw">_</span>))| context.order_key(world, owner.<span class="number">0</span>));
-<a href=#767 id=767 data-nosnippet>767</a>        <span class="kw">for </span>(<span class="kw">_</span>, (owner, value)) <span class="kw">in </span>actors { value.start_native(<span class="kw-2">&amp;mut </span>EcsMoveHost::new(world, owner.<span class="number">0</span>, context)); }
+<a href=#767 id=767 data-nosnippet>767</a>        <span class="kw">for </span>(<span class="kw">_</span>, (owner, value)) <span class="kw">in </span>actors { value.start_native(<span class="kw-2">&amp;mut </span>ObjectContext::new(world, owner.<span class="number">0</span>, context)); }
 <a href=#768 id=768 data-nosnippet>768</a>    }; }
 <a href=#769 id=769 data-nosnippet>769</a>    <span class="macro">initialize!</span>(FirstPersonCharacter);
 <a href=#770 id=770 data-nosnippet>770</a>    <span class="macro">initialize!</span>(ThirdPersonCharacter);
@@ -774,7 +774,7 @@
 <a href=#774 id=774 data-nosnippet>774</a><span class="kw">fn </span>update(world: <span class="kw-2">&amp;</span>SystemWorld&lt;<span class="lifetime">'_</span>&gt;, context: <span class="kw-2">&amp;mut </span>SystemContext&lt;<span class="lifetime">'_</span>&gt;) {
 <a href=#775 id=775 data-nosnippet>775</a>    <span class="macro">macro_rules!</span> advance { (<span class="macro-nonterminal">$t</span>:ty) =&gt; {
 <a href=#776 id=776 data-nosnippet>776</a>        <span class="kw">for </span>(<span class="kw">_</span>, (owner, value)) <span class="kw">in </span>world.query::&lt;(<span class="kw-2">&amp;</span>Owner, <span class="kw-2">&amp;mut </span><span class="macro-nonterminal">$t</span>)&gt;().iter() {
-<a href=#777 id=777 data-nosnippet>777</a>            <span class="kw">if </span>context.is_active(world, owner.<span class="number">0</span>) { value.update_native(<span class="kw-2">&amp;mut </span>EcsMoveHost::new(world, owner.<span class="number">0</span>, context)); }
+<a href=#777 id=777 data-nosnippet>777</a>            <span class="kw">if </span>context.is_active(world, owner.<span class="number">0</span>) { value.update_native(<span class="kw-2">&amp;mut </span>ObjectContext::new(world, owner.<span class="number">0</span>, context)); }
 <a href=#778 id=778 data-nosnippet>778</a>        }
 <a href=#779 id=779 data-nosnippet>779</a>    }; }
 <a href=#780 id=780 data-nosnippet>780</a>    <span class="macro">advance!</span>(FirstPersonCharacter);
@@ -783,13 +783,13 @@
 <a href=#783 id=783 data-nosnippet>783</a>
 <a href=#784 id=784 data-nosnippet>784</a><span class="kw">fn </span>cameras(world: <span class="kw-2">&amp;</span>SystemWorld&lt;<span class="lifetime">'_</span>&gt;, context: <span class="kw-2">&amp;mut </span>SystemContext&lt;<span class="lifetime">'_</span>&gt;) {
 <a href=#785 id=785 data-nosnippet>785</a>    <span class="kw">for </span>(<span class="kw">_</span>, (owner, value)) <span class="kw">in </span>world.query::&lt;(<span class="kw-2">&amp;</span>Owner, <span class="kw-2">&amp;mut </span>ThirdPersonCharacter)&gt;().iter() {
-<a href=#786 id=786 data-nosnippet>786</a>        <span class="kw">if </span>context.is_active(world, owner.<span class="number">0</span>) { value.late_update_native(<span class="kw-2">&amp;mut </span>EcsMoveHost::new(world, owner.<span class="number">0</span>, context)); }
+<a href=#786 id=786 data-nosnippet>786</a>        <span class="kw">if </span>context.is_active(world, owner.<span class="number">0</span>) { value.late_update_native(<span class="kw-2">&amp;mut </span>ObjectContext::new(world, owner.<span class="number">0</span>, context)); }
 <a href=#787 id=787 data-nosnippet>787</a>    }
 <a href=#788 id=788 data-nosnippet>788</a>    <span class="kw">for </span>(<span class="kw">_</span>, (owner, value)) <span class="kw">in </span>world.query::&lt;(<span class="kw-2">&amp;</span>Owner, <span class="kw-2">&amp;mut </span>FollowCamera)&gt;().iter() {
 <a href=#789 id=789 data-nosnippet>789</a>        <span class="kw">if </span>context.is_active(world, owner.<span class="number">0</span>) {
-<a href=#790 id=790 data-nosnippet>790</a>            <span class="kw">let </span><span class="kw-2">mut </span>host = EcsMoveHost::new(world, owner.<span class="number">0</span>, context);
-<a href=#791 id=791 data-nosnippet>791</a>            <span class="kw">if </span>!value.started { value.start_native(<span class="kw-2">&amp;mut </span>host); }
-<a href=#792 id=792 data-nosnippet>792</a>            value.late_update_native(<span class="kw-2">&amp;mut </span>host);
+<a href=#790 id=790 data-nosnippet>790</a>            <span class="kw">let </span><span class="kw-2">mut </span>obj = ObjectContext::new(world, owner.<span class="number">0</span>, context);
+<a href=#791 id=791 data-nosnippet>791</a>            <span class="kw">if </span>!value.started { value.start_native(<span class="kw-2">&amp;mut </span>obj); }
+<a href=#792 id=792 data-nosnippet>792</a>            value.late_update_native(<span class="kw-2">&amp;mut </span>obj);
 <a href=#793 id=793 data-nosnippet>793</a>        }
 <a href=#794 id=794 data-nosnippet>794</a>    }
 <a href=#795 id=795 data-nosnippet>795</a>}
@@ -818,13 +818,13 @@
 <a href=#818 id=818 data-nosnippet>818</a>    }
 <a href=#819 id=819 data-nosnippet>819</a>
 <a href=#820 id=820 data-nosnippet>820</a>    <span class="doccomment">/// A root object with no Character Controller: moves freely on a flat floor.
-<a href=#821 id=821 data-nosnippet>821</a>    </span><span class="kw">struct </span>FreeHost {
+<a href=#821 id=821 data-nosnippet>821</a>    </span><span class="kw">struct </span>FreeMotion {
 <a href=#822 id=822 data-nosnippet>822</a>        id: <span class="kw">crate</span>::ObjectId,
 <a href=#823 id=823 data-nosnippet>823</a>        pos: Vec3,
 <a href=#824 id=824 data-nosnippet>824</a>        rot: Quat,
 <a href=#825 id=825 data-nosnippet>825</a>    }
 <a href=#826 id=826 data-nosnippet>826</a>
-<a href=#827 id=827 data-nosnippet>827</a>    <span class="kw">impl </span>MoveHost <span class="kw">for </span>FreeHost {
+<a href=#827 id=827 data-nosnippet>827</a>    <span class="kw">impl </span>MotionContext <span class="kw">for </span>FreeMotion {
 <a href=#828 id=828 data-nosnippet>828</a>        <span class="kw">fn </span>self_id(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">crate</span>::ObjectId {
 <a href=#829 id=829 data-nosnippet>829</a>            <span class="self">self</span>.id
 <a href=#830 id=830 data-nosnippet>830</a>        }
@@ -867,7 +867,7 @@
 <a href=#867 id=867 data-nosnippet>867</a>    }
 <a href=#868 id=868 data-nosnippet>868</a>
 <a href=#869 id=869 data-nosnippet>869</a>    <span class="doccomment">/// Ground speed after two seconds of holding forward (and Sprint when `sprint`).
-<a href=#870 id=870 data-nosnippet>870</a>    </span><span class="kw">fn </span>settled_speed(sprint: bool, <span class="kw-2">mut </span>step: <span class="kw">impl </span>FnMut(<span class="kw-2">&amp;mut </span>FreeHost, <span class="kw-2">&amp;</span>InputState)) -&gt; f32 {
+<a href=#870 id=870 data-nosnippet>870</a>    </span><span class="kw">fn </span>settled_speed(sprint: bool, <span class="kw-2">mut </span>step: <span class="kw">impl </span>FnMut(<span class="kw-2">&amp;mut </span>FreeMotion, <span class="kw-2">&amp;</span>InputState)) -&gt; f32 {
 <a href=#871 id=871 data-nosnippet>871</a>        <span class="kw">let </span>forward = <span class="kw">crate</span>::ActionValue { down: <span class="bool-val">true</span>, value: <span class="number">1.0</span>, axis2: glam::Vec2::Y, ..Default::default() };
 <a href=#872 id=872 data-nosnippet>872</a>        <span class="kw">let </span>held = <span class="kw">crate</span>::ActionValue { down: <span class="bool-val">true</span>, value: <span class="number">1.0</span>, ..Default::default() };
 <a href=#873 id=873 data-nosnippet>873</a>        <span class="kw">let </span><span class="kw-2">mut </span>actions = <span class="macro">vec!</span>[(<span class="string">"Move"</span>.to_string(), forward)];
@@ -875,13 +875,13 @@
 <a href=#875 id=875 data-nosnippet>875</a>            actions.push((<span class="string">"Sprint"</span>.to_string(), held));
 <a href=#876 id=876 data-nosnippet>876</a>        }
 <a href=#877 id=877 data-nosnippet>877</a>        <span class="kw">let </span>input = InputState::from_actions(actions, glam::Vec2::ZERO);
-<a href=#878 id=878 data-nosnippet>878</a>        <span class="kw">let </span><span class="kw-2">mut </span>host = FreeHost { id: <span class="kw">crate</span>::ObjectId::new(), pos: Vec3::ZERO, rot: Quat::IDENTITY };
+<a href=#878 id=878 data-nosnippet>878</a>        <span class="kw">let </span><span class="kw-2">mut </span>obj = FreeMotion { id: <span class="kw">crate</span>::ObjectId::new(), pos: Vec3::ZERO, rot: Quat::IDENTITY };
 <a href=#879 id=879 data-nosnippet>879</a>        <span class="kw">for _ in </span><span class="number">0</span>..<span class="number">120 </span>{
-<a href=#880 id=880 data-nosnippet>880</a>            step(<span class="kw-2">&amp;mut </span>host, <span class="kw-2">&amp;</span>input);
+<a href=#880 id=880 data-nosnippet>880</a>            step(<span class="kw-2">&amp;mut </span>obj, <span class="kw-2">&amp;</span>input);
 <a href=#881 id=881 data-nosnippet>881</a>        }
-<a href=#882 id=882 data-nosnippet>882</a>        <span class="kw">let </span>before = host.pos;
-<a href=#883 id=883 data-nosnippet>883</a>        step(<span class="kw-2">&amp;mut </span>host, <span class="kw-2">&amp;</span>input);
-<a href=#884 id=884 data-nosnippet>884</a>        Vec3::new(host.pos.x - before.x, <span class="number">0.0</span>, host.pos.z - before.z).length() * <span class="number">60.0
+<a href=#882 id=882 data-nosnippet>882</a>        <span class="kw">let </span>before = obj.pos;
+<a href=#883 id=883 data-nosnippet>883</a>        step(<span class="kw-2">&amp;mut </span>obj, <span class="kw-2">&amp;</span>input);
+<a href=#884 id=884 data-nosnippet>884</a>        Vec3::new(obj.pos.x - before.x, <span class="number">0.0</span>, obj.pos.z - before.z).length() * <span class="number">60.0
 <a href=#885 id=885 data-nosnippet>885</a>    </span>}
 <a href=#886 id=886 data-nosnippet>886</a>
 <a href=#887 id=887 data-nosnippet>887</a>    <span class="attr">#[test]
@@ -902,14 +902,14 @@
 <a href=#902 id=902 data-nosnippet>902</a>    <span class="attr">#[test]
 <a href=#903 id=903 data-nosnippet>903</a>    </span><span class="kw">fn </span>a_networked_view_is_held_to_the_pitch_limits() {
 <a href=#904 id=904 data-nosnippet>904</a>        <span class="kw">let </span>input = InputState::default();
-<a href=#905 id=905 data-nosnippet>905</a>        <span class="kw">let </span><span class="kw-2">mut </span>host = FreeHost { id: <span class="kw">crate</span>::ObjectId::new(), pos: Vec3::ZERO, rot: Quat::IDENTITY };
+<a href=#905 id=905 data-nosnippet>905</a>        <span class="kw">let </span><span class="kw-2">mut </span>obj = FreeMotion { id: <span class="kw">crate</span>::ObjectId::new(), pos: Vec3::ZERO, rot: Quat::IDENTITY };
 <a href=#906 id=906 data-nosnippet>906</a>        <span class="kw">let </span><span class="kw-2">mut </span>fps = FirstPersonCharacter::default();
-<a href=#907 id=907 data-nosnippet>907</a>        fps.step(<span class="kw-2">&amp;mut </span>host, <span class="kw-2">&amp;</span>input, <span class="number">1.0 </span>/ <span class="number">60.0</span>, <span class="bool-val">false</span>, <span class="prelude-val">Some</span>((<span class="number">10.0</span>, <span class="number">5000.0</span>)));
+<a href=#907 id=907 data-nosnippet>907</a>        fps.step(<span class="kw-2">&amp;mut </span>obj, <span class="kw-2">&amp;</span>input, <span class="number">1.0 </span>/ <span class="number">60.0</span>, <span class="bool-val">false</span>, <span class="prelude-val">Some</span>((<span class="number">10.0</span>, <span class="number">5000.0</span>)));
 <a href=#908 id=908 data-nosnippet>908</a>        <span class="macro">assert_eq!</span>((fps.yaw, fps.pitch), (<span class="number">10.0</span>, fps.max_pitch));
-<a href=#909 id=909 data-nosnippet>909</a>        fps.step(<span class="kw-2">&amp;mut </span>host, <span class="kw-2">&amp;</span>input, <span class="number">1.0 </span>/ <span class="number">60.0</span>, <span class="bool-val">false</span>, <span class="prelude-val">Some</span>((<span class="number">10.0</span>, -<span class="number">5000.0</span>)));
+<a href=#909 id=909 data-nosnippet>909</a>        fps.step(<span class="kw-2">&amp;mut </span>obj, <span class="kw-2">&amp;</span>input, <span class="number">1.0 </span>/ <span class="number">60.0</span>, <span class="bool-val">false</span>, <span class="prelude-val">Some</span>((<span class="number">10.0</span>, -<span class="number">5000.0</span>)));
 <a href=#910 id=910 data-nosnippet>910</a>        <span class="macro">assert_eq!</span>(fps.pitch, fps.min_pitch);
 <a href=#911 id=911 data-nosnippet>911</a>        <span class="kw">let </span><span class="kw-2">mut </span>tps = ThirdPersonCharacter::default();
-<a href=#912 id=912 data-nosnippet>912</a>        tps.step(<span class="kw-2">&amp;mut </span>host, <span class="kw-2">&amp;</span>input, <span class="number">1.0 </span>/ <span class="number">60.0</span>, <span class="bool-val">false</span>, <span class="prelude-val">Some</span>((<span class="number">0.0</span>, <span class="number">1e9</span>)));
+<a href=#912 id=912 data-nosnippet>912</a>        tps.step(<span class="kw-2">&amp;mut </span>obj, <span class="kw-2">&amp;</span>input, <span class="number">1.0 </span>/ <span class="number">60.0</span>, <span class="bool-val">false</span>, <span class="prelude-val">Some</span>((<span class="number">0.0</span>, <span class="number">1e9</span>)));
 <a href=#913 id=913 data-nosnippet>913</a>        <span class="macro">assert_eq!</span>(tps.cam_pitch, tps.max_pitch);
 <a href=#914 id=914 data-nosnippet>914</a>        <span class="kw">let </span><span class="kw-2">mut </span>pawn = <span class="kw">crate</span>::Pawn::default();
 <a href=#915 id=915 data-nosnippet>915</a>        <span class="kw">let </span><span class="kw-2">mut </span>zero = Vec3::ZERO;

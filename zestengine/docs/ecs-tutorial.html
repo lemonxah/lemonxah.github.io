@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-49b9e9f7.js";
+            window.path_to_searchindex_js = "searchindex-4e99785a.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-ffb240a5.js"></script>
@@ -208,8 +208,8 @@ the score board listens. Either side can change or be removed without touching t
 <h2 id="step-1-the-data"><a class="header" href="#step-1-the-data">Step 1: the data</a></h2>
 <p>Components are plain structs that implement <code>TypedComponent</code>. They must be <code>Serialize + Deserialize + Default</code>.</p>
 <pre><code class="language-rust">use serde::{Deserialize, Serialize};
-use zestengine_core::ecs::{ContactPhase, EcsMoveHost, SceneEvent, Stage, run_ordered};
-use zestengine_core::{ComponentRegistry, MoveHost, ObjectId, TypedComponent, UiText};
+use zestengine_core::ecs::{ContactPhase, ObjectContext, SceneEvent, Stage, run_ordered};
+use zestengine_core::{ComponentRegistry, MotionContext, ObjectId, TypedComponent, UiText};
 
 /// Marker: objects that can pick coins up. It has no data; its presence is the data.
 #[derive(Default, Serialize, Deserialize)]
@@ -254,8 +254,8 @@ exists while playing, so it is <code>#[serde(skip)]</code>.</li>
 thing</em>. Systems then ask "does the other object carry a <code>Collector</code>?".</li>
 </ul>
 <blockquote>
-<p><strong>Imports.</strong> <code>MoveHost</code> looks unused, but it is the trait that provides <code>self_id()</code> and the transform
-helpers on <code>host</code>. If the compiler says "no method named <code>self_id</code>", this import is missing.</p>
+<p><strong>Imports.</strong> <code>MotionContext</code> looks unused, but it is the trait that provides <code>self_id()</code> and the transform
+helpers on <code>obj</code>. If the compiler says "no method named <code>self_id</code>", this import is missing.</p>
 </blockquote>
 <h2 id="step-2-the-event"><a class="header" href="#step-2-the-event">Step 2: the event</a></h2>
 <p>An event is any <code>'static</code> type. Declare it next to the code that emits it:</p>
@@ -271,15 +271,15 @@ runtime handle.</p>
 system looks for contacts where <em>this coin</em> was entered by something that is a <code>Collector</code>:</p>
 <pre><code class="language-rust">registry.register_system_for::&lt;Coin&gt;("game::coin_pickup", Stage::Events, |world, ctx| {
     let contacts = ctx.services.scene_events;
-    run_ordered(world, ctx, |coin: &amp;mut Coin, host| {
-        let me = host.self_id();
+    run_ordered(world, ctx, |coin: &amp;mut Coin, obj| {
+        let me = obj.self_id();
         for contact in contacts {
             if let SceneEvent::Contact { object, other, trigger: true, phase: ContactPhase::Enter, .. } = contact
                 &amp;&amp; *object == me
-                &amp;&amp; host.get::&lt;Collector&gt;(*other).is_some()
+                &amp;&amp; obj.get::&lt;Collector&gt;(*other).is_some()
             {
-                host.emit(Collected { by: *other, value: coin.value });
-                host.destroy_self();
+                obj.emit(Collected { by: *other, value: coin.value });
+                obj.destroy_self();
             }
         }
     })
@@ -289,25 +289,25 @@ system looks for contacts where <em>this coin</em> was entered by something that
 <li><code>register_system_for::&lt;Coin&gt;</code> runs the system only while at least one enabled <code>Coin</code> exists, so a level
 without coins pays nothing.</li>
 <li><code>run_ordered</code> calls the closure once per active <code>Coin</code>, in scene order, with the component and an
-<code>EcsMoveHost</code> (<code>host</code>) bound to that coin's object. Disabled objects are skipped for you.</li>
+<code>ObjectContext</code> (<code>obj</code>) bound to that coin's object. Disabled objects are skipped for you.</li>
 <li><code>ctx.services.scene_events</code> is this frame's list of contacts. The pattern keeps only trigger overlaps
 (<code>trigger: true</code>) that just started (<code>ContactPhase::Enter</code>), where the receiver (<code>object</code>) is this coin.</li>
-<li><code>host.get::&lt;Collector&gt;(*other)</code> reads a component from the <em>other</em> object. It returns <code>None</code> if the
+<li><code>obj.get::&lt;Collector&gt;(*other)</code> reads a component from the <em>other</em> object. It returns <code>None</code> if the
 object has none, so a crate or a wall touching the coin is ignored.</li>
-<li><code>host.emit(..)</code> broadcasts the event. <code>host.destroy_self()</code> queues the coin for removal; it disappears
+<li><code>obj.emit(..)</code> broadcasts the event. <code>obj.destroy_self()</code> queues the coin for removal; it disappears
 when the stage ends.</li>
 </ul>
 <h2 id="step-4-the-score-system"><a class="header" href="#step-4-the-score-system">Step 4: the score system</a></h2>
 <p>The score board reads <code>Collected</code> events and writes the total into a <code>UiText</code>. UI elements are
 components like any other, so updating them is an ordinary edit:</p>
 <pre><code class="language-rust">impl ScoreBoard {
-    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
-        for collected in host.events::&lt;Collected&gt;() {
+    fn update(&amp;mut self, obj: &amp;mut ObjectContext&lt;'_, '_&gt;) {
+        for collected in obj.events::&lt;Collected&gt;() {
             self.score += collected.value;
         }
-        let id = host.self_id();
+        let id = obj.self_id();
         let text = format!("Score {}", self.score);
-        host.edit::&lt;UiText&gt;(id, move |ui| ui.text = text);
+        obj.edit::&lt;UiText&gt;(id, move |ui| ui.text = text);
     }
 }
 
@@ -315,7 +315,7 @@ registry.register_system_for::&lt;ScoreBoard&gt;("game::score_board", Stage::Lat
     run_ordered(world, ctx, ScoreBoard::update)
 });</code></pre>
 <p><code>LateUpdate</code> is the right stage for anything that mirrors the frame's final state onto the screen.
-<code>host.edit::&lt;UiText&gt;(id, ..)</code> changes the <code>UiText</code> on the same object as the <code>ScoreBoard</code>, so put both
+<code>obj.edit::&lt;UiText&gt;(id, ..)</code> changes the <code>UiText</code> on the same object as the <code>ScoreBoard</code>, so put both
 components on one object.</p>
 <h2 id="step-5-register-everything"><a class="header" href="#step-5-register-everything">Step 5: register everything</a></h2>
 <p>Both systems and all three components are handed to the engine from one function:</p>
@@ -438,11 +438,11 @@ and feed events back in by hand. That keeps each test about one system and one f
 <h2 id="variations-to-try"><a class="header" href="#variations-to-try">Variations to try</a></h2>
 <p>Each of these is a few lines, and each uses a call documented in the <a href="ENGINE_API.html">Engine API Guide</a>.</p>
 <p><strong>Play a sound where the coin was.</strong> Inside the pickup closure, before <code>destroy_self</code>:</p>
-<pre><code class="language-rust">let here = host.world_position();
-host.play_sound_at("audio/pop.ogg", here, 1.0);</code></pre>
+<pre><code class="language-rust">let here = obj.world_position();
+obj.play_sound_at("audio/pop.ogg", here, 1.0);</code></pre>
 <p><strong>Keep the score between sessions.</strong> Saves are queued like every other side effect:</p>
-<pre><code class="language-rust">host.save_value("best_score", self.score as i64);
-host.write_save("slot1");</code></pre>
+<pre><code class="language-rust">obj.save_value("best_score", self.score as i64);
+obj.write_save("slot1");</code></pre>
 <p><strong>Make coins worth more than one point.</strong> Nothing to write: select a coin and change <em>Value</em> in the
 inspector.</p>
 <p><strong>Coins that spin, expire or rain from the sky.</strong> The <a href="ECS.html">ECS Guide</a> has the pieces ready: a

@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-49b9e9f7.js";
+            window.path_to_searchindex_js = "searchindex-4e99785a.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-ffb240a5.js"></script>
@@ -242,8 +242,8 @@ you author a scene, nothing ticks.</li>
 </table>
 </div>
 <p>Two details matter in practice.</p>
-<p><strong>Local versus world.</strong> <code>Transform</code> is local. When you need a true world position, ask the host
-(<code>host.world_position()</code>, <code>host.position_of(target)</code>) or <code>world.world_transform(entity)</code>, which folds in
+<p><strong>Local versus world.</strong> <code>Transform</code> is local. When you need a true world position, ask the object context
+(<code>obj.world_position()</code>, <code>obj.position_of(target)</code>) or <code>world.world_transform(entity)</code>, which folds in
 every parent <em>including writes made earlier in the same stage</em>. <code>GlobalTransform</code> is only a snapshot.</p>
 <p><strong>Duplicate components.</strong> An object can carry two components of the same type. The first lives on the
 object's own hecs entity; later ones live on small auxiliary entities that point back with <code>Owner</code>.
@@ -286,7 +286,7 @@ shown in the inspector. Mark scratch state (timers, "have I started", cached pos
 (<code>[f32; 3]</code>) and runtime-only fields use <code>Vec3</code>/<code>Quat</code> with <code>#[serde(skip)]</code>.</li>
 <li><strong>References to other objects</strong> are <a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/struct.ObjectRef.html"><code>ObjectRef</code></a>
 fields (<code>ObjectRef::NONE</code> when unset). The inspector renders a drop target; at runtime you resolve it
-with <code>host.get::&lt;T&gt;(self.target)</code>, <code>host.position_of(self.target)</code>, and so on. They return <code>None</code> when
+with <code>obj.get::&lt;T&gt;(self.target)</code>, <code>obj.position_of(self.target)</code>, and so on. They return <code>None</code> when
 the target is unset or was deleted, so always handle that case.</li>
 <li><strong>Add <code>#[serde(default)]</code></strong> to a component's struct when you expect to add fields later: old scenes
 keep loading.</li>
@@ -419,15 +419,15 @@ cannot capture variables: keep state in components, not in closures. (A non-capt
 </tbody>
 </table>
 </div>
-<h3 id="the-comfortable-way-run_ordered-and-ecsmovehost"><a class="header" href="#the-comfortable-way-run_ordered-and-ecsmovehost">The comfortable way: <code>run_ordered</code> and <code>EcsMoveHost</code></a></h3>
+<h3 id="the-comfortable-way-run_ordered-and-objectcontext"><a class="header" href="#the-comfortable-way-run_ordered-and-objectcontext">The comfortable way: <code>run_ordered</code> and <code>ObjectContext</code></a></h3>
 <p>Most gameplay code wants "for each active instance of my component, in scene order, with helpers for
 this object". That is <code>run_ordered</code>, which gives your closure the component and an
-<a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.EcsMoveHost.html"><code>EcsMoveHost</code></a>:
+<a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.ObjectContext.html"><code>ObjectContext</code></a>:
 the per-object toolbox for moving, reading other objects, spawning, physics queries, sounds and more.
-It also dereferences to the <code>SystemContext</code>, so <code>host.dt</code>, <code>host.input</code> and <code>host.emit(..)</code> all work.</p>
+It also dereferences to the <code>SystemContext</code>, so <code>obj.dt</code>, <code>obj.input</code> and <code>obj.emit(..)</code> all work.</p>
 <pre><code class="language-rust">use glam::Vec3;
-use zestengine_core::MoveHost;                       // translation(), set_translation(), world_position(), …
-use zestengine_core::ecs::{EcsMoveHost, run_ordered};
+use zestengine_core::MotionContext;                       // translation(), set_translation(), world_position(), …
+use zestengine_core::ecs::{ObjectContext, run_ordered};
 
 #[derive(Serialize, Deserialize)]
 pub struct PlayerMover {
@@ -435,11 +435,11 @@ pub struct PlayerMover {
 }
 
 impl PlayerMover {
-    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
-        let direction = host.input.axis2("Move"); // x = right, y = forward
-        let step = Vec3::new(direction.x, 0.0, -direction.y) * self.speed * host.dt;
-        let position = host.translation() + step;
-        host.set_translation(position);
+    fn update(&amp;mut self, obj: &amp;mut ObjectContext&lt;'_, '_&gt;) {
+        let direction = obj.input.axis2("Move"); // x = right, y = forward
+        let step = Vec3::new(direction.x, 0.0, -direction.y) * self.speed * obj.dt;
+        let position = obj.translation() + step;
+        obj.set_translation(position);
     }
 }
 
@@ -452,10 +452,10 @@ registry.register_system_for::&lt;PlayerMover&gt;("game::player_mover", Stage::U
 <li>iterates in <strong>scene order</strong>, so behaviour is deterministic. That matters for networking, prediction
 replay and anything where two objects interact within one frame. A bare <code>world.query</code> iterates in
 archetype order, which is an implementation detail;</li>
-<li>hands you an <code>EcsMoveHost</code> bound to the object.</li>
+<li>hands you an <code>ObjectContext</code> bound to the object.</li>
 </ul>
 <p>Use a bare query when order is irrelevant and you have thousands of instances (it avoids collecting and
-sorting); use <code>run_ordered</code> otherwise. The full method list of <code>EcsMoveHost</code> is in
+sorting); use <code>run_ordered</code> otherwise. The full method list of <code>ObjectContext</code> is in
 <a href="ENGINE_API.html">ENGINE_API.md</a>.</p>
 <h3 id="borrowing-rules"><a class="header" href="#borrowing-rules">Borrowing rules</a></h3>
 <p>hecs checks borrows at run time, per component column, and the engine adds a lock for structural
@@ -510,17 +510,17 @@ cannot teleport everything.</p>
 pushed onto <code>ctx.commands</code>. The engine applies them, in order, right after the stage that queued them:</p>
 <pre><code class="language-rust">ctx.commands.push(ComponentCommand::Destroy(object_id));
 ctx.commands.push(ComponentCommand::PlaySound { clip: "audio/pop.ogg".into(), position: None, volume: 1.0 });</code></pre>
-<p><code>EcsMoveHost</code> wraps the common ones in readable methods (<code>host.destroy(target)</code>,
-<code>host.play_sound_at(..)</code>, <code>host.add_impulse(..)</code>), which is usually what you want. Two properties to
+<p><code>ObjectContext</code> wraps the common ones in readable methods (<code>obj.destroy(target)</code>,
+<code>obj.play_sound_at(..)</code>, <code>obj.add_impulse(..)</code>), which is usually what you want. Two properties to
 remember:</p>
 <ul>
-<li><strong>Queued means "after this stage".</strong> <code>host.destroy_self()</code> does not remove the object while your system
+<li><strong>Queued means "after this stage".</strong> <code>obj.destroy_self()</code> does not remove the object while your system
 is still iterating; it disappears when the stage ends. Systems later in the <em>same</em> stage still see it.</li>
 <li><strong>Bad targets are ignored.</strong> A command that names an object that no longer exists does nothing.</li>
 </ul>
-<p>Direct writes to component data (<code>host.edit::&lt;T&gt;(target, |t| ..)</code>, <code>host.set_translation(..)</code>) are
+<p>Direct writes to component data (<code>obj.edit::&lt;T&gt;(target, |t| ..)</code>, <code>obj.set_translation(..)</code>) are
 immediate and visible to systems that run later in the same stage. The full list of commands and which
-host methods queue them is in <a href="ENGINE_API.html">ENGINE_API.md</a>.</p>
+<code>ObjectContext</code> methods queue them is in <a href="ENGINE_API.html">ENGINE_API.md</a>.</p>
 <h2 id="events"><a class="header" href="#events">Events</a></h2>
 <p>There are three ways for systems to react to something that happened.</p>
 <h3 id="broadcast-events"><a class="header" href="#broadcast-events">Broadcast events</a></h3>
@@ -579,15 +579,15 @@ pub struct Collected { pub by: ObjectId, pub value: u32 }
 
 registry.register_system_for::&lt;Coin&gt;("game::coin_pickup", Stage::Events, |world, ctx| {
     let contacts = ctx.services.scene_events;
-    run_ordered(world, ctx, |coin: &amp;mut Coin, host| {
-        let me = host.self_id();
+    run_ordered(world, ctx, |coin: &amp;mut Coin, obj| {
+        let me = obj.self_id();
         for contact in contacts {
             if let SceneEvent::Contact { object, other, trigger: true, phase: ContactPhase::Enter, .. } = contact
                 &amp;&amp; *object == me
-                &amp;&amp; host.get::&lt;Collector&gt;(*other).is_some()
+                &amp;&amp; obj.get::&lt;Collector&gt;(*other).is_some()
             {
-                host.emit(Collected { by: *other, value: coin.value });
-                host.destroy_self();
+                obj.emit(Collected { by: *other, value: coin.value });
+                obj.destroy_self();
             }
         }
     })
@@ -605,22 +605,22 @@ engine resolves and runs them. You get that for free for any component that decl
 <h2 id="spawning-and-destroying"><a class="header" href="#spawning-and-destroying">Spawning and destroying</a></h2>
 <p>Spawning is a command; the call returns the new <code>ObjectId</code> immediately so you can wire it up, but the
 object exists from the next stage on.</p>
-<pre><code class="language-rust">let id = host.spawn_prefab("prefabs/enemy.prefab", position, rotation); // a .prefab asset
-let id = host.instantiate(self.bullet_template, position, rotation);    // clone a scene object
-let id = host.spawn_entity("Crate", position, rotation);                // a registered entity
-host.net_spawn("prefabs/bullet.prefab", position, rotation);            // on every peer
-host.destroy(target);                                                    // object and children
-host.destroy_self();
-host.set_active(door, false);                                            // disable without deleting</code></pre>
+<pre><code class="language-rust">let id = obj.spawn_prefab("prefabs/enemy.prefab", position, rotation); // a .prefab asset
+let id = obj.instantiate(self.bullet_template, position, rotation);    // clone a scene object
+let id = obj.spawn_entity("Crate", position, rotation);                // a registered entity
+obj.net_spawn("prefabs/bullet.prefab", position, rotation);            // on every peer
+obj.destroy(target);                                                    // object and children
+obj.destroy_self();
+obj.set_active(door, false);                                            // disable without deleting</code></pre>
 <p>A timed self-destruct is the smallest useful spawn companion:</p>
 <pre><code class="language-rust">#[derive(Serialize, Deserialize)]
 pub struct Lifetime { pub seconds_left: f32 }   // Default: 3.0
 
 impl Lifetime {
-    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
-        self.seconds_left -= host.dt;
+    fn update(&amp;mut self, obj: &amp;mut ObjectContext&lt;'_, '_&gt;) {
+        self.seconds_left -= obj.dt;
         if self.seconds_left &lt;= 0.0 {
-            host.destroy_self();
+            obj.destroy_self();
         }
     }
 }</code></pre>
@@ -660,18 +660,18 @@ pub struct CrateSpawner {
 }
 
 impl CrateSpawner {
-    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
-        self.timer -= host.dt;
+    fn update(&amp;mut self, obj: &amp;mut ObjectContext&lt;'_, '_&gt;) {
+        self.timer -= obj.dt;
         if self.timer &lt;= 0.0 {
             self.timer = self.every;
-            let above = host.world_position() + Vec3::Y;
-            host.spawn_entity("Crate", above, Quat::IDENTITY);
+            let above = obj.world_position() + Vec3::Y;
+            obj.spawn_entity("Crate", above, Quat::IDENTITY);
         }
     }
 }</code></pre>
 <h2 id="talking-to-other-objects"><a class="header" href="#talking-to-other-objects">Talking to other objects</a></h2>
 <p>Systems often need another object's data: a follower needs its target's position, a turret needs its
-target's health. Reference the other object with an <code>ObjectRef</code> field and ask the host.</p>
+target's health. Reference the other object with an <code>ObjectRef</code> field and ask the <code>ObjectContext</code>.</p>
 <pre><code class="language-rust">#[derive(Serialize, Deserialize)]
 pub struct Follower {
     pub target: ObjectRef,
@@ -679,15 +679,15 @@ pub struct Follower {
 }
 
 impl Follower {
-    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
-        let Some(goal) = host.position_of(self.target) else { return }; // world position
-        let here = host.world_position();
+    fn update(&amp;mut self, obj: &amp;mut ObjectContext&lt;'_, '_&gt;) {
+        let Some(goal) = obj.position_of(self.target) else { return }; // world position
+        let here = obj.world_position();
         let to_goal = goal - here;
-        let step = self.speed * host.dt;
+        let step = self.speed * obj.dt;
         if to_goal.length() &lt;= step {
-            host.set_world_position(goal);
+            obj.set_world_position(goal);
         } else {
-            host.set_world_position(here + to_goal.normalize() * step);
+            obj.set_world_position(here + to_goal.normalize() * step);
         }
     }
 }</code></pre>
@@ -697,12 +697,12 @@ impl Follower {
 <tr><th>Want to …</th><th>Call</th><th>Timing</th></tr>
 </thead>
 <tbody>
-<tr><td>Read another object's component</td><td><code>host.get::&lt;T&gt;(target)</code></td><td>immediate</td></tr>
-<tr><td>Change it in place</td><td><code>host.edit::&lt;T&gt;(target, |t| …)</code></td><td>immediate (visible to later systems this stage)</td></tr>
-<tr><td>Read its world position</td><td><code>host.position_of(target)</code></td><td>immediate</td></tr>
-<tr><td>Find an object by name</td><td><code>host.find_object("Player")</code></td><td>immediate (names are cosmetic: prefer <code>ObjectRef</code>)</td></tr>
-<tr><td>List objects carrying a component</td><td><code>host.objects_with::&lt;T&gt;()</code></td><td>immediate, in scene order</td></tr>
-<tr><td>Ask the world to do something to it</td><td><code>host.destroy(target)</code>, <code>host.set_active(..)</code>, <code>host.add_impulse(..)</code></td><td>after the stage</td></tr>
+<tr><td>Read another object's component</td><td><code>obj.get::&lt;T&gt;(target)</code></td><td>immediate</td></tr>
+<tr><td>Change it in place</td><td><code>obj.edit::&lt;T&gt;(target, |t| …)</code></td><td>immediate (visible to later systems this stage)</td></tr>
+<tr><td>Read its world position</td><td><code>obj.position_of(target)</code></td><td>immediate</td></tr>
+<tr><td>Find an object by name</td><td><code>obj.find_object("Player")</code></td><td>immediate (names are cosmetic: prefer <code>ObjectRef</code>)</td></tr>
+<tr><td>List objects carrying a component</td><td><code>obj.objects_with::&lt;T&gt;()</code></td><td>immediate, in scene order</td></tr>
+<tr><td>Ask the world to do something to it</td><td><code>obj.destroy(target)</code>, <code>obj.set_active(..)</code>, <code>obj.add_impulse(..)</code></td><td>after the stage</td></tr>
 </tbody>
 </table>
 </div>
@@ -742,27 +742,27 @@ different components:</p>
 <code>Fire</code>, <code>Interact</code>, <code>Grab</code> and <code>Voice</code>; the gamepad scheme uses the same names on its sticks and
 buttons, so code written against action names works on every device. Players can rebind them, and a
 game can define its own actions in its control scheme. An action that does not exist reads as "not
-pressed". When the player is typing into a UI text field, <code>host.ui_text_editing()</code> is true: skip
+pressed". When the player is typing into a UI text field, <code>obj.ui_text_editing()</code> is true: skip
 gameplay input then.</p>
-<p>For networked objects another peer may be driving, check <code>host.driven_remotely()</code> before applying
-local input, and <code>host.has_authority(id)</code> before changing shared state.</p>
+<p>For networked objects another peer may be driving, check <code>obj.driven_remotely()</code> before applying
+local input, and <code>obj.has_authority(id)</code> before changing shared state.</p>
 <h2 id="physics-and-contacts"><a class="header" href="#physics-and-contacts">Physics and contacts</a></h2>
 <p>Physics queries are immediate; pushes are commands. A ray gun:</p>
 <pre><code class="language-rust">#[derive(Serialize, Deserialize)]
 pub struct Laser { pub damage: f32, pub range: f32 }   // Default: 25 / 100
 
 impl Laser {
-    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
-        if !host.input.pressed("Fire") { return; }
-        let aim = host.self_transform(); // world position and orientation
-        let Some(hit) = host.raycast(aim.translation, aim.forward(), self.range) else { return };
+    fn update(&amp;mut self, obj: &amp;mut ObjectContext&lt;'_, '_&gt;) {
+        if !obj.input.pressed("Fire") { return; }
+        let aim = obj.self_transform(); // world position and orientation
+        let Some(hit) = obj.raycast(aim.translation, aim.forward(), self.range) else { return };
         let damage = self.damage;
-        host.edit::&lt;Hitpoints&gt;(hit.object, move |hp| hp.current = (hp.current - damage).max(0.0));
-        host.add_impulse(hit.object, aim.forward() * 5.0);
-        host.play_sound_at("audio/zap.ogg", hit.point, 1.0);
+        obj.edit::&lt;Hitpoints&gt;(hit.object, move |hp| hp.current = (hp.current - damage).max(0.0));
+        obj.add_impulse(hit.object, aim.forward() * 5.0);
+        obj.play_sound_at("audio/zap.ogg", hit.point, 1.0);
     }
 }</code></pre>
-<p><code>host.raycast</code> ignores triggers and the caller's own colliders; use <code>raycast_filtered</code> with a
+<p><code>obj.raycast</code> ignores triggers and the caller's own colliders; use <code>raycast_filtered</code> with a
 <code>RayFilter</code> for layer masks. Rigid bodies move through commands (<code>add_force</code>, <code>add_impulse</code>,
 <code>set_velocity</code>); characters through <code>move_character</code>. Contacts arrive as <a href="#scene-events-contacts-and-animation-markers">scene events</a>.
 The ENGINE_API guide covers <a href="ENGINE_API.html#physics">physics</a> in full.</p>
@@ -786,19 +786,19 @@ pub struct Door {
 
 impl Door {
     /// Runs once for each new instance (Stage::Start): remember where "closed" is.
-    fn start(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
+    fn start(&amp;mut self, obj: &amp;mut ObjectContext&lt;'_, '_&gt;) {
         if self.closed_y.is_none() {
-            self.closed_y = Some(host.translation().y);
+            self.closed_y = Some(obj.translation().y);
         }
     }
 
-    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
+    fn update(&amp;mut self, obj: &amp;mut ObjectContext&lt;'_, '_&gt;) {
         let Some(closed) = self.closed_y else { return };
         let goal = if self.wants_open { closed + self.lift } else { closed };
-        let mut position = host.translation();
-        let step = self.speed * host.dt;
+        let mut position = obj.translation();
+        let step = self.speed * obj.dt;
         position.y += (goal - position.y).clamp(-step, step);
-        host.set_translation(position);
+        obj.set_translation(position);
     }
 }
 
@@ -823,13 +823,13 @@ pub struct ScoreBoard {
 }
 
 impl ScoreBoard {
-    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
-        for collected in host.events::&lt;Collected&gt;() {
+    fn update(&amp;mut self, obj: &amp;mut ObjectContext&lt;'_, '_&gt;) {
+        for collected in obj.events::&lt;Collected&gt;() {
             self.score += collected.value;
         }
-        let id = host.self_id();
+        let id = obj.self_id();
         let text = format!("Score {}", self.score);
-        host.edit::&lt;UiText&gt;(id, move |ui| ui.text = text);
+        obj.edit::&lt;UiText&gt;(id, move |ui| ui.text = text);
     }
 }
 
@@ -992,7 +992,7 @@ are not applied by the harness, so assert on them instead.</li>
 <tr><td><code>ComponentRegistry</code> (<code>register_ecs</code>, <code>register_system*</code>, <code>register_entity</code>)</td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/struct.ComponentRegistry.html">struct.ComponentRegistry</a></td></tr>
 <tr><td><code>SystemWorld</code>, <code>SystemContext</code>, <code>SystemServices</code></td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.SystemWorld.html">ecs/struct.SystemWorld</a>, <a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.SystemContext.html">ecs/struct.SystemContext</a>, <a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.SystemServices.html">ecs/struct.SystemServices</a></td></tr>
 <tr><td><code>Stage</code>, <code>SceneEvent</code>, <code>ContactPhase</code></td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/enum.Stage.html">ecs/enum.Stage</a>, <a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/enum.SceneEvent.html">ecs/enum.SceneEvent</a></td></tr>
-<tr><td><code>run_ordered</code>, <code>EcsMoveHost</code></td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/fn.run_ordered.html">ecs/fn.run_ordered</a>, <a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.EcsMoveHost.html">ecs/struct.EcsMoveHost</a></td></tr>
+<tr><td><code>run_ordered</code>, <code>ObjectContext</code></td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/fn.run_ordered.html">ecs/fn.run_ordered</a>, <a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.ObjectContext.html">ecs/struct.ObjectContext</a></td></tr>
 <tr><td><code>SceneWorld</code></td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.SceneWorld.html">ecs/struct.SceneWorld</a></td></tr>
 <tr><td><code>EntityTemplate</code>, <code>EntityShape</code></td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/struct.EntityTemplate.html">ecs/struct.EntityTemplate</a>, <a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/ecs/enum.EntityShape.html">ecs/enum.EntityShape</a></td></tr>
 <tr><td><code>ComponentCommand</code></td><td><a href="https://lemonxah.github.io/zestengine/docs/api/zestengine_core/enum.ComponentCommand.html">enum.ComponentCommand</a></td></tr>

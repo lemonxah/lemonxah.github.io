@@ -14,7 +14,7 @@
 <a href=#14 id=14 data-nosnippet>14</a>
 <a href=#15 id=15 data-nosnippet>15</a><span class="kw">use </span>glam::{Quat, Vec3};
 <a href=#16 id=16 data-nosnippet>16</a>
-<a href=#17 id=17 data-nosnippet>17</a><span class="kw">use crate</span>::{MoveHost, ObjectId};
+<a href=#17 id=17 data-nosnippet>17</a><span class="kw">use crate</span>::{MotionContext, ObjectId};
 <a href=#18 id=18 data-nosnippet>18</a>
 <a href=#19 id=19 data-nosnippet>19</a><span class="doccomment">/// How far back a shot may be rewound (seconds).
 <a href=#20 id=20 data-nosnippet>20</a></span><span class="kw">pub const </span>MAX_REWIND: f64 = <span class="number">0.5</span>;
@@ -348,7 +348,7 @@
 <a href=#348 id=348 data-nosnippet>348</a>    <span class="prelude-val">Some</span>(tmin)
 <a href=#349 id=349 data-nosnippet>349</a>}
 <a href=#350 id=350 data-nosnippet>350</a>
-<a href=#351 id=351 data-nosnippet>351</a><span class="kw">impl </span><span class="kw">crate</span>::ecs::EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt; {
+<a href=#351 id=351 data-nosnippet>351</a><span class="kw">impl </span><span class="kw">crate</span>::ecs::ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt; {
 <a href=#352 id=352 data-nosnippet>352</a>    <span class="doccomment">/// The session clock in seconds: the host's time as this peer estimates it.
 <a href=#353 id=353 data-nosnippet>353</a>    ///
 <a href=#354 id=354 data-nosnippet>354</a>    /// **Immediate.** Every peer reads nearly the same value at the same moment, so it can time-stamp events across the

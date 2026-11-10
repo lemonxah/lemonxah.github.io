@@ -39,7 +39,7 @@
 <a href=#39 id=39 data-nosnippet>39</a><span class="kw">use </span>serde::{Deserialize, Serialize};
 <a href=#40 id=40 data-nosnippet>40</a>
 <a href=#41 id=41 data-nosnippet>41</a><span class="kw">use crate</span>::{Transform, TypedComponent};
-<a href=#42 id=42 data-nosnippet>42</a><span class="kw">use </span><span class="kw">crate</span>::ecs::{EcsMoveHost, Stage};
+<a href=#42 id=42 data-nosnippet>42</a><span class="kw">use </span><span class="kw">crate</span>::ecs::{ObjectContext, Stage};
 <a href=#43 id=43 data-nosnippet>43</a>
 <a href=#44 id=44 data-nosnippet>44</a><span class="doccomment">/// Per-hook fuel budget. Wasmtime consumes one unit per instruction, so this
 <a href=#45 id=45 data-nosnippet>45</a>/// is a hard bound on guest work per `start` / `update` call.
@@ -265,7 +265,7 @@
 <a href=#265 id=265 data-nosnippet>265</a>    }
 <a href=#266 id=266 data-nosnippet>266</a>
 <a href=#267 id=267 data-nosnippet>267</a>    <span class="doccomment">/// Run one exported hook (`start` / `update`) against the current frame.
-<a href=#268 id=268 data-nosnippet>268</a>    </span><span class="kw">fn </span>run_hook(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;</span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;, hook: Hook) {
+<a href=#268 id=268 data-nosnippet>268</a>    </span><span class="kw">fn </span>run_hook(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;</span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;, hook: Hook) {
 <a href=#269 id=269 data-nosnippet>269</a>        <span class="kw">if </span><span class="self">self</span>.error.is_some() {
 <a href=#270 id=270 data-nosnippet>270</a>            <span class="kw">return</span>;
 <a href=#271 id=271 data-nosnippet>271</a>        }
@@ -309,14 +309,14 @@
 <a href=#309 id=309 data-nosnippet>309</a>}
 <a href=#310 id=310 data-nosnippet>310</a>
 <a href=#311 id=311 data-nosnippet>311</a><span class="kw">impl </span>Script {
-<a href=#312 id=312 data-nosnippet>312</a>    <span class="kw">fn </span>start_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
+<a href=#312 id=312 data-nosnippet>312</a>    <span class="kw">fn </span>start_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
 <a href=#313 id=313 data-nosnippet>313</a>        <span class="kw">if </span><span class="self">self</span>.started { <span class="kw">return</span>; }
 <a href=#314 id=314 data-nosnippet>314</a>        <span class="self">self</span>.started = <span class="bool-val">true</span>;
 <a href=#315 id=315 data-nosnippet>315</a>        <span class="self">self</span>.ensure_loaded();
 <a href=#316 id=316 data-nosnippet>316</a>        <span class="self">self</span>.run_hook(ctx, Hook::Start);
 <a href=#317 id=317 data-nosnippet>317</a>    }
 <a href=#318 id=318 data-nosnippet>318</a>
-<a href=#319 id=319 data-nosnippet>319</a>    <span class="kw">fn </span>update_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
+<a href=#319 id=319 data-nosnippet>319</a>    <span class="kw">fn </span>update_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
 <a href=#320 id=320 data-nosnippet>320</a>        <span class="self">self</span>.start_native(ctx);
 <a href=#321 id=321 data-nosnippet>321</a>        <span class="self">self</span>.ensure_loaded();
 <a href=#322 id=322 data-nosnippet>322</a>        <span class="self">self</span>.run_hook(ctx, Hook::Update);

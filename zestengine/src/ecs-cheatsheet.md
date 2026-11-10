@@ -17,8 +17,8 @@ with the [tutorial](ecs-tutorial.md).
 
 ```rust
 use serde::{Deserialize, Serialize};
-use zestengine_core::ecs::{EcsMoveHost, Stage, run_ordered};
-use zestengine_core::{ComponentRegistry, MoveHost, TypedComponent};
+use zestengine_core::ecs::{ObjectContext, Stage, run_ordered};
+use zestengine_core::{ComponentRegistry, MotionContext, TypedComponent};
 
 #[derive(Serialize, Deserialize)]
 pub struct Spinner {
@@ -36,9 +36,9 @@ impl TypedComponent for Spinner {
 }
 
 impl Spinner {
-    fn update(&mut self, host: &mut EcsMoveHost<'_, '_>) {
-        self.elapsed += host.dt;
-        // host.translation(), host.set_translation(..), host.input, host.emit(..), host.destroy_self() ...
+    fn update(&mut self, obj: &mut ObjectContext<'_, '_>) {
+        self.elapsed += obj.dt;
+        // obj.translation(), obj.set_translation(..), obj.input, obj.emit(..), obj.destroy_self() ...
     }
 }
 
@@ -70,10 +70,10 @@ Details: [Stages](ECS.md#stages).
 
 | Immediate (visible to later systems this stage) | Queued (applied when the stage ends) |
 |---|---|
-| Reads: `host.get::<T>(t)`, `host.position_of(t)`, `host.raycast(..)` | `host.spawn_entity(..)`, `spawn_prefab`, `instantiate` (the id returns at once, the object exists next stage) |
-| `host.edit::<T>(t, \|c\| ..)` | `host.destroy(t)`, `host.destroy_self()`, `host.set_active(t, ..)` |
-| `host.set_translation(..)`, `set_world_position(..)` | `host.add_impulse(..)`, `set_velocity(..)`, `move_character(..)` |
-| | `host.play_sound_at(..)`, `load_scene(..)`, `save_value(..)`, `net_spawn(..)` |
+| Reads: `obj.get::<T>(t)`, `obj.position_of(t)`, `obj.raycast(..)` | `obj.spawn_entity(..)`, `spawn_prefab`, `instantiate` (the id returns at once, the object exists next stage) |
+| `obj.edit::<T>(t, \|c\| ..)` | `obj.destroy(t)`, `obj.destroy_self()`, `obj.set_active(t, ..)` |
+| `obj.set_translation(..)`, `set_world_position(..)` | `obj.add_impulse(..)`, `set_velocity(..)`, `move_character(..)` |
+| | `obj.play_sound_at(..)`, `load_scene(..)`, `save_value(..)`, `net_spawn(..)` |
 
 An event you emit is **not** visible to you in the same frame. See [Commands](ECS.md#commands) and the
 [Engine API Guide](ENGINE_API.md#immediate-and-queued).
@@ -82,24 +82,24 @@ An event you emit is **not** visible to you in the same frame. See [Commands](EC
 
 | I want to … | Write | Where |
 |---|---|---|
-| Move the object I am on | `host.set_translation(host.translation() + step * host.dt)` | [Moving things](ENGINE_API.md#moving-things) |
-| Move it in world space | `host.set_world_position(v)` | [Moving things](ENGINE_API.md#moving-things) |
-| Read player input | `host.input.pressed("Fire")`, `down`, `released`, `axis`, `axis2("Move")` | [Input](ECS.md#input) |
-| Point at another object | an `ObjectRef` field, then `host.position_of(self.target)` | [Talking to other objects](ECS.md#talking-to-other-objects) |
-| Read or change another object's component | `host.get::<T>(t)`, `host.edit::<T>(t, \|c\| ..)` | [Talking to other objects](ECS.md#talking-to-other-objects) |
-| Find objects | `host.objects_with::<T>()`, `host.find_object("Player")` | [Finding and reading](ENGINE_API.md#finding-and-reading-other-objects) |
-| Broadcast something happened | `host.emit(MyEvent { .. })` | [Broadcast events](ECS.md#broadcast-events) |
-| React to something that happened | `ctx.events::<MyEvent>()` / `host.events::<MyEvent>()` | [Broadcast events](ECS.md#broadcast-events) |
+| Move the object I am on | `obj.set_translation(obj.translation() + step * obj.dt)` | [Moving things](ENGINE_API.md#moving-things) |
+| Move it in world space | `obj.set_world_position(v)` | [Moving things](ENGINE_API.md#moving-things) |
+| Read player input | `obj.input.pressed("Fire")`, `down`, `released`, `axis`, `axis2("Move")` | [Input](ECS.md#input) |
+| Point at another object | an `ObjectRef` field, then `obj.position_of(self.target)` | [Talking to other objects](ECS.md#talking-to-other-objects) |
+| Read or change another object's component | `obj.get::<T>(t)`, `obj.edit::<T>(t, \|c\| ..)` | [Talking to other objects](ECS.md#talking-to-other-objects) |
+| Find objects | `obj.objects_with::<T>()`, `obj.find_object("Player")` | [Finding and reading](ENGINE_API.md#finding-and-reading-other-objects) |
+| Broadcast something happened | `obj.emit(MyEvent { .. })` | [Broadcast events](ECS.md#broadcast-events) |
+| React to something that happened | `ctx.events::<MyEvent>()` / `obj.events::<MyEvent>()` | [Broadcast events](ECS.md#broadcast-events) |
 | React to a collision or trigger | match `SceneEvent::Contact { .. }` in `Stage::Events` | [Scene events](ECS.md#scene-events-contacts-and-animation-markers) |
-| Spawn a registered entity | `host.spawn_entity("Crate", pos, rot)` | [Entities](ECS.md#entities) |
-| Spawn a prefab | `host.spawn_prefab("prefabs/enemy.prefab", pos, rot)` | [Spawning and destroying](ECS.md#spawning-and-destroying) |
-| Remove an object | `host.destroy_self()` / `host.destroy(t)` | [Spawning and destroying](ECS.md#spawning-and-destroying) |
-| Cast a ray | `host.raycast(origin, dir, max)` → `Option<RayHit>` | [Physics and contacts](ECS.md#physics-and-contacts) |
-| Push a rigid body | `host.add_impulse(t, v)` | [Physics](ENGINE_API.md#physics) |
-| Play a sound | `host.play_sound_at("audio/pop.ogg", pos, 1.0)` | [Audio](ENGINE_API.md#audio) |
-| Change UI text | `host.edit::<UiText>(id, move \|ui\| ui.text = text)` | [Showing state in the UI](ECS.md#showing-state-in-the-ui) |
-| Pause or slow time | `host.set_time_scale(0.0)` | [Pause menu](ENGINE_API.md#pause-menu) |
-| Switch scene | `host.load_scene("scenes/level2.scene")` | [Scenes, saves and settings](ENGINE_API.md#scenes-saves-and-settings) |
+| Spawn a registered entity | `obj.spawn_entity("Crate", pos, rot)` | [Entities](ECS.md#entities) |
+| Spawn a prefab | `obj.spawn_prefab("prefabs/enemy.prefab", pos, rot)` | [Spawning and destroying](ECS.md#spawning-and-destroying) |
+| Remove an object | `obj.destroy_self()` / `obj.destroy(t)` | [Spawning and destroying](ECS.md#spawning-and-destroying) |
+| Cast a ray | `obj.raycast(origin, dir, max)` → `Option<RayHit>` | [Physics and contacts](ECS.md#physics-and-contacts) |
+| Push a rigid body | `obj.add_impulse(t, v)` | [Physics](ENGINE_API.md#physics) |
+| Play a sound | `obj.play_sound_at("audio/pop.ogg", pos, 1.0)` | [Audio](ENGINE_API.md#audio) |
+| Change UI text | `obj.edit::<UiText>(id, move \|ui\| ui.text = text)` | [Showing state in the UI](ECS.md#showing-state-in-the-ui) |
+| Pause or slow time | `obj.set_time_scale(0.0)` | [Pause menu](ENGINE_API.md#pause-menu) |
+| Switch scene | `obj.load_scene("scenes/level2.scene")` | [Scenes, saves and settings](ENGINE_API.md#scenes-saves-and-settings) |
 | Make a function callable from the editor | `actions()` / `invoke_action(..)` on the component | [Actions and properties](ECS.md#actions-and-properties) |
 | Test a system | `SceneWorld` + `registry.run_systems(..)` | [Testing systems](ECS.md#testing-systems) |
 
@@ -110,7 +110,7 @@ Every one of these is in the guides with complete code, and is compiled and run 
 | Example | Shows | Read |
 |---|---|---|
 | `Rotator` | A component and its first system | [Systems](ECS.md#systems) |
-| `PlayerMover` | `run_ordered`, input, `dt` | [The comfortable way](ECS.md#the-comfortable-way-run_ordered-and-ecsmovehost) |
+| `PlayerMover` | `run_ordered`, input, `dt` | [The comfortable way](ECS.md#the-comfortable-way-run_ordered-and-objectcontext) |
 | `Hitpoints`, `Hit`, `Died` | Events between systems, death announced once | [Broadcast events](ECS.md#broadcast-events) |
 | `Coin`, `Collector`, `Collected` | Contacts and triggers | [Scene events](ECS.md#scene-events-contacts-and-animation-markers), and the [tutorial](ecs-tutorial.md) |
 | `Lifetime` | A timed self-destruct | [Spawning and destroying](ECS.md#spawning-and-destroying) |

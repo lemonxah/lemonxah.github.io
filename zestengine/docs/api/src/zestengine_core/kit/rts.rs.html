@@ -4,8 +4,8 @@
 <a href=#4 id=4 data-nosnippet>4</a></span><span class="kw">use </span>glam::{EulerRot, Quat, Vec2, Vec3};
 <a href=#5 id=5 data-nosnippet>5</a><span class="kw">use </span>serde::{Deserialize, Serialize};
 <a href=#6 id=6 data-nosnippet>6</a>
-<a href=#7 id=7 data-nosnippet>7</a><span class="kw">use crate</span>::{MoveHost, ObjectId, ObjectRef, TypedComponent, UiRect};
-<a href=#8 id=8 data-nosnippet>8</a><span class="kw">use </span><span class="kw">crate</span>::ecs::{EcsMoveHost, Owner, Stage, SystemContext, SystemWorld};
+<a href=#7 id=7 data-nosnippet>7</a><span class="kw">use crate</span>::{MotionContext, ObjectId, ObjectRef, TypedComponent, UiRect};
+<a href=#8 id=8 data-nosnippet>8</a><span class="kw">use </span><span class="kw">crate</span>::ecs::{ObjectContext, Owner, Stage, SystemContext, SystemWorld};
 <a href=#9 id=9 data-nosnippet>9</a>
 <a href=#10 id=10 data-nosnippet>10</a><span class="doccomment">/// Camera pose orbiting `focus` on the ground: `yaw` / `pitch` in degrees
 <a href=#11 id=11 data-nosnippet>11</a>/// (pitch looks down), `distance` along the view ray.
@@ -157,7 +157,7 @@
 <a href=#157 id=157 data-nosnippet>157</a>}
 <a href=#158 id=158 data-nosnippet>158</a>
 <a href=#159 id=159 data-nosnippet>159</a><span class="kw">impl </span>RtsCamera {
-<a href=#160 id=160 data-nosnippet>160</a>    <span class="kw">fn </span>start_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
+<a href=#160 id=160 data-nosnippet>160</a>    <span class="kw">fn </span>start_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
 <a href=#161 id=161 data-nosnippet>161</a>        <span class="kw">let </span>t = ctx.self_transform();
 <a href=#162 id=162 data-nosnippet>162</a>        <span class="kw">let </span>f = t.forward();
 <a href=#163 id=163 data-nosnippet>163</a>        <span class="self">self</span>.focus = <span class="kw">if </span>f.y &lt; -<span class="number">0.05 </span>{
@@ -172,7 +172,7 @@
 <a href=#172 id=172 data-nosnippet>172</a>        <span class="self">self</span>.started = <span class="bool-val">true</span>;
 <a href=#173 id=173 data-nosnippet>173</a>    }
 <a href=#174 id=174 data-nosnippet>174</a>
-<a href=#175 id=175 data-nosnippet>175</a>    <span class="kw">fn </span>update_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
+<a href=#175 id=175 data-nosnippet>175</a>    <span class="kw">fn </span>update_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
 <a href=#176 id=176 data-nosnippet>176</a>        <span class="kw">if </span>!<span class="self">self</span>.started {
 <a href=#177 id=177 data-nosnippet>177</a>            <span class="self">self</span>.start_native(ctx);
 <a href=#178 id=178 data-nosnippet>178</a>        }
@@ -225,7 +225,7 @@
 <a href=#225 id=225 data-nosnippet>225</a>
 <a href=#226 id=226 data-nosnippet>226</a><span class="kw">impl </span>Selectable {
 <a href=#227 id=227 data-nosnippet>227</a>
-<a href=#228 id=228 data-nosnippet>228</a>    <span class="kw">fn </span>update_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
+<a href=#228 id=228 data-nosnippet>228</a>    <span class="kw">fn </span>update_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
 <a href=#229 id=229 data-nosnippet>229</a>        <span class="kw">if </span><span class="self">self</span>.shown != <span class="prelude-val">Some</span>(<span class="self">self</span>.selected) {
 <a href=#230 id=230 data-nosnippet>230</a>            <span class="kw">if </span><span class="self">self</span>.ring.is_set() {
 <a href=#231 id=231 data-nosnippet>231</a>                ctx.set_active(<span class="self">self</span>.ring, <span class="self">self</span>.selected);
@@ -299,7 +299,7 @@
 <a href=#299 id=299 data-nosnippet>299</a>}
 <a href=#300 id=300 data-nosnippet>300</a>
 <a href=#301 id=301 data-nosnippet>301</a><span class="kw">impl </span>RtsSelection {
-<a href=#302 id=302 data-nosnippet>302</a>    <span class="kw">fn </span>candidates(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;</span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) -&gt; Vec&lt;ObjectId&gt; {
+<a href=#302 id=302 data-nosnippet>302</a>    <span class="kw">fn </span>candidates(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;</span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) -&gt; Vec&lt;ObjectId&gt; {
 <a href=#303 id=303 data-nosnippet>303</a>        ctx.objects_with::&lt;Selectable&gt;()
 <a href=#304 id=304 data-nosnippet>304</a>            .into_iter()
 <a href=#305 id=305 data-nosnippet>305</a>            .filter(|id| ctx.is_active(<span class="kw-2">*</span>id))
@@ -310,7 +310,7 @@
 <a href=#310 id=310 data-nosnippet>310</a>            .collect()
 <a href=#311 id=311 data-nosnippet>311</a>    }
 <a href=#312 id=312 data-nosnippet>312</a>
-<a href=#313 id=313 data-nosnippet>313</a>    <span class="kw">fn </span>set_selection(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;, ids: Vec&lt;ObjectId&gt;, add: bool) {
+<a href=#313 id=313 data-nosnippet>313</a>    <span class="kw">fn </span>set_selection(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;, ids: Vec&lt;ObjectId&gt;, add: bool) {
 <a href=#314 id=314 data-nosnippet>314</a>        <span class="kw">let </span><span class="kw-2">mut </span>next = <span class="kw">if </span>add { <span class="self">self</span>.selected.clone() } <span class="kw">else </span>{ Vec::new() };
 <a href=#315 id=315 data-nosnippet>315</a>        <span class="kw">for </span>id <span class="kw">in </span>ids {
 <a href=#316 id=316 data-nosnippet>316</a>            <span class="kw">if </span>!next.contains(<span class="kw-2">&amp;</span>id) {
@@ -328,7 +328,7 @@
 <a href=#328 id=328 data-nosnippet>328</a>        <span class="self">self</span>.selected = next;
 <a href=#329 id=329 data-nosnippet>329</a>    }
 <a href=#330 id=330 data-nosnippet>330</a>
-<a href=#331 id=331 data-nosnippet>331</a>    <span class="kw">fn </span>show_box(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;, a: Vec2, b: Vec2) {
+<a href=#331 id=331 data-nosnippet>331</a>    <span class="kw">fn </span>show_box(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;, a: Vec2, b: Vec2) {
 <a href=#332 id=332 data-nosnippet>332</a>        <span class="kw">if </span>!<span class="self">self</span>.box_visual.is_set() {
 <a href=#333 id=333 data-nosnippet>333</a>            <span class="kw">return</span>;
 <a href=#334 id=334 data-nosnippet>334</a>        }
@@ -345,7 +345,7 @@
 <a href=#345 id=345 data-nosnippet>345</a>        ctx.set_active(<span class="self">self</span>.box_visual, <span class="bool-val">true</span>);
 <a href=#346 id=346 data-nosnippet>346</a>    }
 <a href=#347 id=347 data-nosnippet>347</a>
-<a href=#348 id=348 data-nosnippet>348</a>    <span class="kw">fn </span>command(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
+<a href=#348 id=348 data-nosnippet>348</a>    <span class="kw">fn </span>command(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
 <a href=#349 id=349 data-nosnippet>349</a>        <span class="self">self</span>.selected.retain(|id| ctx.entity_of(<span class="kw-2">*</span>id).is_some());
 <a href=#350 id=350 data-nosnippet>350</a>        <span class="kw">if </span><span class="self">self</span>.selected.is_empty() {
 <a href=#351 id=351 data-nosnippet>351</a>            <span class="kw">return</span>;
@@ -389,7 +389,7 @@
 <a href=#389 id=389 data-nosnippet>389</a>}
 <a href=#390 id=390 data-nosnippet>390</a>
 <a href=#391 id=391 data-nosnippet>391</a><span class="kw">impl </span>RtsSelection {
-<a href=#392 id=392 data-nosnippet>392</a>    <span class="kw">fn </span>start_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
+<a href=#392 id=392 data-nosnippet>392</a>    <span class="kw">fn </span>start_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
 <a href=#393 id=393 data-nosnippet>393</a>        <span class="kw">for </span>r <span class="kw">in </span>[<span class="self">self</span>.box_visual, <span class="self">self</span>.move_marker] {
 <a href=#394 id=394 data-nosnippet>394</a>            <span class="kw">if </span>r.is_set() {
 <a href=#395 id=395 data-nosnippet>395</a>                ctx.set_active(r, <span class="bool-val">false</span>);
@@ -398,7 +398,7 @@
 <a href=#398 id=398 data-nosnippet>398</a>        <span class="self">self</span>.started = <span class="bool-val">true</span>;
 <a href=#399 id=399 data-nosnippet>399</a>    }
 <a href=#400 id=400 data-nosnippet>400</a>
-<a href=#401 id=401 data-nosnippet>401</a>    <span class="kw">fn </span>update_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
+<a href=#401 id=401 data-nosnippet>401</a>    <span class="kw">fn </span>update_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
 <a href=#402 id=402 data-nosnippet>402</a>        <span class="kw">if </span>!<span class="self">self</span>.started { <span class="self">self</span>.start_native(ctx); }
 <a href=#403 id=403 data-nosnippet>403</a>        <span class="kw">if </span><span class="self">self</span>.marker_timer &gt; <span class="number">0.0 </span>{
 <a href=#404 id=404 data-nosnippet>404</a>            <span class="self">self</span>.marker_timer -= ctx.unscaled_dt;
@@ -523,7 +523,7 @@
 <a href=#523 id=523 data-nosnippet>523</a>
 <a href=#524 id=524 data-nosnippet>524</a><span class="kw">impl </span>ResourceStore {
 <a href=#525 id=525 data-nosnippet>525</a>
-<a href=#526 id=526 data-nosnippet>526</a>    <span class="kw">fn </span>update_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
+<a href=#526 id=526 data-nosnippet>526</a>    <span class="kw">fn </span>update_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) {
 <a href=#527 id=527 data-nosnippet>527</a>        <span class="kw">for </span>r <span class="kw">in </span><span class="kw-2">&amp;mut </span><span class="self">self</span>.resources {
 <a href=#528 id=528 data-nosnippet>528</a>            r.amount += r.income_per_sec * ctx.dt;
 <a href=#529 id=529 data-nosnippet>529</a>            <span class="kw">if </span>r.capacity &gt; <span class="number">0.0 </span>{
@@ -552,7 +552,7 @@
 <a href=#552 id=552 data-nosnippet>552</a>        <span class="kw">let </span><span class="kw-2">mut </span>query = world.query::&lt;(<span class="kw-2">&amp;</span>Owner, <span class="kw-2">&amp;mut </span><span class="macro-nonterminal">$t</span>)&gt;();
 <a href=#553 id=553 data-nosnippet>553</a>        <span class="kw">let </span><span class="kw-2">mut </span>actors: Vec&lt;<span class="kw">_</span>&gt; = query.iter().filter(|(<span class="kw">_</span>, (owner, value))| !value.started &amp;&amp; context.is_active(world, owner.<span class="number">0</span>)).collect();
 <a href=#554 id=554 data-nosnippet>554</a>        actors.sort_unstable_by_key(|(instance, (owner, <span class="kw">_</span>))| context.instance_order::&lt;<span class="macro-nonterminal">$t</span>&gt;(world, owner.<span class="number">0</span>, <span class="kw-2">*</span>instance));
-<a href=#555 id=555 data-nosnippet>555</a>        <span class="kw">for </span>(<span class="kw">_</span>, (owner, value)) <span class="kw">in </span>actors { value.start_native(<span class="kw-2">&amp;mut </span>EcsMoveHost::new(world, owner.<span class="number">0</span>, context)); }
+<a href=#555 id=555 data-nosnippet>555</a>        <span class="kw">for </span>(<span class="kw">_</span>, (owner, value)) <span class="kw">in </span>actors { value.start_native(<span class="kw-2">&amp;mut </span>ObjectContext::new(world, owner.<span class="number">0</span>, context)); }
 <a href=#556 id=556 data-nosnippet>556</a>    }; }
 <a href=#557 id=557 data-nosnippet>557</a>    <span class="macro">start!</span>(RtsCamera);
 <a href=#558 id=558 data-nosnippet>558</a>    <span class="macro">start!</span>(RtsSelection);
@@ -562,19 +562,19 @@
 <a href=#562 id=562 data-nosnippet>562</a>    <span class="kw">let </span><span class="kw-2">mut </span>query = world.query::&lt;(<span class="kw-2">&amp;</span>Owner, <span class="kw-2">&amp;mut </span>RtsCamera)&gt;();
 <a href=#563 id=563 data-nosnippet>563</a>    <span class="kw">let </span><span class="kw-2">mut </span>actors: Vec&lt;<span class="kw">_</span>&gt; = query.iter().filter(|(<span class="kw">_</span>, (owner, <span class="kw">_</span>))| context.is_active(world, owner.<span class="number">0</span>)).collect();
 <a href=#564 id=564 data-nosnippet>564</a>    actors.sort_unstable_by_key(|(instance, (owner, <span class="kw">_</span>))| context.instance_order::&lt;RtsCamera&gt;(world, owner.<span class="number">0</span>, <span class="kw-2">*</span>instance));
-<a href=#565 id=565 data-nosnippet>565</a>    <span class="kw">for </span>(<span class="kw">_</span>, (owner, value)) <span class="kw">in </span>actors { value.update_native(<span class="kw-2">&amp;mut </span>EcsMoveHost::new(world, owner.<span class="number">0</span>, context)); }
+<a href=#565 id=565 data-nosnippet>565</a>    <span class="kw">for </span>(<span class="kw">_</span>, (owner, value)) <span class="kw">in </span>actors { value.update_native(<span class="kw-2">&amp;mut </span>ObjectContext::new(world, owner.<span class="number">0</span>, context)); }
 <a href=#566 id=566 data-nosnippet>566</a>}
 <a href=#567 id=567 data-nosnippet>567</a>
 <a href=#568 id=568 data-nosnippet>568</a><span class="kw">fn </span>selection(world: <span class="kw-2">&amp;</span>SystemWorld&lt;<span class="lifetime">'_</span>&gt;, context: <span class="kw-2">&amp;mut </span>SystemContext&lt;<span class="lifetime">'_</span>&gt;) {
 <a href=#569 id=569 data-nosnippet>569</a>    <span class="kw">let </span><span class="kw-2">mut </span>query = world.query::&lt;(<span class="kw-2">&amp;</span>Owner, <span class="kw-2">&amp;mut </span>RtsSelection)&gt;();
 <a href=#570 id=570 data-nosnippet>570</a>    <span class="kw">let </span><span class="kw-2">mut </span>actors: Vec&lt;<span class="kw">_</span>&gt; = query.iter().filter(|(<span class="kw">_</span>, (owner, <span class="kw">_</span>))| context.is_active(world, owner.<span class="number">0</span>)).collect();
 <a href=#571 id=571 data-nosnippet>571</a>    actors.sort_unstable_by_key(|(instance, (owner, <span class="kw">_</span>))| context.instance_order::&lt;RtsSelection&gt;(world, owner.<span class="number">0</span>, <span class="kw-2">*</span>instance));
-<a href=#572 id=572 data-nosnippet>572</a>    <span class="kw">for </span>(<span class="kw">_</span>, (owner, value)) <span class="kw">in </span>actors { value.update_native(<span class="kw-2">&amp;mut </span>EcsMoveHost::new(world, owner.<span class="number">0</span>, context)); }
+<a href=#572 id=572 data-nosnippet>572</a>    <span class="kw">for </span>(<span class="kw">_</span>, (owner, value)) <span class="kw">in </span>actors { value.update_native(<span class="kw-2">&amp;mut </span>ObjectContext::new(world, owner.<span class="number">0</span>, context)); }
 <a href=#573 id=573 data-nosnippet>573</a>}
 <a href=#574 id=574 data-nosnippet>574</a>
 <a href=#575 id=575 data-nosnippet>575</a><span class="kw">fn </span>resources(world: <span class="kw-2">&amp;</span>SystemWorld&lt;<span class="lifetime">'_</span>&gt;, context: <span class="kw-2">&amp;mut </span>SystemContext&lt;<span class="lifetime">'_</span>&gt;) {
 <a href=#576 id=576 data-nosnippet>576</a>    <span class="kw">for </span>(<span class="kw">_</span>, (owner, value)) <span class="kw">in </span>world.query::&lt;(<span class="kw-2">&amp;</span>Owner, <span class="kw-2">&amp;mut </span>ResourceStore)&gt;().iter() {
-<a href=#577 id=577 data-nosnippet>577</a>        <span class="kw">if </span>context.is_active(world, owner.<span class="number">0</span>) { value.update_native(<span class="kw-2">&amp;mut </span>EcsMoveHost::new(world, owner.<span class="number">0</span>, context)); }
+<a href=#577 id=577 data-nosnippet>577</a>        <span class="kw">if </span>context.is_active(world, owner.<span class="number">0</span>) { value.update_native(<span class="kw-2">&amp;mut </span>ObjectContext::new(world, owner.<span class="number">0</span>, context)); }
 <a href=#578 id=578 data-nosnippet>578</a>    }
 <a href=#579 id=579 data-nosnippet>579</a>}
 <a href=#580 id=580 data-nosnippet>580</a>
@@ -582,7 +582,7 @@
 <a href=#582 id=582 data-nosnippet>582</a>    <span class="kw">let </span><span class="kw-2">mut </span>query = world.query::&lt;(<span class="kw-2">&amp;</span>Owner, <span class="kw-2">&amp;mut </span>Selectable)&gt;();
 <a href=#583 id=583 data-nosnippet>583</a>    <span class="kw">let </span><span class="kw-2">mut </span>actors: Vec&lt;<span class="kw">_</span>&gt; = query.iter().filter(|(<span class="kw">_</span>, (owner, <span class="kw">_</span>))| context.is_active(world, owner.<span class="number">0</span>)).collect();
 <a href=#584 id=584 data-nosnippet>584</a>    actors.sort_unstable_by_key(|(instance, (owner, <span class="kw">_</span>))| context.instance_order::&lt;Selectable&gt;(world, owner.<span class="number">0</span>, <span class="kw-2">*</span>instance));
-<a href=#585 id=585 data-nosnippet>585</a>    <span class="kw">for </span>(<span class="kw">_</span>, (owner, value)) <span class="kw">in </span>actors { value.update_native(<span class="kw-2">&amp;mut </span>EcsMoveHost::new(world, owner.<span class="number">0</span>, context)); }
+<a href=#585 id=585 data-nosnippet>585</a>    <span class="kw">for </span>(<span class="kw">_</span>, (owner, value)) <span class="kw">in </span>actors { value.update_native(<span class="kw-2">&amp;mut </span>ObjectContext::new(world, owner.<span class="number">0</span>, context)); }
 <a href=#586 id=586 data-nosnippet>586</a>}
 <a href=#587 id=587 data-nosnippet>587</a>
 <a href=#588 id=588 data-nosnippet>588</a><span class="attr">#[cfg(test)]

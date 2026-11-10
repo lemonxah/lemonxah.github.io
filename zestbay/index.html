@@ -3,239 +3,239 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ZestBay — PipeWire patchbay with plugin hosting for Linux</title>
-<meta name="description" content="ZestBay shows every audio node on your Linux system, lets you wire it by drag-and-drop, inserts LV2, VST2, VST3 and CLAP effects straight into the PipeWire graph, and learns rules so your routing comes back on its own.">
-<meta name="theme-color" content="#121418">
-<meta name="color-scheme" content="dark">
+<title>ZestBay: PipeWire patchbay with plugin hosting for Linux</title>
+<meta name="description" content="See every app, device and virtual sink on your Linux system as a node. Drag ports together. Drop LV2, LADSPA, VST2, VST3 and CLAP effects onto the wires. ZestBay remembers the routing and puts it back after a reboot, a replugged interface or an app restart.">
+<meta name="theme-color" content="#c9e265">
 <link rel="canonical" href="https://lemonxah.github.io/zestbay/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="ZestBay — PipeWire patchbay with plugin hosting for Linux">
-<meta property="og:description" content="ZestBay shows every audio node on your Linux system, lets you wire it by drag-and-drop, inserts LV2, VST2, VST3 and CLAP effects straight into the PipeWire graph, and learns rules so your routing comes back on its own.">
+<meta property="og:title" content="ZestBay: PipeWire patchbay with plugin hosting for Linux">
+<meta property="og:description" content="See every app, device and virtual sink on your Linux system as a node. Drag ports together. Drop LV2, LADSPA, VST2, VST3 and CLAP effects onto the wires. ZestBay remembers the routing and puts it back after a reboot, a replugged interface or an app restart.">
 <meta property="og:url" content="https://lemonxah.github.io/zestbay/">
 <meta property="og:image" content="https://lemonxah.github.io/zestbay/assets/img/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="ZestBay — PipeWire patchbay with plugin hosting for Linux">
-<meta name="twitter:description" content="ZestBay shows every audio node on your Linux system, lets you wire it by drag-and-drop, inserts LV2, VST2, VST3 and CLAP effects straight into the PipeWire graph, and learns rules so your routing comes back on its own.">
+<meta name="twitter:title" content="ZestBay: PipeWire patchbay with plugin hosting for Linux">
+<meta name="twitter:description" content="See every app, device and virtual sink on your Linux system as a node. Drag ports together. Drop LV2, LADSPA, VST2, VST3 and CLAP effects onto the wires. ZestBay remembers the routing and puts it back after a reboot, a replugged interface or an app restart.">
 <meta name="twitter:image" content="https://lemonxah.github.io/zestbay/assets/img/og.png">
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="192x192" href="assets/img/icon-192.png">
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+<link rel="preload" href="assets/fonts/archivo-latin-wdth-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/IBMPlexSans-SemiBold.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="assets/fonts/IBMPlexMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles.css">
 </head>
-<body id="top">
-
-<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
-<symbol id="check" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></symbol>
-<symbol id="github" viewBox="0 0 24 24"><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></symbol>
-<symbol id="eye" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
-<symbol id="wire" viewBox="0 0 24 24"><circle cx="5" cy="7" r="2"/><circle cx="19" cy="17" r="2"/><path d="M7 7c6 0 4 10 10 10"/></symbol>
-<symbol id="refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15.5-6.3L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.3L3 16"/><path d="M3 21v-5h5"/></symbol>
-<symbol id="subgraph" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><path d="M10 6.5h4v4"/></symbol>
-<symbol id="speaker" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 9a4 4 0 0 1 0 6"/></symbol>
-<symbol id="mic" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v4"/></symbol>
-<symbol id="shield" viewBox="0 0 24 24"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5l8-3z"/><path d="M9 12l2 2 4-4"/></symbol>
-<symbol id="bolt" viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/></symbol>
-<symbol id="insert" viewBox="0 0 24 24"><path d="M3 12h10"/><path d="M9 8l4 4-4 4"/><rect x="15" y="6" width="6" height="12" rx="1.5"/></symbol>
-<symbol id="tray" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><circle cx="12" cy="11" r="2"/><path d="M8 22h8"/></symbol>
-<symbol id="power" viewBox="0 0 24 24"><path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.8 0"/></symbol>
-<symbol id="search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></symbol>
-</svg>
+<body>
 
 <a class="skip-link" href="#main">Skip to content</a>
 
-<header class="site-header">
+<!-- ========== LIME FIELD: NAV + HERO ========== -->
+<header id="top" class="site-header field">
+<div class="bar">
+<a class="brand" href="#top">
+<span class="brand-mark"><img src="assets/logo/zestbay-mark.svg" alt="" width="30" height="23"></span>
+<span class="brand-name display">ZestBay</span>
+</a>
 <nav class="nav" aria-label="Main">
-<a class="brand" href="#top"><img src="assets/logo/zestbay-mark.svg" alt="" width="34" height="26"><span>ZestBay</span></a>
-<div class="nav-links">
-<a href="#features">Features</a>
 <a href="#how">How it works</a>
+<a href="#features">Features</a>
 <a href="#compare">Compare</a>
-<a href="#install">Install</a>
-</div>
-<div class="nav-cta">
-<a class="btn btn-ghost" href="https://github.com/lemonxah/zestbay"><svg class="ico" aria-hidden="true"><use href="#github"/></svg>GitHub</a>
-<a class="btn btn-primary" href="#install">Install</a>
-</div>
+<a href="https://github.com/lemonxah/zestbay">GitHub</a>
+<a class="btn" href="#install">Install</a>
 </nav>
+</div>
 </header>
 
 <main id="main">
-
-<!-- ========== HERO ========== -->
-<section class="hero" aria-labelledby="hero-title">
-<div class="hero-inner">
-<div class="pill"><span class="pill-dot"></span><span><span class="ver" hidden><span data-version></span> · </span>PipeWire · Linux · MIT</span></div>
-<h1 id="hero-title">A PipeWire patchbay that hosts your plugins.</h1>
-<p class="lead">ZestBay shows every audio node on your Linux system, lets you wire it by drag-and-drop, inserts LV2, VST2, VST3 and CLAP effects straight into the PipeWire graph, and learns rules so your routing comes back on its own after a reboot, a replugged device or an app restart.</p>
-<div class="hero-cta">
-<a class="btn btn-primary btn-lg" href="#install">Install ZestBay</a>
-<a class="btn btn-ghost btn-lg" href="https://github.com/lemonxah/zestbay">View on GitHub</a>
+<section class="hero-band field" aria-labelledby="hero-title">
+<div class="hero">
+<h1 id="hero-title" class="display">A PipeWire patchbay that hosts your plugins.</h1>
+<div class="hero-row">
+<p class="hero-lead">See every app, device and virtual sink on your Linux system as a node. Drag ports together. Drop LV2, LADSPA, VST2, VST3 and CLAP effects onto the wires. ZestBay remembers the routing and puts it back after a reboot, a replugged interface or an app restart.</p>
+<div class="hero-actions">
+<div class="hero-links">
+<a class="btn btn-lg" href="#install">Install ZestBay</a>
+<a href="https://github.com/lemonxah/zestbay">Source on GitHub</a>
 </div>
-<div class="cmd"><span class="prompt">$</span><span>sudo pacman -S zestbay</span><span class="note">· Arch extra</span></div>
-<figure class="hero-frame">
-<picture><source srcset="assets/img/hero.webp" type="image/webp"><img class="" src="assets/img/hero.png" alt="ZestBay main window: node cards for devices, apps and plugins wired across a dot-grid canvas, dark theme" width="2000" height="1194" decoding="async" fetchpriority="high"></picture>
+<code class="hero-cmd">sudo pacman -S zestbay</code>
+</div>
+</div>
+<figure class="hero-shot">
+<picture><source srcset="assets/img/hero.webp" type="image/webp"><img src="assets/img/hero.png" alt="The ZestBay window: devices, apps and plugins as node cards joined by wires on a dotted canvas" width="2000" height="1194" decoding="async" fetchpriority="high"></picture>
 </figure>
 </div>
 </section>
 
-<!-- ========== AT A GLANCE ========== -->
-<section class="section section-panel" aria-label="At a glance">
-<div class="facts">
-<div class="fact"><strong>Rust + Qt6/QML</strong><span>Memory-safe core, native desktop UI</span></div>
-<div class="fact"><strong>Native PipeWire</strong><span>No JACK compatibility layer</span></div>
-<div class="fact"><strong>Four plugin formats</strong><span class="mono">LV2 · VST2 · VST3 · CLAP</span></div>
-<div class="fact"><strong>Everything persists</strong><span>Plain JSON in <span class="mono">~/.config/zestbay</span></span></div>
-<div class="fact"><strong>MIT licensed</strong><span>Free and open source</span></div>
+<!-- ========== WHAT IT DOES ========== -->
+<section class="what" aria-label="What it does">
+<div class="wrap">
+<p class="version-line"><span class="ver" hidden><span data-version></span>. </span>Written in Rust with a Qt6 interface, talking to PipeWire through its own API. MIT licensed.</p>
+<div class="three">
+<div>
+<h2 class="display">See everything</h2>
+<p>Every device, app stream, virtual sink and plugin is a node on one canvas. Wires are coloured by what they carry: <span class="w-audio">audio</span>, <span class="w-midi">MIDI</span> or <span class="w-video">video</span>.</p>
 </div>
-</section>
-
-<!-- ========== WHAT IT IS ========== -->
-<section class="section" aria-labelledby="what-title">
-<div class="section-body">
-<div class="section-head">
-<span class="eyebrow">What it is</span>
-<h2 id="what-title">A patchbay first. Then everything a patchbay should have had.</h2>
-<p class="lead">Most PipeWire patchbays visualise and connect. ZestBay does that, and then keeps your routing alive, hosts effects inline and gives you presets, MIDI control and CPU readouts for them, all in one window.</p>
+<div>
+<h2 class="display">Wire it by hand</h2>
+<p>Drag from one port to another to connect them. Select wires and press Delete to pull them out. Drop a plugin on a wire and it is inserted right there.</p>
 </div>
-<div class="row">
-<article class="card"><span class="chip-icon" style="--chip:var(--c-audio)"><svg class="ico" aria-hidden="true"><use href="#eye"/></svg></span><h3>See</h3><p>Every device, app stream, virtual sink, plugin and subgraph as a node card, colour-coded by kind, with wires coloured by signal: audio, MIDI, video. Pan, zoom, search, auto-layout, snap to grid.</p></article>
-<article class="card"><span class="chip-icon" style="--chip:var(--c-app)"><svg class="ico" aria-hidden="true"><use href="#wire"/></svg></span><h3>Wire</h3><p>Drag port to port to connect. Select wires and press Delete. Drop a plugin onto a wire to insert it into that connection. Set a default node so new app streams land where you want them.</p></article>
-<article class="card"><span class="chip-icon" style="--chip:var(--accent)"><svg class="ico" aria-hidden="true"><use href="#refresh"/></svg></span><h3>Keep</h3><p>Connect two ports by hand and ZestBay writes a rule. Block a pair and it stays blocked, by rules or by hand. Restart, and plugins, wiring, MIDI maps, layout and viewport are all back.</p></article>
+<div>
+<h2 class="display">Never wire it twice</h2>
+<p>Connect two ports once and ZestBay writes a rule for them. Block a pair and they stay apart. Plugins, MIDI maps and layout all come back when you restart.</p>
+</div>
 </div>
 </div>
 </section>
 
-<!-- ========== HOW IT WORKS ========== -->
-<section class="section section-panel" id="how" aria-labelledby="how-title">
-<div class="section-body">
-<div class="section-head">
-<span class="eyebrow">How it works</span>
-<h2 id="how-title">Real PipeWire nodes, not a picture of them.</h2>
-<p class="lead">ZestBay doesn't sit beside PipeWire; it lives inside the graph. Plugins are filter nodes, virtual devices are loopback modules, and every wire you draw is a real link.</p>
+<!-- ========== HOW IT WORKS (graphite) ========== -->
+<section id="how" class="how dark" aria-labelledby="how-title">
+<div class="wrap">
+<div class="band-head">
+<h2 id="how-title" class="display">It lives inside the PipeWire graph.</h2>
+<p>ZestBay is not a picture of your audio. Plugins are real filter nodes, virtual devices are real loopback modules, and every wire you draw is a real link.</p>
 </div>
-<ol class="steps">
-<li class="step"><span class="num">01</span><h3>Connect to PipeWire natively</h3><p>ZestBay speaks PipeWire's own API. App streams, hardware and virtual sinks appear the moment they exist, and MIDI bridge devices split into one node per device.</p></li>
-<li class="step"><span class="num">02</span><h3>Plugins become filter nodes</h3><p>Add an LV2, VST2, VST3 or CLAP plugin and ZestBay wraps it in a PipeWire filter node, processing in the RT callback with no locks on the audio path.</p></li>
-<li class="step"><span class="num">03</span><h3>Rules learn from you</h3><p>Connect ports by hand and a connect rule is written; disconnect and it updates. Glob patterns, exclusive mode and block rules are applied whenever the graph changes.</p></li>
-<li class="step"><span class="num">04</span><h3>The session saves itself</h3><p>Plugins, parameters, state, wiring, MIDI mappings, subgraphs, virtual devices, layout and window geometry are written as JSON. Nothing to export, nothing to remember.</p></li>
-</ol>
-<div class="hood">
-<div class="hood-head"><h3>Under the hood</h3><span class="mono">typed mpsc channels · lock-free atomics · no mutexes on the audio path</span></div>
+
+<div class="chain">
+<div class="node">
+<span class="pin r" aria-hidden="true"></span>
+<h3>PipeWire, natively</h3>
+<p>ZestBay uses PipeWire's own API, not the JACK layer. Streams, hardware and virtual sinks appear the moment they exist.</p>
+</div>
+<div class="node">
+<span class="stub" aria-hidden="true"></span>
+<span class="pin l" aria-hidden="true"></span>
+<span class="pin r" aria-hidden="true"></span>
+<h3>Plugins as filter nodes</h3>
+<p>Each LV2, LADSPA, VST2, VST3 or CLAP plugin is wrapped in a PipeWire filter node and runs in the real-time callback, with no locks on the audio path.</p>
+</div>
+<div class="node">
+<span class="stub" aria-hidden="true"></span>
+<span class="pin l" aria-hidden="true"></span>
+<span class="pin r" aria-hidden="true"></span>
+<h3>Rules that learn</h3>
+<p>Wire something by hand and a rule is written. Unwire it and the rule updates. Rules run again whenever the graph changes.</p>
+</div>
+<div class="node">
+<span class="stub" aria-hidden="true"></span>
+<span class="pin l" aria-hidden="true"></span>
+<h3>A session that saves itself</h3>
+<p>Plugins, parameters, wiring, MIDI maps and layout are written to <span class="mono">~/.config/zestbay</span> as JSON. There is nothing to export.</p>
+</div>
+</div>
+
 <div class="threads">
-<span class="thread"><b>Qt/QML thread</b><span>UI, polls events</span></span>
-<span class="thread"><b>PipeWire thread</b><span>graph state, RT audio</span></span>
-<span class="thread"><b>Tray thread</b><span>D-Bus StatusNotifier</span></span>
-<span class="thread"><b>GTK thread</b><span>native LV2 UI windows</span></span>
-<span class="thread"><b>zestbay-ui-bridge</b><span>out-of-process plugin UIs</span></span>
-<span class="thread"><b>Probe processes</b><span>test-load before use</span></span>
-</div>
+<p>Six threads and processes, joined by typed channels and lock-free atomics. No mutexes on the audio path.</p>
+<dl>
+<div><dt>Qt/QML thread</dt><dd>Runs the interface</dd></div>
+<div><dt>PipeWire thread</dt><dd>Owns the graph and the real-time audio</dd></div>
+<div><dt>Tray thread</dt><dd>Serves the system tray over D-Bus</dd></div>
+<div><dt>GTK thread</dt><dd>Keeps native LV2 plugin windows alive</dd></div>
+<div><dt>zestbay-ui-bridge</dt><dd>Hosts plugin windows in their own process</dd></div>
+<div><dt>Probe processes</dt><dd>Test-load each plugin before it runs</dd></div>
+</dl>
 </div>
 </div>
 </section>
 
 <!-- ========== FEATURES ========== -->
-<section class="section" id="features" aria-labelledby="features-title">
-<div class="section-body">
-<div class="section-head">
-<span class="eyebrow">Features</span>
-<h2 id="features-title">Everything in one window.</h2>
-<p class="lead">No DAW, no separate plugin host, no config files to hand-edit.</p>
-</div>
+<section id="features" class="features" aria-labelledby="features-title">
+<div class="wrap">
+<h2 id="features-title" class="display">No DAW to keep open. No config files to edit.</h2>
 
-<article class="feature">
+<div class="feature">
 <div class="feature-text">
-<span class="tag" style="--tag:var(--c-plugin)">Plugin hosting</span>
-<h3>LV2, VST2, VST3 and CLAP. Inline.</h3>
-<p>Insert EQ, compression, reverb or anything else directly into the PipeWire graph. ZestBay creates real filter nodes with RT-safe DSP, so there's no DAW to keep open.</p>
-<ul class="checks"><li><svg class="ico ico-check" aria-hidden="true"><use href="#check"/></svg><span>Browse, search and filter every installed plugin by name, author, category or format; 25 recognised categories</span></li><li><svg class="ico ico-check" aria-hidden="true"><use href="#check"/></svg><span>Native plugin UIs: LV2 via suil (GTK2/3/4, X11, Qt5), VST2, VST3 and CLAP as embedded X11 windows, several open at once</span></li><li><svg class="ico ico-check" aria-hidden="true"><use href="#check"/></svg><span>Comprehensive LV2 extension support: URID, worker, state, log, options, buf-size, data-access, instance-access</span></li><li><svg class="ico ico-check" aria-hidden="true"><use href="#check"/></svg><span>Bypass and rename per instance; Manage plugins window for every active plugin; optional "Let idle devices sleep"</span></li></ul>
+<h3 class="display">Five plugin formats, hosted inline</h3>
+<p>Put an EQ, a compressor or a reverb straight into the graph. LV2, LADSPA, VST2, VST3 and CLAP plugins all load as real PipeWire nodes, so nothing else has to be running.</p>
+<ul>
+<li>Search every installed plugin by name, author, category or format</li>
+<li>Open the plugin's own window, several at once</li>
+<li>Bypass and rename each instance</li>
+<li>A plugin that crashes on load is skipped, not allowed to take ZestBay down</li>
+</ul>
 </div>
-<div class="feature-media">
-<div class="shot-wrap" style="max-width:560px"><picture><source srcset="assets/img/add-plugin.webp" type="image/webp"><img class="shot" src="assets/img/add-plugin.png" alt="Add plugin dialog listing installed plugins with format badges and an Add button on each row" width="1120" height="891" decoding="async" loading="lazy"></picture></div>
+<div class="panel lime">
+<picture><source srcset="assets/img/add-plugin.webp" type="image/webp"><img src="assets/img/add-plugin.png" alt="The Add plugin window listing installed plugins with their formats" width="1120" height="891" decoding="async" loading="lazy"></picture>
 </div>
-</article>
+</div>
 
-<article class="feature flip">
-<div class="feature-media">
-<div class="shot-wrap" style="max-width:520px"><picture><source srcset="assets/img/rules.webp" type="image/webp"><img class="shot" src="assets/img/rules.png" alt="Patchbay rules dialog: connect rules with source → target, port mapping counts, switches, and a blocked rule marked in red" width="1040" height="1067" decoding="async" loading="lazy"></picture></div>
+<div class="feature reverse">
+<div class="panel orange">
+<picture><source srcset="assets/img/rules.webp" type="image/webp"><img src="assets/img/rules.png" alt="The Patchbay rules window with connect rules and one blocked rule" width="1040" height="1067" decoding="async" loading="lazy"></picture>
 </div>
 <div class="feature-text">
-<span class="tag" style="--tag:var(--accent)">Patchbay rules</span>
-<h3>Wire it once. ZestBay remembers.</h3>
-<p>Rules restore your routing whenever devices or apps appear, and keep apart the things that should never meet. You rarely have to write one by hand.</p>
-<ul class="checks"><li><svg class="ico ico-check" aria-hidden="true"><use href="#check"/></svg><span>Auto-learn: connect by hand and a rule is created; disconnect and it updates</span></li><li><svg class="ico ico-check" aria-hidden="true"><use href="#check"/></svg><span>Glob matching on node names (<span class="mono">*</span>, <span class="mono">?</span>), optionally limited to a node type, with per-port-pair mappings</span></li><li><svg class="ico ico-check" aria-hidden="true"><use href="#check"/></svg><span>Exclusive mode keeps a source to exactly the connections its rules allow</span></li><li><svg class="ico ico-check" aria-hidden="true"><use href="#check"/></svg><span>Block rules: right-drag from one port to another, or right-click a wire. Blocked pairs are drawn as red ⊘ lines and win over everything</span></li><li><svg class="ico ico-check" aria-hidden="true"><use href="#check"/></svg><span>Named backups of the rule set, snapshot current connections, configurable settle time</span></li></ul>
-</div>
-</article>
-
-<div class="duo">
-<article>
-<div class="copy">
-<span class="tag" style="--tag:var(--c-virtual)">Plugin presets</span>
-<h3>Set a plugin up once. Reuse it everywhere.</h3>
-<p>Every plugin node has a preset dropdown and a Save button. Presets are stored per plugin and shared by every instance of it, and one can be the default so new instances start from it. For LV2 a preset keeps the plugin's saved state too, not just the knobs.</p>
-</div>
-<div class="well"><div class="shot-wrap" style="--max:300px"><picture><source srcset="assets/img/presets.webp" type="image/webp"><img class="" src="assets/img/presets.png" alt="Preset dropdown on a plugin node with a starred default preset, Set as default and Delete items" width="600" height="1106" decoding="async" loading="lazy"></picture></div></div>
-</article>
-<article>
-<div class="copy">
-<span class="tag" style="--tag:var(--c-midi)">MIDI control</span>
-<h3>Put your hands on it.</h3>
-<p>Click Learn on any parameter, move a knob or press a key, done. Continuous, toggle and momentary modes; per-device, channel-specific or any-channel; conflicts detected. MIDI is parsed in the audio callback with no locks, and mappings for an unplugged controller wait until it returns.</p>
-</div>
-<div class="well"><div class="shot-wrap" style="--max:360px"><picture><source srcset="assets/img/parameters.webp" type="image/webp"><img class="" src="assets/img/parameters.png" alt="Plugin parameters window with sliders, value fields and MIDI learn pills per parameter" width="720" height="869" decoding="async" loading="lazy"></picture></div></div>
-</article>
-</div>
-
-<div class="duo">
-<article class="narrow">
-<div class="copy">
-<span class="tag" style="--tag:var(--c-hardware)">CPU usage</span>
-<h3>See what each plugin costs.</h3>
-<p>A CPU usage window charts each plugin's DSP load over time, and the status bar keeps a sparkline in view, so you know which effect is eating the budget.</p>
-</div>
-<div class="shot-center"><picture><source srcset="assets/img/cpu-usage.webp" type="image/webp"><img class="shot" src="assets/img/cpu-usage.png" alt="CPU usage window: a line chart of per-plugin DSP load over time with a table of plugins beneath" width="1040" height="1046" decoding="async" loading="lazy"></picture></div>
-</article>
-<article class="wide">
-<div class="copy">
-<span class="tag neutral">Dark and light</span>
-<h3>Follows your desktop, or pick one.</h3>
-<p>Qt6/QML with a native look on KDE Plasma and other Qt desktops. Light is its own palette, not an inversion, so cards still lift off the canvas.</p>
-</div>
-<picture><source srcset="assets/img/main-light.webp" type="image/webp"><img class="shot" src="assets/img/main-light.png" alt="ZestBay main window in the light theme" width="1600" height="956" decoding="async" loading="lazy"></picture>
-</article>
-</div>
-
-<div class="more">
-<h3>And the rest</h3>
-<div class="more-grid">
-<div class="more-item"><span class="chip-icon sm" style="--chip:var(--c-subgraph)"><svg class="ico" aria-hidden="true"><use href="#subgraph"/></svg></span><div><strong>Subgraphs</strong><span>Group a plugin chain into one block. Open it, edit it, duplicate it, save it as a template and insert it again later.</span></div></div>
-<div class="more-item"><span class="chip-icon sm" style="--chip:var(--c-virtual)"><svg class="ico" aria-hidden="true"><use href="#speaker"/></svg></span><div><strong>Virtual devices</strong><span>Create virtual sinks and sources like "Comms Sink" from the canvas menu. No PipeWire config to edit.</span></div></div>
-<div class="more-item"><span class="chip-icon sm" style="--chip:var(--c-hardware)"><svg class="ico" aria-hidden="true"><use href="#mic"/></svg></span><div><strong>Show as a device</strong><span>A subgraph's output can be a microphone, so your "Mic Chain" with gate, EQ and compressor is what you pick in Discord.</span></div></div>
-<div class="more-item"><span class="chip-icon sm" style="--chip:var(--accent)"><svg class="ico" aria-hidden="true"><use href="#shield"/></svg></span><div><strong>Crash-safe loading</strong><span>Every plugin is test-loaded in a separate process first. If a restore still crashes, the next start enters safe mode with the last known-good set.</span></div></div>
-<div class="more-item"><span class="chip-icon sm" style="--chip:var(--c-app)"><svg class="ico" aria-hidden="true"><use href="#bolt"/></svg></span><div><strong>Fast startup</strong><span>Saved plugins restore without waiting for discovery. Scanning runs in the background in up to four isolated processes.</span></div></div>
-<div class="more-item"><span class="chip-icon sm" style="--chip:var(--c-plugin)"><svg class="ico" aria-hidden="true"><use href="#insert"/></svg></span><div><strong>Quick wiring</strong><span>Drag a plugin onto a wire to insert it. Set a default node so app streams without a rule are routed there.</span></div></div>
-<div class="more-item"><span class="chip-icon sm neutral" style="--chip:#c9cfd8"><svg class="ico" aria-hidden="true"><use href="#tray"/></svg></span><div><strong>System tray</strong><span>Start minimised as a background service. Rules stay active; the tray menu opens plugin UIs, rules and preferences.</span></div></div>
-<div class="more-item"><span class="chip-icon sm" style="--chip:var(--text-destructive)"><svg class="ico" aria-hidden="true"><use href="#power"/></svg></span><div><strong>Restart PipeWire</strong><span>One menu item restarts PipeWire, PipeWire-Pulse and WirePlumber when a device wedges. ZestBay reconnects and restores itself.</span></div></div>
-<div class="more-item"><span class="chip-icon sm" style="--chip:var(--c-audio)"><svg class="ico" aria-hidden="true"><use href="#search"/></svg></span><div><strong>Search, pin, snap</strong><span>Ctrl+F dims everything that doesn't match. Pin nodes so auto layout leaves them alone. Snap to grid or Shift-snap to neighbours.</span></div></div>
+<h3 class="display">Rules you never have to write</h3>
+<p>ZestBay watches what you connect and turns it into rules. When a device or app shows up again, its wiring is already there.</p>
+<ul>
+<li>Match node names with <span class="mono">*</span> and <span class="mono">?</span> patterns</li>
+<li>Exclusive mode keeps a source to exactly the connections its rules allow</li>
+<li>Block rules keep two things apart, even from your own mouse</li>
+<li>Save named backups of the whole rule set</li>
+</ul>
 </div>
 </div>
 
+<div class="pairs">
+<div>
+<div class="well"><picture><source srcset="assets/img/presets.webp" type="image/webp"><img src="assets/img/presets.png" alt="A preset menu open on a plugin node" width="600" height="1106" decoding="async" loading="lazy"></picture></div>
+<div class="pair-text">
+<h3 class="display">Set a plugin up once</h3>
+<p>Save a plugin's settings as a preset and pick it on any other copy of that plugin. Make one the default and every new copy starts from it.</p>
+</div>
+</div>
+<div>
+<div class="well"><picture><source srcset="assets/img/parameters.webp" type="image/webp"><img src="assets/img/parameters.png" alt="The parameters window with a slider, value and MIDI button for each parameter" width="720" height="869" decoding="async" loading="lazy"></picture></div>
+<div class="pair-text">
+<h3 class="display">Map a knob in one click</h3>
+<p>Click Learn on a parameter, then move a knob or press a key on your MIDI controller. Mappings can be continuous, toggle or momentary, and they wait for an unplugged controller to come back.</p>
+</div>
+</div>
+<div>
+<div class="well"><picture><source srcset="assets/img/cpu-usage.webp" type="image/webp"><img src="assets/img/cpu-usage.png" alt="The CPU usage window charting the load of each plugin over time" width="1040" height="1046" decoding="async" loading="lazy"></picture></div>
+<div class="pair-text">
+<h3 class="display">See what each plugin costs</h3>
+<p>A CPU window charts every plugin's load over time, so you can tell which effect is eating the budget.</p>
+</div>
+</div>
+<div>
+<div class="well"><picture><source srcset="assets/img/main-light.webp" type="image/webp"><img class="wide" src="assets/img/main-light.png" alt="The ZestBay window in its light theme" width="1600" height="956" decoding="async" loading="lazy"></picture></div>
+<div class="pair-text">
+<h3 class="display">Dark, light or whatever your desktop says</h3>
+<p>ZestBay follows your desktop theme, or you can pick one. It looks at home on KDE Plasma and other Qt desktops.</p>
+</div>
+</div>
+</div>
+
+<div class="box">
+<h3 class="display">Also in the box</h3>
+<dl>
+<div><dt>Sessions</dt><dd>Keep whole setups as named sessions and switch between them live from the toolbar, or start one with <span class="mono">--session</span>.</dd></div>
+<div><dt>OSC control</dt><dd>Switch plugins on and off, set parameters, apply presets and change session from another device over OSC. Links stay out of reach.</dd></div>
+<div><dt>Subgraphs</dt><dd>Group a chain of plugins into one block, open it to edit, and save it as a template.</dd></div>
+<div><dt>Virtual devices</dt><dd>Create virtual sinks and sources from the canvas menu.</dd></div>
+<div><dt>Chains as devices</dt><dd>Offer a subgraph to apps as a microphone, and pick your "Mic Chain" in Discord.</dd></div>
+<div><dt>Port names</dt><dd>Rename a plugin's ports from the right-click menu. The names are saved with the plugin and with its presets.</dd></div>
+<div><dt>Safe mode</dt><dd>If restoring a session crashes, the next start offers the last plugin set that worked.</dd></div>
+<div><dt>Fast startup</dt><dd>Saved plugins load straight away while the plugin scan runs in the background.</dd></div>
+<div><dt>Default node</dt><dd>Choose where app streams go when no rule claims them.</dd></div>
+<div><dt>System tray</dt><dd>Start minimised and keep your rules running in the background.</dd></div>
+<div><dt>Restart PipeWire</dt><dd>One menu item restarts the audio stack when a device wedges. ZestBay reconnects itself.</dd></div>
+<div><dt>Search and layout</dt><dd>Find nodes and ports with Ctrl+F, pin nodes in place, snap to a grid, or let auto layout follow the signal.</dd></div>
+<div><dt>Idle devices sleep</dt><dd>Optionally let a device suspend when it is only linked through plugins.</dd></div>
+<div><dt>Unnamed streams</dt><dd>Streams with no name of their own, such as pavucontrol's level meters, stay off the canvas.</dd></div>
+</dl>
+</div>
 </div>
 </section>
 
 <!-- ========== COMPARE ========== -->
-<section class="section section-panel" id="compare" aria-labelledby="compare-title">
-<div class="section-body gap-40">
-<div class="section-head">
-<span class="eyebrow">Compared</span>
-<h2 id="compare-title">How ZestBay stacks up.</h2>
-<p class="lead">qpwgraph, Carla and Helvum are all good tools. This is where ZestBay sits between them: a patchbay that goes further than a graph editor without becoming a DAW.</p>
+<section id="compare" class="compare" aria-labelledby="compare-title">
+<div class="wrap">
+<div class="band-head">
+<h2 id="compare-title" class="display">ZestBay next to the others</h2>
+<p>qpwgraph, Carla and Helvum are good tools. ZestBay sits between them: more than a graph editor, less than a full plugin host.</p>
 </div>
-<div class="table-wrap" tabindex="0" role="region" aria-label="Feature comparison, scrolls sideways on small screens">
-<table class="compare">
+<div class="table-box">
+<table>
 <thead>
 <tr>
 <th scope="col">Feature</th>
@@ -246,69 +246,206 @@
 </tr>
 </thead>
 <tbody>
-<tr><th scope="row">Native PipeWire API</th><td class="zb"><span class="yes"><svg class="ico ico-check ico-check-sm" aria-hidden="true"><use href="#check"/></svg><span>Yes</span></span></td><td>Yes</td><td>Via the JACK layer</td><td>Yes</td></tr>
-<tr><th scope="row">Inline plugin hosting</th><td class="zb"><span class="yes"><svg class="ico ico-check ico-check-sm" aria-hidden="true"><use href="#check"/></svg><span>Real PipeWire filter nodes</span></span></td><td class="none">—</td><td>Yes, rack or patchbay</td><td class="none">—</td></tr>
-<tr><th scope="row">Plugin formats</th><td class="zb mono">LV2 · VST2 · VST3 · CLAP</td><td class="none">—</td><td class="mono">LV2 · VST2 · CLAP · LADSPA + more</td><td class="none">—</td></tr>
-<tr><th scope="row">Native plugin UIs</th><td class="zb"><span class="yes"><svg class="ico ico-check ico-check-sm" aria-hidden="true"><use href="#check"/></svg><span>GTK, X11, Qt5 via suil; embedded X11</span></span></td><td class="none">—</td><td>Yes</td><td class="none">—</td></tr>
-<tr><th scope="row">Presets on the node, shared per plugin</th><td class="zb"><span class="yes"><svg class="ico ico-check ico-check-sm" aria-hidden="true"><use href="#check"/></svg><span>With a default for new instances</span></span></td><td class="none">—</td><td>Saved with the project</td><td class="none">—</td></tr>
-<tr><th scope="row">MIDI learn on any parameter</th><td class="zb"><span class="yes"><svg class="ico ico-check ico-check-sm" aria-hidden="true"><use href="#check"/></svg><span>Continuous, toggle, momentary</span></span></td><td class="none">—</td><td>Yes, per parameter</td><td class="none">—</td></tr>
-<tr><th scope="row">Connect rules learned from manual wiring</th><td class="zb"><span class="yes"><svg class="ico ico-check ico-check-sm" aria-hidden="true"><use href="#check"/></svg><span>Glob patterns, exclusive mode</span></span></td><td>Saved patchbay, exclusive mode</td><td>Saved in project</td><td class="none">—</td></tr>
-<tr><th scope="row">Block rules</th><td class="zb"><span class="yes"><svg class="ico ico-check ico-check-sm" aria-hidden="true"><use href="#check"/></svg><span>Keep a source from ever reaching a target</span></span></td><td class="none">—</td><td class="none">—</td><td class="none">—</td></tr>
-<tr><th scope="row">Subgraphs and virtual devices</th><td class="zb"><span class="yes"><svg class="ico ico-check ico-check-sm" aria-hidden="true"><use href="#check"/></svg><span>Group chains, expose them as devices</span></span></td><td class="none">—</td><td class="none">—</td><td class="none">—</td></tr>
-<tr><th scope="row">Per-plugin CPU load</th><td class="zb"><span class="yes"><svg class="ico ico-check ico-check-sm" aria-hidden="true"><use href="#check"/></svg><span>Chart over time</span></span></td><td class="none">—</td><td>Global DSP load only</td><td class="none">—</td></tr>
-<tr><th scope="row">Crash-safe plugin loading</th><td class="zb"><span class="yes"><svg class="ico ico-check ico-check-sm" aria-hidden="true"><use href="#check"/></svg><span>Probe process + safe mode</span></span></td><td class="none">n/a</td><td>Optional plugin bridges</td><td class="none">n/a</td></tr>
-<tr><th scope="row">Scope</th><td class="zb">Patchbay with inline effects</td><td>Graph editor</td><td>Full plugin host with transport and rack</td><td>Graph editor</td></tr>
-<tr><th scope="row">Runtime dependencies</th><td class="zb mono">Qt6 · PipeWire · lilv/suil</td><td class="mono">Qt6 (Qt5 fallback)</td><td class="mono">Python · PyQt5/6 (JACK optional)</td><td class="mono">GTK4 · libadwaita</td></tr>
-<tr><th scope="row">Written in</th><td class="zb mono">Rust</td><td class="mono">C++</td><td class="mono">C++ / Python</td><td class="mono">Rust</td></tr>
+<tr>
+<th scope="row">Native PipeWire API</th>
+<td class="zb"><span class="yn"><span class="dot" aria-hidden="true"></span>Yes</span></td>
+<td><span class="yn"><span class="dot" aria-hidden="true"></span>Yes</span></td>
+<td class="txt">Through the JACK layer</td>
+<td><span class="yn"><span class="dot" aria-hidden="true"></span>Yes</span></td>
+</tr>
+<tr>
+<th scope="row">Hosts plugins inline</th>
+<td class="zb"><span class="yn"><span class="dot" aria-hidden="true"></span>As PipeWire filter nodes</span></td>
+<td class="no"><span class="yn"><span class="dot off" aria-hidden="true"></span>No</span></td>
+<td><span class="yn"><span class="dot" aria-hidden="true"></span>In a rack</span></td>
+<td class="no"><span class="yn"><span class="dot off" aria-hidden="true"></span>No</span></td>
+</tr>
+<tr>
+<th scope="row">Plugin formats</th>
+<td class="zb">LV2, LADSPA, VST2, VST3, CLAP</td>
+<td class="no">None</td>
+<td class="txt">LADSPA, DSSI, LV2, VST2, VST3, AU</td>
+<td class="no">None</td>
+</tr>
+<tr>
+<th scope="row">Opens the plugin's own window</th>
+<td class="zb"><span class="yn"><span class="dot" aria-hidden="true"></span>Yes</span></td>
+<td class="no"><span class="yn"><span class="dot off" aria-hidden="true"></span>No</span></td>
+<td><span class="yn"><span class="dot" aria-hidden="true"></span>Yes</span></td>
+<td class="no"><span class="yn"><span class="dot off" aria-hidden="true"></span>No</span></td>
+</tr>
+<tr>
+<th scope="row">Presets on the node</th>
+<td class="zb"><span class="yn"><span class="dot" aria-hidden="true"></span>Shared by plugin type</span></td>
+<td class="no"><span class="yn"><span class="dot off" aria-hidden="true"></span>No</span></td>
+<td class="txt">Kept in project files</td>
+<td class="no"><span class="yn"><span class="dot off" aria-hidden="true"></span>No</span></td>
+</tr>
+<tr>
+<th scope="row">MIDI learn on any parameter</th>
+<td class="zb"><span class="yn"><span class="dot" aria-hidden="true"></span>Yes</span></td>
+<td class="no"><span class="yn"><span class="dot off" aria-hidden="true"></span>No</span></td>
+<td><span class="yn"><span class="dot" aria-hidden="true"></span>Yes</span></td>
+<td class="no"><span class="yn"><span class="dot off" aria-hidden="true"></span>No</span></td>
+</tr>
+<tr>
+<th scope="row">Rules learned from your wiring</th>
+<td class="zb"><span class="yn"><span class="dot" aria-hidden="true"></span>Yes</span></td>
+<td class="txt">Saved patchbay, no learning</td>
+<td class="txt">Saved in the project</td>
+<td class="no"><span class="yn"><span class="dot off" aria-hidden="true"></span>No</span></td>
+</tr>
+<tr>
+<th scope="row">Block rules</th>
+<td class="zb"><span class="yn"><span class="dot" aria-hidden="true"></span>Yes</span></td>
+<td class="no"><span class="yn"><span class="dot off" aria-hidden="true"></span>No</span></td>
+<td class="no"><span class="yn"><span class="dot off" aria-hidden="true"></span>No</span></td>
+<td class="no"><span class="yn"><span class="dot off" aria-hidden="true"></span>No</span></td>
+</tr>
+<tr>
+<th scope="row">Subgraphs and virtual devices</th>
+<td class="zb"><span class="yn"><span class="dot" aria-hidden="true"></span>Yes</span></td>
+<td class="no"><span class="yn"><span class="dot off" aria-hidden="true"></span>No</span></td>
+<td class="no"><span class="yn"><span class="dot off" aria-hidden="true"></span>No</span></td>
+<td class="no"><span class="yn"><span class="dot off" aria-hidden="true"></span>No</span></td>
+</tr>
+<tr>
+<th scope="row">Switchable sessions</th>
+<td class="zb"><span class="yn"><span class="dot" aria-hidden="true"></span>Live, from the toolbar or OSC</span></td>
+<td class="txt">Patchbay files, connections only</td>
+<td class="txt">Project files</td>
+<td class="no"><span class="yn"><span class="dot off" aria-hidden="true"></span>No</span></td>
+</tr>
+<tr>
+<th scope="row">OSC remote control</th>
+<td class="zb"><span class="yn"><span class="dot" aria-hidden="true"></span>Plugins and sessions</span></td>
+<td class="no"><span class="yn"><span class="dot off" aria-hidden="true"></span>No</span></td>
+<td><span class="yn"><span class="dot" aria-hidden="true"></span>Yes</span></td>
+<td class="no"><span class="yn"><span class="dot off" aria-hidden="true"></span>No</span></td>
+</tr>
+<tr>
+<th scope="row">CPU load per plugin</th>
+<td class="zb"><span class="yn"><span class="dot" aria-hidden="true"></span>Charted over time</span></td>
+<td class="no"><span class="yn"><span class="dot off" aria-hidden="true"></span>No</span></td>
+<td><span class="yn"><span class="dot" aria-hidden="true"></span>Yes</span></td>
+<td class="no"><span class="yn"><span class="dot off" aria-hidden="true"></span>No</span></td>
+</tr>
+<tr>
+<th scope="row">Survives a crashing plugin</th>
+<td class="zb">Test-loads each plugin, with a safe mode</td>
+<td class="no">Hosts no plugins</td>
+<td class="txt">Optional plugin bridges</td>
+<td class="no">Hosts no plugins</td>
+</tr>
+<tr>
+<th scope="row">What it is</th>
+<td class="zb">A patchbay with inline effects</td>
+<td class="txt">A graph editor</td>
+<td class="txt">A full plugin host with transport</td>
+<td class="txt">A graph editor</td>
+</tr>
+<tr>
+<th scope="row">Written in</th>
+<td class="zb">Rust</td>
+<td class="txt">C++</td>
+<td class="txt">C++ and Python</td>
+<td class="txt">Rust</td>
+</tr>
 </tbody>
 </table>
 </div>
-<p class="footnote">Checked against each project's own documentation and source in November 2026; a dash means no such feature was found. If something here is out of date, <a href="https://github.com/lemonxah/zestbay/issues">open an issue</a>.</p>
-<aside class="aside">
-<div class="aside-text">
-<h3>Deliberately not a DAW.</h3>
-<p>There is no transport, no MIDI sequencing, no rack view. If you need a DAW-style host with MIDI tracks and a timeline, use Carla. If you need persistent audio routing with inline effects and a hardware knob on the compressor, ZestBay is simpler and faster to set up.</p>
+<p class="footnote">A filled pin means yes and a hollow pin means no, the same way ZestBay draws connected and free ports. The other columns are mostly written from general knowledge of each project and not checked against their documentation; only the OSC, saved-patchbay and Carla plugin-format cells were looked up; <a href="https://github.com/lemonxah/zestbay/issues">open an issue</a> if a cell is out of date.</p>
+<div class="closing">
+<h3 class="display">It is not a DAW, on purpose.</h3>
+<p>ZestBay has no transport, no MIDI sequencer and no rack. If you need tracks and a timeline, use Carla. If you need routing that stays put, effects on the wires and a hardware knob on the compressor, ZestBay is the shorter path.</p>
 </div>
-<div class="chips">
-<span class="chip">no transport</span><span class="chip">no sequencer</span><span class="chip">no Python</span><span class="chip">no config files to hand-edit</span>
-</div>
-</aside>
 </div>
 </section>
 
-<!-- ========== INSTALL ========== -->
-<section class="section" id="install" aria-labelledby="install-title">
-<div class="section-body gap-40">
-<div class="section-head">
-<span class="eyebrow">Install</span>
-<h2 id="install-title">In the repos you already use.</h2>
-<p class="lead">ZestBay finds the plugins your distro installs automatically. Add your own to <span class="mono">~/.lv2</span>, <span class="mono">~/.vst3</span> or <span class="mono">~/.clap</span>; Windows VST2 works through Wine and yabridge.</p>
+<!-- ========== INSTALL (orange field) ========== -->
+<section id="install" class="install" aria-labelledby="install-title">
+<div class="wrap">
+<div class="band-head">
+<h2 id="install-title" class="display">Install ZestBay</h2>
+<p>ZestBay finds the plugins your distro installs. Put your own in <span class="mono">~/.lv2</span>, <span class="mono">~/.vst3</span> or <span class="mono">~/.clap</span>. Windows VST2 plugins work through Wine and yabridge.</p>
+</div>
+<div class="rows">
+<div class="row">
+<div class="row-label"><h3 class="display">Arch Linux</h3><span>In the official extra repository</span></div>
+<pre><code>sudo pacman -S zestbay</code></pre>
 </div>
 <div class="row">
-<article class="install-card"><div class="install-head"><h3>Arch Linux</h3><span class="mono">official extra repo</span></div><pre><code>sudo pacman -S zestbay</code></pre><p>No longer on the AUR; the extra package replaces it.</p></article>
-<article class="install-card"><div class="install-head"><h3>Ubuntu 24.04 / 26.04</h3><span class="mono">Launchpad PPA</span></div><pre><code>sudo add-apt-repository ppa:lemonxah/tools
+<div class="row-label"><h3 class="display">Ubuntu 24.04 and 26.04</h3><span>Also Linux Mint and Pop!_OS, from the PPA</span></div>
+<pre><code>sudo add-apt-repository ppa:lemonxah/tools
 sudo apt update
-sudo apt install zestbay</code></pre><p>Also Linux Mint and Pop!_OS. Updates arrive through <span class="mono">apt upgrade</span>.</p></article>
-<article class="install-card"><div class="install-head"><h3>Debian 12 / 13</h3><span class="mono">.deb per release</span></div><pre><code>sudo apt install ./zestbay_&lt;version&gt;-debian13_amd64.deb</code></pre><p>Download the build for bookworm or trixie from the <a href="https://github.com/lemonxah/zestbay/releases/latest">latest release</a>.</p></article>
-<article class="install-card"><div class="install-head"><h3>Flatpak</h3><span class="mono">io.github.lemonxah.ZestBay</span></div><pre><code>just flatpak
-just flatpak-bundle</code></pre><p>Sandboxed: install free plugins from Flathub's LinuxAudio.Plugins extensions; copy paid ones into the app's plugin folder.</p></article>
-<article class="install-card"><div class="install-head"><h3>Fedora, Nix</h3><span class="mono">packaging in the repo</span></div><pre><code>pkg/rpm/
-pkg/nix/</code></pre><p>RPM spec and Nix expression ship in the repository.</p></article>
-<article class="install-card"><div class="install-head"><h3>From source</h3><span class="mono">Rust stable</span></div><pre><code>cargo build --release
-just install</code></pre><p>Build: Rust, Clang, CMake, pkg-config, Qt6 headers. Runtime: PipeWire, Qt6 Base + Declarative, lilv/LV2/suil, libX11, D-Bus.</p></article>
+sudo apt install zestbay</code></pre>
+</div>
+<div class="row">
+<div class="row-label"><h3 class="display">Debian 12 and 13</h3><span>Download the .deb from the <a href="https://github.com/lemonxah/zestbay/releases/latest">latest release</a></span></div>
+<pre><code>sudo apt install ./zestbay_&lt;version&gt;-debian13_amd64.deb</code></pre>
+</div>
+<div class="row">
+<div class="row-label"><h3 class="display">Flatpak</h3><span>Build the bundle from the repository</span></div>
+<pre><code>just flatpak-bundle</code></pre>
+</div>
+<div class="row">
+<div class="row-label"><h3 class="display">From source</h3><span>Needs Rust 1.88 or newer, Clang, CMake and the Qt6 headers, so install the packages below first. Fedora and Nix packaging is in <span class="mono">pkg/</span></span></div>
+<pre><code>git clone https://github.com/lemonxah/zestbay
+cd zestbay
+just install</code></pre>
+</div>
+<div class="row">
+<div class="row-label"><h3 class="display">Build packages: Debian</h3><span>Install Rust with <a href="https://rustup.rs">rustup</a>, because the packaged rustc is too old on Debian 13. The QML modules are needed when ZestBay runs</span></div>
+<pre><code>sudo apt install build-essential pkg-config cmake clang libclang-dev \
+    libpipewire-0.3-dev qt6-base-dev qt6-base-private-dev qt6-declarative-dev \
+    qt6-declarative-private-dev liblilv-dev lv2-dev libsuil-dev libdbus-1-dev \
+    libx11-dev libgtk-3-dev
+
+sudo apt install qml6-module-qtquick qml6-module-qtquick-controls \
+    qml6-module-qtquick-layouts qml6-module-qtquick-shapes \
+    qml6-module-qtquick-templates qml6-module-qtquick-window \
+    qml6-module-qtqml-models qml6-module-qtqml-workerscript</code></pre>
+</div>
+<div class="row">
+<div class="row-label"><h3 class="display">Build packages: Ubuntu</h3><span>The default rustc is too old on Ubuntu 24.04. Use <a href="https://rustup.rs">rustup</a>, or the versioned Rust packages the PPA build accepts. The QML modules are needed when ZestBay runs</span></div>
+<pre><code># Rust: versioned packages (or rustup)
+sudo apt install rustc-1.91 cargo-1.91
+
+sudo apt install build-essential pkg-config cmake clang libclang-dev \
+    libpipewire-0.3-dev qt6-base-dev qt6-base-private-dev qt6-declarative-dev \
+    qt6-declarative-private-dev liblilv-dev lv2-dev libsuil-dev libdbus-1-dev \
+    libx11-dev libgtk-3-dev
+
+sudo apt install qml6-module-qtquick qml6-module-qtquick-controls \
+    qml6-module-qtquick-layouts qml6-module-qtquick-shapes \
+    qml6-module-qtquick-templates qml6-module-qtquick-window \
+    qml6-module-qtqml-models qml6-module-qtqml-workerscript</code></pre>
+</div>
+<div class="row">
+<div class="row-label"><h3 class="display">Build packages: Fedora</h3><span>Includes Rust and Cargo</span></div>
+<pre><code>sudo dnf install rust cargo clang cmake pkgconf-pkg-config pipewire-devel \
+    qt6-qtbase-devel qt6-qtdeclarative-devel lilv-devel lv2-devel suil-devel \
+    gtk3-devel libX11-devel dbus-devel</code></pre>
+</div>
+<div class="row">
+<div class="row-label"><h3 class="display">Build packages: Arch Linux</h3><span>Leave out <span class="mono">rust</span> if you manage your toolchain with rustup</span></div>
+<pre><code>sudo pacman -S --needed base-devel rust clang cmake pipewire qt6-base \
+    qt6-declarative lilv lv2 suil gtk3 libx11 dbus</code></pre>
+</div>
 </div>
 </div>
 </section>
 
 </main>
 
-<footer class="site-footer">
-<div class="footer-inner">
-<div class="footer-brand">
-<img src="assets/logo/zestbay-logo.svg" alt="ZestBay" width="168" height="128">
-<span class="mono"><span class="ver" hidden><span data-version></span> · </span>MIT License · Rust + Qt6/QML</span>
+<!-- ========== FOOTER ========== -->
+<footer class="site-footer dark">
+<div class="wrap">
+<div class="foot-brand">
+<img src="assets/logo/zestbay-logo.svg" alt="ZestBay" width="150" height="114">
+<span><span class="ver" hidden><span data-version></span>. </span>MIT licensed.</span>
 </div>
-<nav class="footer-links" aria-label="Project links">
+<nav class="foot-links" aria-label="Project links">
 <a href="https://github.com/lemonxah/zestbay">GitHub</a>
 <a href="https://github.com/lemonxah/zestbay/releases/latest">Releases</a>
 <a href="https://github.com/lemonxah/zestbay/issues">Issues</a>

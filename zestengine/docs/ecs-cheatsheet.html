@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-49b9e9f7.js";
+            window.path_to_searchindex_js = "searchindex-4e99785a.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-ffb240a5.js"></script>
@@ -197,8 +197,8 @@ with the <a href="ecs-tutorial.html">tutorial</a>.</p>
 </div>
 <h2 id="skeleton-component-system-registration"><a class="header" href="#skeleton-component-system-registration">Skeleton: component, system, registration</a></h2>
 <pre><code class="language-rust">use serde::{Deserialize, Serialize};
-use zestengine_core::ecs::{EcsMoveHost, Stage, run_ordered};
-use zestengine_core::{ComponentRegistry, MoveHost, TypedComponent};
+use zestengine_core::ecs::{ObjectContext, Stage, run_ordered};
+use zestengine_core::{ComponentRegistry, MotionContext, TypedComponent};
 
 #[derive(Serialize, Deserialize)]
 pub struct Spinner {
@@ -216,9 +216,9 @@ impl TypedComponent for Spinner {
 }
 
 impl Spinner {
-    fn update(&amp;mut self, host: &amp;mut EcsMoveHost&lt;'_, '_&gt;) {
-        self.elapsed += host.dt;
-        // host.translation(), host.set_translation(..), host.input, host.emit(..), host.destroy_self() ...
+    fn update(&amp;mut self, obj: &amp;mut ObjectContext&lt;'_, '_&gt;) {
+        self.elapsed += obj.dt;
+        // obj.translation(), obj.set_translation(..), obj.input, obj.emit(..), obj.destroy_self() ...
     }
 }
 
@@ -254,10 +254,10 @@ Use <code>register_system_for::&lt;T&gt;</code> by default: it costs nothing whi
 <tr><th>Immediate (visible to later systems this stage)</th><th>Queued (applied when the stage ends)</th></tr>
 </thead>
 <tbody>
-<tr><td>Reads: <code>host.get::&lt;T&gt;(t)</code>, <code>host.position_of(t)</code>, <code>host.raycast(..)</code></td><td><code>host.spawn_entity(..)</code>, <code>spawn_prefab</code>, <code>instantiate</code> (the id returns at once, the object exists next stage)</td></tr>
-<tr><td><code>host.edit::&lt;T&gt;(t, |c| ..)</code></td><td><code>host.destroy(t)</code>, <code>host.destroy_self()</code>, <code>host.set_active(t, ..)</code></td></tr>
-<tr><td><code>host.set_translation(..)</code>, <code>set_world_position(..)</code></td><td><code>host.add_impulse(..)</code>, <code>set_velocity(..)</code>, <code>move_character(..)</code></td></tr>
-<tr><td></td><td><code>host.play_sound_at(..)</code>, <code>load_scene(..)</code>, <code>save_value(..)</code>, <code>net_spawn(..)</code></td></tr>
+<tr><td>Reads: <code>obj.get::&lt;T&gt;(t)</code>, <code>obj.position_of(t)</code>, <code>obj.raycast(..)</code></td><td><code>obj.spawn_entity(..)</code>, <code>spawn_prefab</code>, <code>instantiate</code> (the id returns at once, the object exists next stage)</td></tr>
+<tr><td><code>obj.edit::&lt;T&gt;(t, |c| ..)</code></td><td><code>obj.destroy(t)</code>, <code>obj.destroy_self()</code>, <code>obj.set_active(t, ..)</code></td></tr>
+<tr><td><code>obj.set_translation(..)</code>, <code>set_world_position(..)</code></td><td><code>obj.add_impulse(..)</code>, <code>set_velocity(..)</code>, <code>move_character(..)</code></td></tr>
+<tr><td></td><td><code>obj.play_sound_at(..)</code>, <code>load_scene(..)</code>, <code>save_value(..)</code>, <code>net_spawn(..)</code></td></tr>
 </tbody>
 </table>
 </div>
@@ -270,24 +270,24 @@ Use <code>register_system_for::&lt;T&gt;</code> by default: it costs nothing whi
 <tr><th>I want to …</th><th>Write</th><th>Where</th></tr>
 </thead>
 <tbody>
-<tr><td>Move the object I am on</td><td><code>host.set_translation(host.translation() + step * host.dt)</code></td><td><a href="ENGINE_API.html#moving-things">Moving things</a></td></tr>
-<tr><td>Move it in world space</td><td><code>host.set_world_position(v)</code></td><td><a href="ENGINE_API.html#moving-things">Moving things</a></td></tr>
-<tr><td>Read player input</td><td><code>host.input.pressed("Fire")</code>, <code>down</code>, <code>released</code>, <code>axis</code>, <code>axis2("Move")</code></td><td><a href="ECS.html#input">Input</a></td></tr>
-<tr><td>Point at another object</td><td>an <code>ObjectRef</code> field, then <code>host.position_of(self.target)</code></td><td><a href="ECS.html#talking-to-other-objects">Talking to other objects</a></td></tr>
-<tr><td>Read or change another object's component</td><td><code>host.get::&lt;T&gt;(t)</code>, <code>host.edit::&lt;T&gt;(t, |c| ..)</code></td><td><a href="ECS.html#talking-to-other-objects">Talking to other objects</a></td></tr>
-<tr><td>Find objects</td><td><code>host.objects_with::&lt;T&gt;()</code>, <code>host.find_object("Player")</code></td><td><a href="ENGINE_API.html#finding-and-reading-other-objects">Finding and reading</a></td></tr>
-<tr><td>Broadcast something happened</td><td><code>host.emit(MyEvent { .. })</code></td><td><a href="ECS.html#broadcast-events">Broadcast events</a></td></tr>
-<tr><td>React to something that happened</td><td><code>ctx.events::&lt;MyEvent&gt;()</code> / <code>host.events::&lt;MyEvent&gt;()</code></td><td><a href="ECS.html#broadcast-events">Broadcast events</a></td></tr>
+<tr><td>Move the object I am on</td><td><code>obj.set_translation(obj.translation() + step * obj.dt)</code></td><td><a href="ENGINE_API.html#moving-things">Moving things</a></td></tr>
+<tr><td>Move it in world space</td><td><code>obj.set_world_position(v)</code></td><td><a href="ENGINE_API.html#moving-things">Moving things</a></td></tr>
+<tr><td>Read player input</td><td><code>obj.input.pressed("Fire")</code>, <code>down</code>, <code>released</code>, <code>axis</code>, <code>axis2("Move")</code></td><td><a href="ECS.html#input">Input</a></td></tr>
+<tr><td>Point at another object</td><td>an <code>ObjectRef</code> field, then <code>obj.position_of(self.target)</code></td><td><a href="ECS.html#talking-to-other-objects">Talking to other objects</a></td></tr>
+<tr><td>Read or change another object's component</td><td><code>obj.get::&lt;T&gt;(t)</code>, <code>obj.edit::&lt;T&gt;(t, |c| ..)</code></td><td><a href="ECS.html#talking-to-other-objects">Talking to other objects</a></td></tr>
+<tr><td>Find objects</td><td><code>obj.objects_with::&lt;T&gt;()</code>, <code>obj.find_object("Player")</code></td><td><a href="ENGINE_API.html#finding-and-reading-other-objects">Finding and reading</a></td></tr>
+<tr><td>Broadcast something happened</td><td><code>obj.emit(MyEvent { .. })</code></td><td><a href="ECS.html#broadcast-events">Broadcast events</a></td></tr>
+<tr><td>React to something that happened</td><td><code>ctx.events::&lt;MyEvent&gt;()</code> / <code>obj.events::&lt;MyEvent&gt;()</code></td><td><a href="ECS.html#broadcast-events">Broadcast events</a></td></tr>
 <tr><td>React to a collision or trigger</td><td>match <code>SceneEvent::Contact { .. }</code> in <code>Stage::Events</code></td><td><a href="ECS.html#scene-events-contacts-and-animation-markers">Scene events</a></td></tr>
-<tr><td>Spawn a registered entity</td><td><code>host.spawn_entity("Crate", pos, rot)</code></td><td><a href="ECS.html#entities">Entities</a></td></tr>
-<tr><td>Spawn a prefab</td><td><code>host.spawn_prefab("prefabs/enemy.prefab", pos, rot)</code></td><td><a href="ECS.html#spawning-and-destroying">Spawning and destroying</a></td></tr>
-<tr><td>Remove an object</td><td><code>host.destroy_self()</code> / <code>host.destroy(t)</code></td><td><a href="ECS.html#spawning-and-destroying">Spawning and destroying</a></td></tr>
-<tr><td>Cast a ray</td><td><code>host.raycast(origin, dir, max)</code> → <code>Option&lt;RayHit&gt;</code></td><td><a href="ECS.html#physics-and-contacts">Physics and contacts</a></td></tr>
-<tr><td>Push a rigid body</td><td><code>host.add_impulse(t, v)</code></td><td><a href="ENGINE_API.html#physics">Physics</a></td></tr>
-<tr><td>Play a sound</td><td><code>host.play_sound_at("audio/pop.ogg", pos, 1.0)</code></td><td><a href="ENGINE_API.html#audio">Audio</a></td></tr>
-<tr><td>Change UI text</td><td><code>host.edit::&lt;UiText&gt;(id, move |ui| ui.text = text)</code></td><td><a href="ECS.html#showing-state-in-the-ui">Showing state in the UI</a></td></tr>
-<tr><td>Pause or slow time</td><td><code>host.set_time_scale(0.0)</code></td><td><a href="ENGINE_API.html#pause-menu">Pause menu</a></td></tr>
-<tr><td>Switch scene</td><td><code>host.load_scene("scenes/level2.scene")</code></td><td><a href="ENGINE_API.html#scenes-saves-and-settings">Scenes, saves and settings</a></td></tr>
+<tr><td>Spawn a registered entity</td><td><code>obj.spawn_entity("Crate", pos, rot)</code></td><td><a href="ECS.html#entities">Entities</a></td></tr>
+<tr><td>Spawn a prefab</td><td><code>obj.spawn_prefab("prefabs/enemy.prefab", pos, rot)</code></td><td><a href="ECS.html#spawning-and-destroying">Spawning and destroying</a></td></tr>
+<tr><td>Remove an object</td><td><code>obj.destroy_self()</code> / <code>obj.destroy(t)</code></td><td><a href="ECS.html#spawning-and-destroying">Spawning and destroying</a></td></tr>
+<tr><td>Cast a ray</td><td><code>obj.raycast(origin, dir, max)</code> → <code>Option&lt;RayHit&gt;</code></td><td><a href="ECS.html#physics-and-contacts">Physics and contacts</a></td></tr>
+<tr><td>Push a rigid body</td><td><code>obj.add_impulse(t, v)</code></td><td><a href="ENGINE_API.html#physics">Physics</a></td></tr>
+<tr><td>Play a sound</td><td><code>obj.play_sound_at("audio/pop.ogg", pos, 1.0)</code></td><td><a href="ENGINE_API.html#audio">Audio</a></td></tr>
+<tr><td>Change UI text</td><td><code>obj.edit::&lt;UiText&gt;(id, move |ui| ui.text = text)</code></td><td><a href="ECS.html#showing-state-in-the-ui">Showing state in the UI</a></td></tr>
+<tr><td>Pause or slow time</td><td><code>obj.set_time_scale(0.0)</code></td><td><a href="ENGINE_API.html#pause-menu">Pause menu</a></td></tr>
+<tr><td>Switch scene</td><td><code>obj.load_scene("scenes/level2.scene")</code></td><td><a href="ENGINE_API.html#scenes-saves-and-settings">Scenes, saves and settings</a></td></tr>
 <tr><td>Make a function callable from the editor</td><td><code>actions()</code> / <code>invoke_action(..)</code> on the component</td><td><a href="ECS.html#actions-and-properties">Actions and properties</a></td></tr>
 <tr><td>Test a system</td><td><code>SceneWorld</code> + <code>registry.run_systems(..)</code></td><td><a href="ECS.html#testing-systems">Testing systems</a></td></tr>
 </tbody>
@@ -302,7 +302,7 @@ Use <code>register_system_for::&lt;T&gt;</code> by default: it costs nothing whi
 </thead>
 <tbody>
 <tr><td><code>Rotator</code></td><td>A component and its first system</td><td><a href="ECS.html#systems">Systems</a></td></tr>
-<tr><td><code>PlayerMover</code></td><td><code>run_ordered</code>, input, <code>dt</code></td><td><a href="ECS.html#the-comfortable-way-run_ordered-and-ecsmovehost">The comfortable way</a></td></tr>
+<tr><td><code>PlayerMover</code></td><td><code>run_ordered</code>, input, <code>dt</code></td><td><a href="ECS.html#the-comfortable-way-run_ordered-and-objectcontext">The comfortable way</a></td></tr>
 <tr><td><code>Hitpoints</code>, <code>Hit</code>, <code>Died</code></td><td>Events between systems, death announced once</td><td><a href="ECS.html#broadcast-events">Broadcast events</a></td></tr>
 <tr><td><code>Coin</code>, <code>Collector</code>, <code>Collected</code></td><td>Contacts and triggers</td><td><a href="ECS.html#scene-events-contacts-and-animation-markers">Scene events</a>, and the <a href="ecs-tutorial.html">tutorial</a></td></tr>
 <tr><td><code>Lifetime</code></td><td>A timed self-destruct</td><td><a href="ECS.html#spawning-and-destroying">Spawning and destroying</a></td></tr>

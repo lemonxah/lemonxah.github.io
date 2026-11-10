@@ -45,7 +45,7 @@ Decal Projector, Per Instance, Vehicle, Perception / Behaviour Tree); cargo-buil
 hot-reloadable **Rust plugins** (runtime behaviour in `zestengine-core`, editor
 inspector/gizmo behind an `editor` feature); stable **object identity**
 (`ObjectId` UUID) with `ObjectRef` cross-object references set by dragging from
-the Scene tree; a native system API (`ecs::EcsMoveHost`) for transforms (incl.
+the Scene tree; a native system API (`ecs::ObjectContext`) for transforms (incl.
 parent-aware world writes), object lookups, and runtime scene switching; runtime
 custom **GLSL shaders**; a sandboxed **`Wasm Script`** component (wasmtime, no
 host I/O, fuel + memory caps; see the [WASM Guide](WASM.md)) for user-generated content and mods; humanoid animation
@@ -114,7 +114,7 @@ emitted events remain deferred to the next frame.
 instance state survives disabling and reenabling; replacement instances initialize
 on already-running objects. Initialization systems track completion in their ECS
 data; the stage can repeat when startup commands spawn more objects.
-Native controllers use `EcsMoveHost` to read/write
+Native controllers use `ObjectContext` to read/write
 actual ECS transforms and sibling data while sharing the same movement step as
 prediction replay. Parented camera poses use world-to-local conversion, and
 constraints capture their rest pose during initialization before motion starts.

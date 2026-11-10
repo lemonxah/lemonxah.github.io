@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-49b9e9f7.js";
+            window.path_to_searchindex_js = "searchindex-4e99785a.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-ffb240a5.js"></script>
@@ -186,14 +186,14 @@ the engine you are building against.</p>
 <tr><th>Crate</th><th>What it holds</th><th>Reference</th></tr>
 </thead>
 <tbody>
-<tr><td><code>zestengine-core</code></td><td>Components, systems, the ECS (<code>SceneWorld</code>, <code>SystemWorld</code>, <code>Stage</code>, <code>EcsMoveHost</code>), commands, input, physics queries, networking types</td><td><a href="api/zestengine_core/index.html">zestengine_core</a></td></tr>
+<tr><td><code>zestengine-core</code></td><td>Components, systems, the ECS (<code>SceneWorld</code>, <code>SystemWorld</code>, <code>Stage</code>, <code>ObjectContext</code>), commands, input, physics queries, networking types</td><td><a href="api/zestengine_core/index.html">zestengine_core</a></td></tr>
 </tbody>
 </table>
 </div>
 <p>Good places to start in the reference:</p>
 <ul>
 <li><a href="api/zestengine_core/ecs/index.html"><code>ecs</code></a>: the ECS model, systems, stages, <code>run_ordered</code>, entity templates.</li>
-<li><a href="api/zestengine_core/ecs/struct.EcsMoveHost.html"><code>EcsMoveHost</code></a>: everything a system can do to the
+<li><a href="api/zestengine_core/ecs/struct.ObjectContext.html"><code>ObjectContext</code></a>: everything a system can do to the
 world: move, read and edit other objects, spawn, raycast, play sounds, save, network.</li>
 <li><a href="api/zestengine_core/trait.TypedComponent.html"><code>TypedComponent</code></a>: the trait every component implements.</li>
 <li><a href="api/zestengine_core/struct.ComponentRegistry.html"><code>ComponentRegistry</code></a>: where components, systems and

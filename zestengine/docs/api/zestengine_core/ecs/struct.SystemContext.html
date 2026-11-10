@@ -11,8 +11,8 @@ the engine services for this frame.</p>
 <p>Systems edit component data directly and ask for everything else by pushing a
 <a href="../enum.ComponentCommand.html" title="enum zestengine_core::ComponentCommand"><code>ComponentCommand</code></a> (or calling a helper such as <a href="struct.SystemContext.html#method.emit" title="method zestengine_core::ecs::SystemContext::emit"><code>SystemContext::emit</code></a>). The
 engine applies queued commands, in order, when the stage ends.</p>
-<p>Inside <a href="fn.run_ordered.html" title="fn zestengine_core::ecs::run_ordered"><code>run_ordered</code></a> you work through an <a href="struct.EcsMoveHost.html" title="struct zestengine_core::ecs::EcsMoveHost"><code>EcsMoveHost</code></a>, which dereferences to
-this type: <code>host.dt</code>, <code>host.input</code> and <code>host.emit(..)</code> all work.</p>
+<p>Inside <a href="fn.run_ordered.html" title="fn zestengine_core::ecs::run_ordered"><code>run_ordered</code></a> you work through an <a href="struct.ObjectContext.html" title="struct zestengine_core::ecs::ObjectContext"><code>ObjectContext</code></a>, which dereferences to
+this type: <code>obj.dt</code>, <code>obj.input</code> and <code>obj.emit(..)</code> all work.</p>
 
 <div class="example-wrap ignore"><a href="#" class="tooltip" title="This example is not tested">ⓘ</a><pre class="rust rust-example-rendered"><code><span class="kw">fn </span>tick(world: <span class="kw-2">&amp;</span>SystemWorld&lt;<span class="lifetime">'_</span>&gt;, ctx: <span class="kw-2">&amp;mut </span>SystemContext&lt;<span class="lifetime">'_</span>&gt;) {
     <span class="kw">let </span>speed = ctx.input.axis2(<span class="string">"Move"</span>).length() * ctx.dt;       <span class="comment">// time and input
@@ -53,7 +53,7 @@ ancestor enabled) and it is visible in the scene. Check this before acting
 for an object; disabled objects must not update.</p>
 </div></details><details class="toggle method-toggle" open><summary><section id="method.is_visible" class="method"><a class="src rightside" href="../../src/zestengine_core/ecs.rs.html#707-709">Source</a><h4 class="code-header">pub fn <a href="#method.is_visible" class="fn">is_visible</a>(&amp;self, world: &amp;<a class="struct" href="struct.SystemWorld.html" title="struct zestengine_core::ecs::SystemWorld">SystemWorld</a>&lt;'_&gt;, entity: <a class="struct" href="struct.Entity.html" title="struct zestengine_core::ecs::Entity">Entity</a>) -&gt; <a class="primitive" href="https://doc.rust-lang.org/1.99.1/std/primitive.bool.html">bool</a></h4></section></summary><div class="docblock"><p>Whether <code>entity</code> is an object of the scene being run. Hidden or foreign
 objects (for example, ones not in the scene’s authoring order) are not visible,
-and the host helpers treat them as absent.</p>
+and the object helpers treat them as absent.</p>
 </div></details><details class="toggle method-toggle" open><summary><section id="method.order_key" class="method"><a class="src rightside" href="../../src/zestengine_core/ecs.rs.html#712-715">Source</a><h4 class="code-header">pub fn <a href="#method.order_key" class="fn">order_key</a>(
     &amp;self,
     world: &amp;<a class="struct" href="struct.SystemWorld.html" title="struct zestengine_core::ecs::SystemWorld">SystemWorld</a>&lt;'_&gt;,

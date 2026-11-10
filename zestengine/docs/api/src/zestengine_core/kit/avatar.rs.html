@@ -3,7 +3,7 @@
 <a href=#3 id=3 data-nosnippet>3</a>
 <a href=#4 id=4 data-nosnippet>4</a></span><span class="kw">use </span>glam::{Quat, Vec3};
 <a href=#5 id=5 data-nosnippet>5</a><span class="kw">use </span>serde::{Deserialize, Serialize};
-<a href=#6 id=6 data-nosnippet>6</a><span class="kw">use </span><span class="kw">crate</span>::ecs::{EcsMoveHost, Owner, Stage, SystemContext, SystemWorld};
+<a href=#6 id=6 data-nosnippet>6</a><span class="kw">use </span><span class="kw">crate</span>::ecs::{ObjectContext, Owner, Stage, SystemContext, SystemWorld};
 <a href=#7 id=7 data-nosnippet>7</a>
 <a href=#8 id=8 data-nosnippet>8</a><span class="kw">use crate</span>::{Animator, FirstPersonCharacter, NetworkAvatar, ObjectRef, ThirdPersonCharacter, TypedComponent};
 <a href=#9 id=9 data-nosnippet>9</a>
@@ -59,13 +59,13 @@
 <a href=#59 id=59 data-nosnippet>59</a>}
 <a href=#60 id=60 data-nosnippet>60</a>
 <a href=#61 id=61 data-nosnippet>61</a><span class="kw">impl </span>TemplateAvatar {
-<a href=#62 id=62 data-nosnippet>62</a>    <span class="kw">fn </span>replicated_variant(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;</span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;bool&gt; {
+<a href=#62 id=62 data-nosnippet>62</a>    <span class="kw">fn </span>replicated_variant(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: <span class="kw-2">&amp;</span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;bool&gt; {
 <a href=#63 id=63 data-nosnippet>63</a>        ctx.get::&lt;<span class="kw">crate</span>::NetworkVariables&gt;(<span class="self">self</span>.player).and_then(|vars| <span class="kw">match </span>vars.get(<span class="string">"zestengine.avatar_female"</span>) {
 <a href=#64 id=64 data-nosnippet>64</a>            <span class="prelude-val">Some</span>(<span class="kw">crate</span>::NetValue::Bool(value)) =&gt; <span class="prelude-val">Some</span>(<span class="kw-2">*</span>value), <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
 <a href=#65 id=65 data-nosnippet>65</a>        })
 <a href=#66 id=66 data-nosnippet>66</a>    }
 <a href=#67 id=67 data-nosnippet>67</a>
-<a href=#68 id=68 data-nosnippet>68</a>    <span class="kw">fn </span>update_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>EcsMoveHost&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;, followed: <span class="prelude-ty">Option</span>&lt;AvatarVariant&gt;) {
+<a href=#68 id=68 data-nosnippet>68</a>    <span class="kw">fn </span>update_native(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ctx: <span class="kw-2">&amp;mut </span>ObjectContext&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;, followed: <span class="prelude-ty">Option</span>&lt;AvatarVariant&gt;) {
 <a href=#69 id=69 data-nosnippet>69</a>        <span class="kw">let </span>remote = ctx.get::&lt;NetworkAvatar&gt;(<span class="self">self</span>.player).is_some_and(|av| av.remote);
 <a href=#70 id=70 data-nosnippet>70</a>        <span class="kw">if </span>remote {
 <a href=#71 id=71 data-nosnippet>71</a>            <span class="kw">if let </span><span class="prelude-val">Some</span>(female) = <span class="self">self</span>.replicated_variant(ctx) {
@@ -149,14 +149,14 @@
 <a href=#149 id=149 data-nosnippet>149</a>        <span class="kw">let </span>(before, rest) = actors.split_at_mut(index);
 <a href=#150 id=150 data-nosnippet>150</a>        <span class="kw">let </span>((<span class="kw">_</span>, (owner, avatar)), after) = rest.split_first_mut().unwrap();
 <a href=#151 id=151 data-nosnippet>151</a>        <span class="kw">if </span>!ctx.is_active(world, owner.<span class="number">0</span>) { <span class="kw">continue</span>; }
-<a href=#152 id=152 data-nosnippet>152</a>        <span class="kw">let </span><span class="kw-2">mut </span>host = EcsMoveHost::new(world, owner.<span class="number">0</span>, ctx);
+<a href=#152 id=152 data-nosnippet>152</a>        <span class="kw">let </span><span class="kw-2">mut </span>obj = ObjectContext::new(world, owner.<span class="number">0</span>, ctx);
 <a href=#153 id=153 data-nosnippet>153</a>        <span class="kw">let </span><span class="kw-2">mut </span>last_owner = <span class="prelude-val">None</span>;
 <a href=#154 id=154 data-nosnippet>154</a>        <span class="kw">let </span>followed = avatar.follow_local_player.then(|| before.iter().chain(after.iter()).find_map(|(<span class="kw">_</span>, (candidate_owner, candidate))| {
 <a href=#155 id=155 data-nosnippet>155</a>            <span class="kw">if </span>last_owner == <span class="prelude-val">Some</span>(candidate_owner.<span class="number">0</span>) { <span class="kw">return </span><span class="prelude-val">None</span>; }
 <a href=#156 id=156 data-nosnippet>156</a>            last_owner = <span class="prelude-val">Some</span>(candidate_owner.<span class="number">0</span>);
-<a href=#157 id=157 data-nosnippet>157</a>            (!candidate.follow_local_player &amp;&amp; host.get::&lt;<span class="kw">crate</span>::VrCharacter&gt;(candidate.player).is_some()).then_some(candidate.variant)
+<a href=#157 id=157 data-nosnippet>157</a>            (!candidate.follow_local_player &amp;&amp; obj.get::&lt;<span class="kw">crate</span>::VrCharacter&gt;(candidate.player).is_some()).then_some(candidate.variant)
 <a href=#158 id=158 data-nosnippet>158</a>        })).flatten();
-<a href=#159 id=159 data-nosnippet>159</a>        avatar.update_native(<span class="kw-2">&amp;mut </span>host, followed);
+<a href=#159 id=159 data-nosnippet>159</a>        avatar.update_native(<span class="kw-2">&amp;mut </span>obj, followed);
 <a href=#160 id=160 data-nosnippet>160</a>    }
 <a href=#161 id=161 data-nosnippet>161</a>}
 <a href=#162 id=162 data-nosnippet>162</a>

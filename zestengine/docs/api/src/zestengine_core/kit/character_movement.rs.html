@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/zestengine-core/src/kit/character_movement.rs`."><title>character_movement.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-0c87338a.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="zestengine_core" data-themes="" data-resource-suffix="" data-rustdoc-version="1.99.1 (58cf8f9c3 2026-10-13)" data-channel="1.99.1" data-search-js="search-cf4fc35e.js" data-stringdex-js="stringdex-b5109af9.js" data-settings-js="settings-170eb4bf.js" ><script src="../../../static.files/storage-41dd4d93.js"></script><script defer src="../../../static.files/src-script-813739b1.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-417ebf0a.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-9f56287d.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><h1><div class="sub-heading">zestengine_core/kit/</div>character_movement.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-3"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="doccomment">//! Shared walking/falling/swimming state for desktop and VR characters.
 <a href=#2 id=2 data-nosnippet>2</a></span><span class="kw">use </span>glam::{Quat, Vec3};
 <a href=#3 id=3 data-nosnippet>3</a><span class="kw">use </span>serde::{Deserialize, Serialize};
-<a href=#4 id=4 data-nosnippet>4</a><span class="kw">use crate</span>::{MotionState, MoveHost, RayFilter};
+<a href=#4 id=4 data-nosnippet>4</a><span class="kw">use crate</span>::{MotionState, MotionContext, RayFilter};
 <a href=#5 id=5 data-nosnippet>5</a><span class="kw">use </span><span class="kw">super</span>::swim::{Climb, breathe, float_accel, stroke, swims};
 <a href=#6 id=6 data-nosnippet>6</a>
 <a href=#7 id=7 data-nosnippet>7</a><span class="kw">fn </span>smooth(rate: f32, dt: f32) -&gt; f32 { <span class="number">1.0 </span>- (-rate.max(<span class="number">0.0</span>) * dt).exp() }
@@ -143,12 +143,12 @@
 <a href=#143 id=143 data-nosnippet>143</a>
 <a href=#144 id=144 data-nosnippet>144</a>    <span class="doccomment">/// Swim instead of walk when the water is deep enough: returns true when
 <a href=#145 id=145 data-nosnippet>145</a>    /// it did (or is climbing out), so the walk is skipped.
-<a href=#146 id=146 data-nosnippet>146</a>    </span><span class="kw">fn </span>swim(<span class="kw-2">&amp;mut </span><span class="self">self</span>, host: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>MoveHost, swim: SwimInput, dt: f32) -&gt; bool {
-<a href=#147 id=147 data-nosnippet>147</a>        <span class="kw">let </span>s = host.swimmer();
-<a href=#148 id=148 data-nosnippet>148</a>        <span class="kw">let </span>(height, radius) = host.capsule().map_or((<span class="number">1.8</span>, <span class="number">0.35</span>), |(r, h, <span class="kw">_</span>)| (h, r));
+<a href=#146 id=146 data-nosnippet>146</a>    </span><span class="kw">fn </span>swim(<span class="kw-2">&amp;mut </span><span class="self">self</span>, obj: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>MotionContext, swim: SwimInput, dt: f32) -&gt; bool {
+<a href=#147 id=147 data-nosnippet>147</a>        <span class="kw">let </span>s = obj.swimmer();
+<a href=#148 id=148 data-nosnippet>148</a>        <span class="kw">let </span>(height, radius) = obj.capsule().map_or((<span class="number">1.8</span>, <span class="number">0.35</span>), |(r, h, <span class="kw">_</span>)| (h, r));
 <a href=#149 id=149 data-nosnippet>149</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>(c) = <span class="kw-2">&amp;mut </span><span class="self">self</span>.climb {
 <a href=#150 id=150 data-nosnippet>150</a>            c.t += dt / s.climb_time.max(<span class="number">0.05</span>);
-<a href=#151 id=151 data-nosnippet>151</a>            host.set_translation(c.at(c.t));
+<a href=#151 id=151 data-nosnippet>151</a>            obj.set_translation(c.at(c.t));
 <a href=#152 id=152 data-nosnippet>152</a>            <span class="kw">if </span>c.t &gt;= <span class="number">1.0 </span>{
 <a href=#153 id=153 data-nosnippet>153</a>                <span class="self">self</span>.climb = <span class="prelude-val">None</span>;
 <a href=#154 id=154 data-nosnippet>154</a>                <span class="self">self</span>.vel = Vec3::ZERO;
@@ -156,12 +156,12 @@
 <a href=#156 id=156 data-nosnippet>156</a>            }
 <a href=#157 id=157 data-nosnippet>157</a>            <span class="kw">return </span><span class="bool-val">true</span>;
 <a href=#158 id=158 data-nosnippet>158</a>        }
-<a href=#159 id=159 data-nosnippet>159</a>        <span class="kw">let </span>feet = host.translation();
-<a href=#160 id=160 data-nosnippet>160</a>        <span class="kw">let </span>surface = host.water_surface(feet + Vec3::Y * height);
+<a href=#159 id=159 data-nosnippet>159</a>        <span class="kw">let </span>feet = obj.translation();
+<a href=#160 id=160 data-nosnippet>160</a>        <span class="kw">let </span>surface = obj.water_surface(feet + Vec3::Y * height);
 <a href=#161 id=161 data-nosnippet>161</a>        <span class="kw">let </span>was = <span class="self">self</span>.swimming;
 <a href=#162 id=162 data-nosnippet>162</a>        <span class="self">self</span>.swimming = surface.is_some_and(|h| swims(<span class="kw-2">&amp;</span>s, <span class="self">self</span>.swimming, h - feet.y, height));
 <a href=#163 id=163 data-nosnippet>163</a>        <span class="kw">if </span><span class="self">self</span>.swimming != was {
-<a href=#164 id=164 data-nosnippet>164</a>            host.set_animator_bool(<span class="string">"Swimming"</span>, <span class="self">self</span>.swimming);
+<a href=#164 id=164 data-nosnippet>164</a>            obj.set_animator_bool(<span class="string">"Swimming"</span>, <span class="self">self</span>.swimming);
 <a href=#165 id=165 data-nosnippet>165</a>        }
 <a href=#166 id=166 data-nosnippet>166</a>        <span class="kw">let </span>eye = feet.y + height * EYE_SHARE;
 <a href=#167 id=167 data-nosnippet>167</a>        <span class="kw">let </span>breath = <span class="self">self</span>.breath.unwrap_or(s.breath);
@@ -182,35 +182,35 @@
 <a href=#182 id=182 data-nosnippet>182</a>        </span><span class="kw">if </span>eye &gt; h - <span class="number">0.3 </span>&amp;&amp; swim.input.y &gt; <span class="number">0.3 </span>{
 <a href=#183 id=183 data-nosnippet>183</a>            <span class="kw">let </span>fwd = swim.look * Vec3::NEG_Z;
 <a href=#184 id=184 data-nosnippet>184</a>            <span class="kw">let </span>dir = Vec3::new(fwd.x, <span class="number">0.0</span>, fwd.z).normalize_or_zero();
-<a href=#185 id=185 data-nosnippet>185</a>            <span class="kw">if let </span><span class="prelude-val">Some</span>(to) = ledge(host, feet, h, dir, radius, s.climb_height) {
+<a href=#185 id=185 data-nosnippet>185</a>            <span class="kw">if let </span><span class="prelude-val">Some</span>(to) = ledge(obj, feet, h, dir, radius, s.climb_height) {
 <a href=#186 id=186 data-nosnippet>186</a>                <span class="self">self</span>.climb = <span class="prelude-val">Some</span>(Climb { from: feet, to, t: <span class="number">0.0 </span>});
 <a href=#187 id=187 data-nosnippet>187</a>                <span class="self">self</span>.vel = Vec3::ZERO;
 <a href=#188 id=188 data-nosnippet>188</a>                <span class="kw">return </span><span class="bool-val">true</span>;
 <a href=#189 id=189 data-nosnippet>189</a>            }
 <a href=#190 id=190 data-nosnippet>190</a>        }
 <a href=#191 id=191 data-nosnippet>191</a>        <span class="self">self</span>.grounded = <span class="bool-val">false</span>;
-<a href=#192 id=192 data-nosnippet>192</a>        <span class="kw">if </span>host.has_character() {
-<a href=#193 id=193 data-nosnippet>193</a>            host.move_character(<span class="self">self</span>.vel * dt);
+<a href=#192 id=192 data-nosnippet>192</a>        <span class="kw">if </span>obj.has_character() {
+<a href=#193 id=193 data-nosnippet>193</a>            obj.move_character(<span class="self">self</span>.vel * dt);
 <a href=#194 id=194 data-nosnippet>194</a>        } <span class="kw">else </span>{
-<a href=#195 id=195 data-nosnippet>195</a>            host.set_translation(feet + <span class="self">self</span>.vel * dt);
+<a href=#195 id=195 data-nosnippet>195</a>            obj.set_translation(feet + <span class="self">self</span>.vel * dt);
 <a href=#196 id=196 data-nosnippet>196</a>        }
 <a href=#197 id=197 data-nosnippet>197</a>        <span class="bool-val">true
 <a href=#198 id=198 data-nosnippet>198</a>    </span>}
 <a href=#199 id=199 data-nosnippet>199</a>
-<a href=#200 id=200 data-nosnippet>200</a>    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>step(<span class="kw-2">&amp;mut </span><span class="self">self</span>, host: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>MoveHost, m: Stride, dt: f32) {
-<a href=#201 id=201 data-nosnippet>201</a>        <span class="kw">if </span><span class="self">self</span>.swim(host, m.swim, dt) {
+<a href=#200 id=200 data-nosnippet>200</a>    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>step(<span class="kw-2">&amp;mut </span><span class="self">self</span>, obj: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>MotionContext, m: Stride, dt: f32) {
+<a href=#201 id=201 data-nosnippet>201</a>        <span class="kw">if </span><span class="self">self</span>.swim(obj, m.swim, dt) {
 <a href=#202 id=202 data-nosnippet>202</a>            <span class="kw">return</span>;
 <a href=#203 id=203 data-nosnippet>203</a>        }
-<a href=#204 id=204 data-nosnippet>204</a>        <span class="self">self</span>.walk(host, m, dt);
+<a href=#204 id=204 data-nosnippet>204</a>        <span class="self">self</span>.walk(obj, m, dt);
 <a href=#205 id=205 data-nosnippet>205</a>    }
 <a href=#206 id=206 data-nosnippet>206</a>
 <a href=#207 id=207 data-nosnippet>207</a>    <span class="doccomment">/// Ground/falling movement, also used by VR after its tracked-hand swimming.
-<a href=#208 id=208 data-nosnippet>208</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>walk(<span class="kw-2">&amp;mut </span><span class="self">self</span>, host: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>MoveHost, m: Stride, dt: f32) {
+<a href=#208 id=208 data-nosnippet>208</a>    </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>walk(<span class="kw-2">&amp;mut </span><span class="self">self</span>, obj: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>MotionContext, m: Stride, dt: f32) {
 <a href=#209 id=209 data-nosnippet>209</a>        <span class="kw">let </span>Stride { wish, accel, air_control, braking, jump: jump_speed, gravity, .. } = m;
-<a href=#210 id=210 data-nosnippet>210</a>        <span class="kw">let </span>physical = host.has_character();
+<a href=#210 id=210 data-nosnippet>210</a>        <span class="kw">let </span>physical = obj.has_character();
 <a href=#211 id=211 data-nosnippet>211</a>        <span class="kw">if </span>physical {
 <a href=#212 id=212 data-nosnippet>212</a>            <span class="comment">// An upward takeoff must not be cancelled by last frame's floor contact.
-<a href=#213 id=213 data-nosnippet>213</a>            </span><span class="self">self</span>.grounded = host.grounded() &amp;&amp; <span class="self">self</span>.vel.y &lt;= <span class="number">0.0</span>;
+<a href=#213 id=213 data-nosnippet>213</a>            </span><span class="self">self</span>.grounded = obj.grounded() &amp;&amp; <span class="self">self</span>.vel.y &lt;= <span class="number">0.0</span>;
 <a href=#214 id=214 data-nosnippet>214</a>        }
 <a href=#215 id=215 data-nosnippet>215</a>        <span class="kw">let </span>horizontal = braking.velocity(<span class="self">self</span>.vel.with_y(<span class="number">0.0</span>), wish, accel, air_control, <span class="self">self</span>.grounded, dt);
 <a href=#216 id=216 data-nosnippet>216</a>        <span class="self">self</span>.vel.x = horizontal.x;
@@ -229,15 +229,15 @@
 <a href=#229 id=229 data-nosnippet>229</a>        <span class="comment">// Integrate gravity using average velocity so jump height is stable across frame rates.
 <a href=#230 id=230 data-nosnippet>230</a>        </span><span class="kw">let </span>delta = Vec3::new(<span class="self">self</span>.vel.x, (old_y + <span class="self">self</span>.vel.y) * <span class="number">0.5</span>, <span class="self">self</span>.vel.z) * dt;
 <a href=#231 id=231 data-nosnippet>231</a>        <span class="kw">if </span>physical {
-<a href=#232 id=232 data-nosnippet>232</a>            host.move_character(delta);
+<a href=#232 id=232 data-nosnippet>232</a>            obj.move_character(delta);
 <a href=#233 id=233 data-nosnippet>233</a>        } <span class="kw">else </span>{
-<a href=#234 id=234 data-nosnippet>234</a>            <span class="kw">let </span><span class="kw-2">mut </span>pos = host.translation() + delta;
+<a href=#234 id=234 data-nosnippet>234</a>            <span class="kw">let </span><span class="kw-2">mut </span>pos = obj.translation() + delta;
 <a href=#235 id=235 data-nosnippet>235</a>            <span class="kw">if </span>pos.y &lt;= <span class="self">self</span>.floor_y {
 <a href=#236 id=236 data-nosnippet>236</a>                pos.y = <span class="self">self</span>.floor_y;
 <a href=#237 id=237 data-nosnippet>237</a>                <span class="self">self</span>.vel.y = <span class="number">0.0</span>;
 <a href=#238 id=238 data-nosnippet>238</a>                <span class="self">self</span>.grounded = <span class="bool-val">true</span>;
 <a href=#239 id=239 data-nosnippet>239</a>            }
-<a href=#240 id=240 data-nosnippet>240</a>            host.set_translation(pos);
+<a href=#240 id=240 data-nosnippet>240</a>            obj.set_translation(pos);
 <a href=#241 id=241 data-nosnippet>241</a>        }
 <a href=#242 id=242 data-nosnippet>242</a>    }
 <a href=#243 id=243 data-nosnippet>243</a>}
@@ -245,18 +245,18 @@
 <a href=#245 id=245 data-nosnippet>245</a><span class="doccomment">/// An edge to climb out onto: a wall `dir` of a swimmer at `feet` (surface
 <a href=#246 id=246 data-nosnippet>246</a>/// `surface`) whose top is no more than `climb` above the water. Where the
 <a href=#247 id=247 data-nosnippet>247</a>/// feet end up, a body width onto it.
-<a href=#248 id=248 data-nosnippet>248</a></span><span class="kw">fn </span>ledge(host: <span class="kw-2">&amp;</span><span class="kw">dyn </span>MoveHost, feet: Vec3, surface: f32, dir: Vec3, radius: f32, climb: f32) -&gt; <span class="prelude-ty">Option</span>&lt;Vec3&gt; {
+<a href=#248 id=248 data-nosnippet>248</a></span><span class="kw">fn </span>ledge(obj: <span class="kw-2">&amp;</span><span class="kw">dyn </span>MotionContext, feet: Vec3, surface: f32, dir: Vec3, radius: f32, climb: f32) -&gt; <span class="prelude-ty">Option</span>&lt;Vec3&gt; {
 <a href=#249 id=249 data-nosnippet>249</a>    <span class="kw">if </span>dir.length_squared() &lt; <span class="number">0.5 </span>{
 <a href=#250 id=250 data-nosnippet>250</a>        <span class="kw">return </span><span class="prelude-val">None</span>;
 <a href=#251 id=251 data-nosnippet>251</a>    }
-<a href=#252 id=252 data-nosnippet>252</a>    <span class="kw">let </span>filter = RayFilter { exclude: <span class="prelude-val">Some</span>(host.self_id()), ..Default::default() };
+<a href=#252 id=252 data-nosnippet>252</a>    <span class="kw">let </span>filter = RayFilter { exclude: <span class="prelude-val">Some</span>(obj.self_id()), ..Default::default() };
 <a href=#253 id=253 data-nosnippet>253</a>    <span class="kw">let </span>from = Vec3::new(feet.x, surface + <span class="number">0.05</span>, feet.z);
-<a href=#254 id=254 data-nosnippet>254</a>    <span class="kw">let </span>wall = host.raycast(from, dir, radius + <span class="number">0.5</span>, <span class="kw-2">&amp;</span>filter)<span class="question-mark">?</span>;
+<a href=#254 id=254 data-nosnippet>254</a>    <span class="kw">let </span>wall = obj.raycast(from, dir, radius + <span class="number">0.5</span>, <span class="kw-2">&amp;</span>filter)<span class="question-mark">?</span>;
 <a href=#255 id=255 data-nosnippet>255</a>    <span class="kw">if </span>wall.normal.y.abs() &gt; <span class="number">0.5 </span>{
 <a href=#256 id=256 data-nosnippet>256</a>        <span class="kw">return </span><span class="prelude-val">None</span>;
 <a href=#257 id=257 data-nosnippet>257</a>    }
 <a href=#258 id=258 data-nosnippet>258</a>    <span class="kw">let </span>above = wall.point + dir * (radius + <span class="number">0.05</span>) + Vec3::Y * (climb + <span class="number">0.1</span>);
-<a href=#259 id=259 data-nosnippet>259</a>    <span class="kw">let </span>top = host.raycast(above, Vec3::NEG_Y, climb + <span class="number">0.4</span>, <span class="kw-2">&amp;</span>filter)<span class="question-mark">?</span>;
+<a href=#259 id=259 data-nosnippet>259</a>    <span class="kw">let </span>top = obj.raycast(above, Vec3::NEG_Y, climb + <span class="number">0.4</span>, <span class="kw-2">&amp;</span>filter)<span class="question-mark">?</span>;
 <a href=#260 id=260 data-nosnippet>260</a>    (top.normal.y &gt; <span class="number">0.7 </span>&amp;&amp; top.point.y - surface &lt;= climb &amp;&amp; top.point.y &gt; surface - <span class="number">0.1</span>).then_some(top.point + Vec3::Y * <span class="number">0.02</span>)
 <a href=#261 id=261 data-nosnippet>261</a>}
 <a href=#262 id=262 data-nosnippet>262</a>

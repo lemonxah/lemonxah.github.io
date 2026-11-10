@@ -26,7 +26,7 @@ the same call as <a href="struct.ComponentRegistry.html#method.register" title="
 </div></details><details class="toggle method-toggle" open><summary><section id="method.register_entity" class="method"><a class="src rightside" href="../src/zestengine_core/ecs.rs.html#835-842">Source</a><h4 class="code-header">pub fn <a href="#method.register_entity" class="fn">register_entity</a>(&amp;mut self, name: &amp;'static <a class="primitive" href="https://doc.rust-lang.org/1.99.1/std/primitive.str.html">str</a>, build: <a class="type" href="ecs/type.EntityFn.html" title="type zestengine_core::ecs::EntityFn">EntityFn</a>)</h4></section></summary><div class="docblock"><p>Register an <strong>entity</strong>: a named, ready-made object, described by a mesh shape
 and the components a new instance starts with. The editor lists it under
 Create &gt; Entity, and systems spawn it by name with
-<a href="ecs/struct.EcsMoveHost.html#method.spawn_entity" title="method zestengine_core::ecs::EcsMoveHost::spawn_entity"><code>EcsMoveHost::spawn_entity</code></a>.</p>
+<a href="ecs/struct.ObjectContext.html#method.spawn_entity" title="method zestengine_core::ecs::ObjectContext::spawn_entity"><code>ObjectContext::spawn_entity</code></a>.</p>
 <p><code>build</code> runs for every new instance, so each object gets its own component
 values. Names are unique: registering an existing name replaces the builder
 in place, so a hot-reloaded plugin supersedes its previous build, and a
