@@ -77,7 +77,7 @@
 </div>
 <div>
 <h2 class="display">Wire it by hand</h2>
-<p>Drag from one port to another to connect them. Select wires and press Delete to pull them out. Drop a plugin on a wire and it is inserted right there.</p>
+<p>Drag from one port to another to connect them. Wires light up when the cursor gets close, so you can click one and press Delete without perfect aim. Drop a plugin on a wire and it is inserted right there.</p>
 </div>
 <div>
 <h2 class="display">Never wire it twice</h2>
@@ -168,7 +168,7 @@
 <ul>
 <li>Match node names with <span class="mono">*</span> and <span class="mono">?</span> patterns</li>
 <li>Exclusive mode keeps a source to exactly the connections its rules allow</li>
-<li>Block rules keep two things apart, even from your own mouse</li>
+<li>Block rules keep two things apart, even from your own mouse. They show as red lines you can select and delete</li>
 <li>Save named backups of the whole rule set</li>
 </ul>
 </div>
@@ -203,6 +203,20 @@
 <p>ZestBay follows your desktop theme, or you can pick one. It looks at home on KDE Plasma and other Qt desktops.</p>
 </div>
 </div>
+</div>
+
+<div class="box">
+<h3 class="display">A canvas that copes with a crowd</h3>
+<dl>
+<div><dt>Grab and Select</dt><dd>Drag the empty canvas to pan, or press W to draw a selection box instead. Hold Space to pan from anywhere, or Shift to box-select without switching.</dd></div>
+<div><dt>Auto layout</dt><dd>One button at the top right, or press L. Nodes you pinned stay where you put them, and Shift+L lays out those too.</dd></div>
+<div><dt>Two densities</dt><dd>Compact, Normal or Spacious, or any pixel value, for how far apart nodes sit and, separately, how big the node cards are.</dd></div>
+<div><dt>New nodes find a spot</dt><dd>A stream that a rule connects lands beside the node it is wired to. Anything you placed or pinned stays put. A new node pulses once, and a marker at the edge points to it when it appears off screen.</dd></div>
+<div><dt>Undo and redo</dt><dd>Ctrl+Z takes back a move, an auto layout, a wire you made or removed, or a node you hid.</dd></div>
+<div><dt>Delete does what you mean</dt><dd>It disconnects the selected wires, removes plugins after asking, hides devices and app streams, and deletes the selected block rules.</dd></div>
+<div><dt>Long names</dt><dd>The node under the cursor lights up. If its name does not fit the card, a popup shows all of it.</dd></div>
+<div><dt>Every shortcut</dt><dd>Press <span class="mono">?</span> or <span class="mono">F1</span> for the full list, or click the question mark at the corner of the canvas.</dd></div>
+</dl>
 </div>
 
 <div class="box">
@@ -449,6 +463,7 @@ sudo apt install qml6-module-qtquick qml6-module-qtquick-controls \
 <a href="https://github.com/lemonxah/zestbay">GitHub</a>
 <a href="https://github.com/lemonxah/zestbay/releases/latest">Releases</a>
 <a href="https://github.com/lemonxah/zestbay/issues">Issues</a>
+<a href="https://github.com/lemonxah/zestbay/issues/new?labels=enhancement&amp;title=Feature%20request%3A%20">Request a feature</a>
 <a href="https://launchpad.net/~lemonxah/+archive/ubuntu/tools">Ubuntu PPA</a>
 </nav>
 </div>
