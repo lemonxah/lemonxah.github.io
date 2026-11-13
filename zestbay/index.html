@@ -148,7 +148,7 @@
 <p>Put an EQ, a compressor or a reverb straight into the graph. LV2, LADSPA, VST2, VST3 and CLAP plugins all load as real PipeWire nodes, so nothing else has to be running.</p>
 <ul>
 <li>Search every installed plugin by name, author, category or format</li>
-<li>Open the plugin's own window, several at once</li>
+<li>Open the plugin's own window, several at once, including plugins that open a window of their own. Most run in a helper process, so a crashing window can't take ZestBay down</li>
 <li>Bypass and rename each instance</li>
 <li>A plugin that crashes on load is skipped, not allowed to take ZestBay down</li>
 </ul>
@@ -174,7 +174,38 @@
 </div>
 </div>
 
+<div class="feature">
+<div class="feature-text">
+<h3 class="display">Meters on the wires</h3>
+<p>See where the sound is going and which links are silent. ZestBay has its own level meters: nothing to install, no window to open, and the audio passes through untouched.</p>
+<ul>
+<li>Right-click the canvas, then <strong>Add meter</strong>, and pick 1 to 6 or 8 channels. Drop it on a wire to splice it in</li>
+<li>Drag the meter onto the node before or after it and it snaps on: the card goes away and the bars sit under that node's port names</li>
+<li>Right-click any node, then <strong>Meter inputs</strong> or <strong>Meter outputs</strong>, to meter all its ports at once and move their wires through the meters</li>
+<li>Connect to a snapped port and the wire goes through the meter. Wires that skip it are dashed</li>
+<li>Peak level from −60 to 0 dBFS, green, amber above −12 and red above −3</li>
+</ul>
+</div>
+<div class="panel lime">
+<picture><source srcset="assets/img/meters.webp" type="image/webp"><img src="assets/img/meters.png" alt="A meter card between Spotify and Media Sink, and meters snapped onto Daw Sink's inputs and the Microphone's output, shown as bars under the port names" width="1000" height="767" decoding="async" loading="lazy"></picture>
+</div>
+</div>
+
 <div class="pairs">
+<div>
+<div class="well"><picture><source srcset="assets/img/meter-menu.webp" type="image/webp"><img src="assets/img/meter-menu.png" alt="The canvas menu with the Add meter submenu: 1 channel to 6 channels, and 8 channels (7.1)" width="600" height="725" decoding="async" loading="lazy"></picture></div>
+<div class="pair-text">
+<h3 class="display">A meter in two clicks</h3>
+<p>Add a mono, stereo or up to 7.1 meter from the canvas menu. It works like any plugin: drop it on a wire, rename it, hide it, put it in a subgraph. Removing it joins the wires back up.</p>
+</div>
+</div>
+<div>
+<div class="well"><picture><source srcset="assets/img/node-meters.webp" type="image/webp"><img src="assets/img/node-meters.png" alt="Daw Sink with level bars under its inputs and its menu open: Unsnap meter, Remove snapped meter, Meter inputs, Meter outputs" width="600" height="377" decoding="async" loading="lazy"></picture></div>
+<div class="pair-text">
+<h3 class="display">Meter a whole device</h3>
+<p>Meter inputs or Meter outputs puts a snapped meter on every port of a node, eight channels per meter. Unsnap them to get the cards back, or remove them and the wiring is as it was.</p>
+</div>
+</div>
 <div>
 <div class="well"><picture><source srcset="assets/img/presets.webp" type="image/webp"><img src="assets/img/presets.png" alt="A preset menu open on a plugin node" width="600" height="1106" decoding="async" loading="lazy"></picture></div>
 <div class="pair-text">
@@ -190,10 +221,10 @@
 </div>
 </div>
 <div>
-<div class="well"><picture><source srcset="assets/img/cpu-usage.webp" type="image/webp"><img src="assets/img/cpu-usage.png" alt="The CPU usage window charting the load of each plugin over time" width="1040" height="1046" decoding="async" loading="lazy"></picture></div>
+<div class="well"><picture><source srcset="assets/img/cpu-usage.webp" type="image/webp"><img src="assets/img/cpu-usage.png" alt="The CPU usage window charting the load of each plugin over time, with the meters grouped into one row and listed under it" width="1040" height="1321" decoding="async" loading="lazy"></picture></div>
 <div class="pair-text">
 <h3 class="display">See what each plugin costs</h3>
-<p>A CPU window charts every plugin's load over time, so you can tell which effect is eating the budget.</p>
+<p>A CPU window charts every plugin's load over time, so you can tell which effect is eating the budget. Meters share one row; click it to list them.</p>
 </div>
 </div>
 <div>
@@ -212,7 +243,8 @@
 <div><dt>Auto layout</dt><dd>One button at the top right, or press L. Nodes you pinned stay where you put them, and Shift+L lays out those too.</dd></div>
 <div><dt>Two densities</dt><dd>Compact, Normal or Spacious, or any pixel value, for how far apart nodes sit and, separately, how big the node cards are.</dd></div>
 <div><dt>New nodes find a spot</dt><dd>A stream that a rule connects lands beside the node it is wired to. Anything you placed or pinned stays put. A new node pulses once, and a marker at the edge points to it when it appears off screen.</dd></div>
-<div><dt>Undo and redo</dt><dd>Ctrl+Z takes back a move, an auto layout, a wire you made or removed, or a node you hid.</dd></div>
+<div><dt>Undo and redo</dt><dd>Ctrl+Z takes back a move, an auto layout, a wire you made or removed, a plugin you dropped on a wire, a meter you snapped, or a node you hid.</dd></div>
+<div><dt>Remove a plugin, keep the sound</dt><dd>Take a plugin out of a chain and the wires on either side are joined back up.</dd></div>
 <div><dt>Delete does what you mean</dt><dd>It disconnects the selected wires, removes plugins after asking, hides devices and app streams, and deletes the selected block rules.</dd></div>
 <div><dt>Long names</dt><dd>The node under the cursor lights up. If its name does not fit the card, a popup shows all of it.</dd></div>
 <div><dt>Every shortcut</dt><dd>Press <span class="mono">?</span> or <span class="mono">F1</span> for the full list, or click the question mark at the corner of the canvas.</dd></div>
@@ -236,6 +268,7 @@
 <div><dt>Search and layout</dt><dd>Find nodes and ports with Ctrl+F, pin nodes in place, snap to a grid, or let auto layout follow the signal.</dd></div>
 <div><dt>Idle devices sleep</dt><dd>Optionally let a device suspend when it is only linked through plugins.</dd></div>
 <div><dt>Unnamed streams</dt><dd>Streams with no name of their own, such as pavucontrol's level meters, stay off the canvas.</dd></div>
+<div><dt>Zestins</dt><dd>ZestBay's own LV2 plugins: utility, meter, EQ, gate, compressor, delay, reverb, tone generator, a synth and MIDI tools. A separate package that works in any LV2 host.</dd></div>
 </dl>
 </div>
 </div>
@@ -338,6 +371,13 @@
 <td class="no"><span class="yn"><span class="dot off" aria-hidden="true"></span>No</span></td>
 </tr>
 <tr>
+<th scope="row">Level meters in the graph</th>
+<td class="zb"><span class="yn"><span class="dot" aria-hidden="true"></span>On a card, or snapped onto any port</span></td>
+<td class="no"><span class="yn"><span class="dot off" aria-hidden="true"></span>No</span></td>
+<td class="txt">In the plugin rack</td>
+<td class="no"><span class="yn"><span class="dot off" aria-hidden="true"></span>No</span></td>
+</tr>
+<tr>
 <th scope="row">CPU load per plugin</th>
 <td class="zb"><span class="yn"><span class="dot" aria-hidden="true"></span>Charted over time</span></td>
 <td class="no"><span class="yn"><span class="dot off" aria-hidden="true"></span>No</span></td>
@@ -397,6 +437,17 @@ sudo apt install zestbay</code></pre>
 <div class="row">
 <div class="row-label"><h3 class="display">Debian 12 and 13</h3><span>Download the .deb from the <a href="https://github.com/lemonxah/zestbay/releases/latest">latest release</a></span></div>
 <pre><code>sudo apt install ./zestbay_&lt;version&gt;-debian13_amd64.deb</code></pre>
+</div>
+<div class="row">
+<div class="row-label"><h3 class="display">Zestins, optional</h3><span>ZestBay's own LV2 plugins, a separate package. The .deb and .rpm files are on the <a href="https://github.com/lemonxah/zestbay/releases/latest">latest release</a>; on Arch build <span class="mono">pkg/zestins</span> with makepkg</span></div>
+<pre><code># Ubuntu, from the PPA
+sudo apt install zestins
+# Debian
+sudo apt install ./zestins_&lt;version&gt;-debian13_amd64.deb
+# Fedora
+sudo dnf install ./zestins-&lt;version&gt;-1.fc&lt;NN&gt;.x86_64.rpm
+# Anywhere, from the source tree (into ~/.lv2)
+make -C zestins install</code></pre>
 </div>
 <div class="row">
 <div class="row-label"><h3 class="display">Flatpak</h3><span>Build the bundle from the repository</span></div>

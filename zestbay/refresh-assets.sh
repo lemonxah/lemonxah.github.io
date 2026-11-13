@@ -27,6 +27,9 @@ conv parameters parameters   720
 conv cpu-usage  cpu-usage   1040
 conv sessions-crop  sessions   800
 conv port-menu-crop port-menu  520
+conv meters-crop      meters      1000
+conv meter-menu-crop  meter-menu   600
+conv node-meters-crop node-meters  600
 # Open Graph / Twitter card: top 1200x630 of the dark main window
 magick "$SRC/main-dark.png" -resize 1200x -gravity north -crop 1200x630+0+0 +repage -strip -quality 85 "$OUT/og.png"
 
