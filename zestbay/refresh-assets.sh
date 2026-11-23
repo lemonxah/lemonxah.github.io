@@ -30,6 +30,8 @@ conv port-menu-crop port-menu  520
 conv meters-crop      meters      1000
 conv meter-menu-crop  meter-menu   600
 conv node-meters-crop node-meters  600
+conv themes      themes      1120
+conv wires-crop  wires       1120
 # Open Graph / Twitter card: top 1200x630 of the dark main window
 magick "$SRC/main-dark.png" -resize 1200x -gravity north -crop 1200x630+0+0 +repage -strip -quality 85 "$OUT/og.png"
 

@@ -156,6 +156,7 @@ code, pre { font-family: var(--mono); }
 .panel.lime { background: var(--lime); }
 .panel.orange { background: var(--orange); }
 .panel.orange img { max-width: 520px; margin: 0 auto; }
+.panel.orange img.wide { max-width: none; }
 
 .pairs { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 64px 56px; }
 .pairs > div { display: flex; flex-direction: column; gap: 28px; }

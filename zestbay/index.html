@@ -191,6 +191,38 @@
 </div>
 </div>
 
+<div class="feature reverse">
+<div class="panel orange">
+<picture><source srcset="assets/img/themes.webp" type="image/webp"><img class="wide" src="assets/img/themes.png" alt="The same graph in four palettes: Catppuccin, Gruvbox, Nord and light Solarized" width="1120" height="813" decoding="async" loading="lazy"></picture>
+</div>
+<div class="feature-text">
+<h3 class="display">Your colours, live</h3>
+<p>Five palettes are built in: Zest, Catppuccin, Gruvbox, Nord and Solarized, each with a dark and a light version. Or write your own in plain CSS and watch the running app change as you save.</p>
+<ul>
+<li>Drop a <span class="mono">.css</span> file into <span class="mono">~/.config/zestbay/themes</span> and it shows up in Preferences, named after the file</li>
+<li>Set surfaces, borders, text, accent, wires and node kinds. Anything you leave out keeps the Zest colour</li>
+<li>pywal and base16 colour sets work as they are, and a <a href="https://github.com/lemonxah/zestbay#using-your-desktops-generated-colours">short matugen template</a> makes ZestBay follow your wallpaper</li>
+<li>Nothing restarts and the audio keeps playing</li>
+</ul>
+</div>
+</div>
+
+<div class="feature">
+<div class="feature-text">
+<h3 class="display">Wires, drawn your way</h3>
+<p>Pick how every wire runs: Curved, Straight, Stepped or Circuit. The change shows straight away.</p>
+<ul>
+<li>Stepped uses right angles and steers around node cards instead of running behind them</li>
+<li>Circuit does the same with rounded corners, like traces on a circuit board, and gives wires running side by side a lane each</li>
+<li>Gradient wires fade each audio wire from one node's colour to the other's</li>
+<li>Give any node a colour from its right-click menu</li>
+</ul>
+</div>
+<div class="panel lime">
+<picture><source srcset="assets/img/wires.webp" type="image/webp"><img src="assets/img/wires.png" alt="A graph drawn in the Circuit wire style: right-angled wires with rounded corners, each in its own lane around the node cards" width="1120" height="656" decoding="async" loading="lazy"></picture>
+</div>
+</div>
+
 <div class="pairs">
 <div>
 <div class="well"><picture><source srcset="assets/img/meter-menu.webp" type="image/webp"><img src="assets/img/meter-menu.png" alt="The canvas menu with the Add meter submenu: 1 channel to 6 channels, and 8 channels (7.1)" width="600" height="725" decoding="async" loading="lazy"></picture></div>
@@ -231,7 +263,7 @@
 <div class="well"><picture><source srcset="assets/img/main-light.webp" type="image/webp"><img class="wide" src="assets/img/main-light.png" alt="The ZestBay window in its light theme" width="1600" height="956" decoding="async" loading="lazy"></picture></div>
 <div class="pair-text">
 <h3 class="display">Dark, light or whatever your desktop says</h3>
-<p>ZestBay follows your desktop theme, or you can pick one. It looks at home on KDE Plasma and other Qt desktops.</p>
+<p>ZestBay follows your desktop's colour scheme, or you can pick dark or light yourself. Every built-in palette has both, and it looks at home on KDE Plasma and other Qt desktops.</p>
 </div>
 </div>
 </div>
@@ -246,6 +278,9 @@
 <div><dt>Undo and redo</dt><dd>Ctrl+Z takes back a move, an auto layout, a wire you made or removed, a plugin you dropped on a wire, a meter you snapped, or a node you hid.</dd></div>
 <div><dt>Remove a plugin, keep the sound</dt><dd>Take a plugin out of a chain and the wires on either side are joined back up.</dd></div>
 <div><dt>Delete does what you mean</dt><dd>It disconnects the selected wires, removes plugins after asking, hides devices and app streams, and deletes the selected block rules.</dd></div>
+<div><dt>Tall columns</dt><dd>Auto layout can split a long stack of apps or devices into side-by-side columns, so the graph takes less height.</dd></div>
+<div><dt>Connected ports only</dt><dd>The funnel in a node's header hides every port on it that has no wire.</dd></div>
+<div><dt>Block lines</dt><dd>Right-drag from one port to another to keep the two apart. Delete the red line to undo it.</dd></div>
 <div><dt>Long names</dt><dd>The node under the cursor lights up. If its name does not fit the card, a popup shows all of it.</dd></div>
 <div><dt>Every shortcut</dt><dd>Press <span class="mono">?</span> or <span class="mono">F1</span> for the full list, or click the question mark at the corner of the canvas.</dd></div>
 </dl>
@@ -439,7 +474,11 @@ sudo apt install zestbay</code></pre>
 <pre><code>sudo apt install ./zestbay_&lt;version&gt;-debian13_amd64.deb</code></pre>
 </div>
 <div class="row">
-<div class="row-label"><h3 class="display">Zestins, optional</h3><span>ZestBay's own LV2 plugins, a separate package. The .deb and .rpm files are on the <a href="https://github.com/lemonxah/zestbay/releases/latest">latest release</a>; on Arch build <span class="mono">pkg/zestins</span> with makepkg</span></div>
+<div class="row-label"><h3 class="display">Fedora</h3><span>Download the .rpm, built for the current Fedora, from the <a href="https://github.com/lemonxah/zestbay/releases/latest">latest release</a></span></div>
+<pre><code>sudo dnf install ./zestbay-&lt;version&gt;-1.fc&lt;NN&gt;.x86_64.rpm</code></pre>
+</div>
+<div class="row">
+<div class="row-label"><h3 class="display">Zestins, optional</h3><span>ZestBay's own LV2 plugins, a separate package. The .deb and .rpm files are on the <a href="https://github.com/lemonxah/zestbay/releases/latest">latest release</a>, with a prebuilt bundle for any distro; on Arch it is <span class="mono">zestins</span> in the AUR</span></div>
 <pre><code># Ubuntu, from the PPA
 sudo apt install zestins
 # Debian
@@ -450,11 +489,7 @@ sudo dnf install ./zestins-&lt;version&gt;-1.fc&lt;NN&gt;.x86_64.rpm
 make -C zestins install</code></pre>
 </div>
 <div class="row">
-<div class="row-label"><h3 class="display">Flatpak</h3><span>Build the bundle from the repository</span></div>
-<pre><code>just flatpak-bundle</code></pre>
-</div>
-<div class="row">
-<div class="row-label"><h3 class="display">From source</h3><span>Needs Rust 1.88 or newer, Clang, CMake and the Qt6 headers, so install the packages below first. Fedora and Nix packaging is in <span class="mono">pkg/</span></span></div>
+<div class="row-label"><h3 class="display">From source</h3><span>Needs Rust 1.88 or newer, Clang, CMake and the Qt6 headers, so install the packages below first. Debian, RPM and Nix packaging is in <span class="mono">pkg/</span></span></div>
 <pre><code>git clone https://github.com/lemonxah/zestbay
 cd zestbay
 just install</code></pre>
